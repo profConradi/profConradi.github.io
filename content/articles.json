@@ -1,12 +1,52 @@
 {
   "items": [
     {
-      "title": "Introduction to Complex Polynomial Dynamics",
-      "slug": "complex-polynomial-dynamics",
-      "date": "2025-01-15",
-      "summary": "An exploration of how polynomial roots in the complex plane create intricate visual patterns, combining rigorous mathematics with computational visualization.",
-      "tags": ["complex analysis", "dynamical systems", "visualization"],
+      "title": "Nils Aall Barricelli: A Pioneer of Digital Artificial Life",
+      "slug": "barricelli-artificial-life",
+      "date": "2024-08-19",
+      "summary": "Nils Aall Barricelli, pioneer of digital evolution, created numerical organisms capable of reproducing and evolving, anticipating artificial intelligence and artificial life. His research, initially unrecognized, is now acknowledged as fundamental to computer science development.",
+      "tags": ["artificial life", "history of AI", "evolution", "computer science"],
+      "readTime": "10 min"
+    },
+    {
+      "title": "An Introduction to Large Language Models",
+      "slug": "llm-introduction",
+      "date": "2023-11-29",
+      "summary": "A clear and accessible introduction to the language models behind ChatGPT and other AI assistants, featuring Andrej Karpathy's excellent explainer on System 1 vs System 2 thinking in AI.",
+      "tags": ["AI", "LLM", "ChatGPT", "machine learning"],
+      "readTime": "8 min"
+    },
+    {
+      "title": "Why Teach Artificial Intelligence in Schools",
+      "slug": "why-teach-ai-in-schools",
+      "date": "2023-09-17",
+      "summary": "The motivations for why AI must enter traditional school subjects. Exploring the relationship between humans and computers, and why AI literacy is essential for all citizens, not just future scientists.",
+      "tags": ["AI education", "pedagogy", "ethics", "civic education"],
+      "readTime": "15 min"
+    },
+    {
+      "title": "Simulating the Second Law of Thermodynamics",
+      "slug": "second-law-thermodynamics",
+      "date": "2023-09-20",
+      "summary": "An agent-based simulation exploring the second law of thermodynamics through a money exchange model. Discover how entropy increases and equilibrium distributions emerge from simple random interactions.",
+      "tags": ["physics", "thermodynamics", "simulation", "statistical mechanics"],
       "readTime": "12 min"
+    },
+    {
+      "title": "Artificial Intelligence in High School Education",
+      "slug": "ai-textbook",
+      "date": "2023-09-15",
+      "summary": "A textbook on artificial intelligence for high school students, covering history, ethics, Python programming, data science tools, and machine learning with scikit-learn.",
+      "tags": ["AI education", "textbook", "Python", "machine learning"],
+      "readTime": "5 min"
+    },
+    {
+      "title": "Dielectric Breakdown Simulation",
+      "slug": "dielectric-breakdown",
+      "date": "2023-09-14",
+      "summary": "A computational model simulating fractal patterns formed during dielectric breakdown, implementing the Pietronero model to generate structures similar to lightning and electrical treeing.",
+      "tags": ["physics", "fractals", "simulation", "computational physics"],
+      "readTime": "7 min"
     }
   ]
 }
