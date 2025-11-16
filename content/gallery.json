@@ -2,9 +2,9 @@
   "items": [
     {
       "title": "Stellar flux",
-      "image": "creature125_2__dimensioni_medie.jpeg",
-      "equation": "1024z^7 + (500t₂ - 500t₁)z^18 + 148z^14 - 332.75z^10 + [500t₁² - 500t₁t₂ + 500t₂² + 500t₁t₂ + 500] z^3 + 20.796875z^8 - 0.118164062z",
-      "description": "Complex polynomial roots create flowing, organic structures with aurora-like color gradients. The star-like form emerges from precise mathematical relationships in the complex plane."
+      "image": "2e7ff0824977dae41fc43d32208158bbf13931feae2fb9c734a102f5aefd62f6.jpeg",
+      "equation": "2e7ff0824977dae41fc43d32208158bbf13931feae2fb9c734a102f5aefd62f6",
+      "description": ""
     },
     {
       "title": "Bubble chamber bloom",
