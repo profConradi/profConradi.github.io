@@ -1,34 +1,58 @@
 {
   "items": [
     {
-      "title": "Stellar flux",
+      "title": "Polynomial Games",
       "image": "2e7ff0824977dae41fc43d32208158bbf13931feae2fb9c734a102f5aefd62f6.jpeg",
-      "equation": "2e7ff0824977dae41fc43d32208158bbf13931feae2fb9c734a102f5aefd62f6",
+      "equation": "",
       "description": ""
     },
     {
-      "title": "Bubble chamber bloom",
-      "image": "creature137_1__dimensioni_medie.jpeg",
-      "equation": "4t₁z² + (3000z - 288z^7) + 4t₂²(z - p₁m₂t₁) - 3000z - p₁08z^7 - p₁08t₁z⁷ - 8000z² + p₁08t₂1z² + 0.18843",
-      "description": "Concentric layers reveal the delicate membrane-like quality of mathematical structures. The iridescent colors encode parameter angles, transforming abstract mathematics into visual language."
+      "title": "Alien Orchid",
+      "image": "5ba00b99040c36af57f6072ed351440fc21ea975d4db6293eb5400c14f328ff9.jpeg",
+      "equation": "",
+      "description": ""
     },
     {
-      "title": "Polynomial roots mandala",
-      "image": "creature116_2__dimensioni_medie.jpeg",
-      "equation": "16z^15 + (10 - 10t₂) z^12 + (10t₁² - 10t₁² - 10t₂ - 10) z^9 + 0.488300018310517z^3",
-      "description": "Dense regions alternate with voids in the complex plane. The warm palette and organic boundaries emerge from millions of computed polynomial roots, revealing hidden mathematical symmetries."
+      "title": "Droplets",
+      "image": "791dc9a33434e6bd39116b92ca3ab26f8cd8bc9a7f28307ff879e5b2d9599b81.jpeg",
+      "equation": "",
+      "description": ""
     },
     {
-      "title": "Spectral braid",
-      "image": "creature139_3__dimensioni_medie.jpeg",
-      "equation": "z^12 + (20t₁² - 20t₁² - 20t₁² - 20t₁² - 20t₂² + 20t₁ - 20t₂) z^5 + (20t₂ - 20) z^7 - 50z² + 5t",
-      "description": "Flowing ribbons interweave in patterns that echo topological braids. Each strand represents a trajectory of polynomial roots as parameters vary continuously on the unit circle."
+      "title": "Sepals",
+      "image": "7493f87c9939161ffebb9a7f60f660a2fb93712896604b321dac9396696d3362.jpeg",
+      "equation": "",
+      "description": ""
     },
     {
-      "title": "Translucent memoir",
-      "image": "creature92_1__dimensioni_medie.jpeg",
-      "equation": "Details to be added",
-      "description": "Delicate curves on a light background create an ethereal composition. The minimalist aesthetic allows the pure mathematical structure to speak without distraction."
+      "title": "Voids",
+      "image": "5288687c19f0d9579e1ce26c84407625b8f9c5078d4ba0df8dc0468e80586428.jpeg",
+      "equation": "",
+      "description": ""
+    },
+    {
+      "title": "Splash",
+      "image": "ad0224009ecb5457552eee2abd3cdd7a2aa89be71467b844989c3c70d40caaa2.jpeg",
+      "equation": "",
+      "description": ""
+    },
+    {
+      "title": "Tension",
+      "image": "c132fa17f7435513c2b8f63d964fcfceadb00439558702ed298496bc9e7c5f36.jpeg",
+      "equation": "",
+      "description": ""
+    },
+    {
+      "title": "Complex or Complicated?",
+      "image": "edae8f93845f9e74fce5c0f3ad48bc3b6228eee654d953371bf1a8840fc1c047.jpeg",
+      "equation": "",
+      "description": ""
+    },
+    {
+      "title": "Polynomial Veins",
+      "image": "f9fb44e2287da7cbac8234d34c4fe24c5991d5f651a6496dd11c12c2ac15a493.jpeg",
+      "equation": "",
+      "description": ""
     }
   ]
 }
