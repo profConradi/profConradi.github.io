@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loadContent();
     loadArticles();
     loadGallery();
-    loadSimulations();
     initSmoothScroll();
 });
 
@@ -32,14 +31,6 @@ async function loadContent() {
             const artIntroText = await artIntroResponse.text();
             const artIntroHtml = marked.parse(artIntroText);
             document.getElementById('art-intro').innerHTML = artIntroHtml;
-        }
-
-        // Load simulations intro
-        const simsIntroResponse = await fetch(`${config.contentPath}simulations-intro.md`);
-        if (simsIntroResponse.ok) {
-            const simsIntroText = await simsIntroResponse.text();
-            const simsIntroHtml = marked.parse(simsIntroText);
-            document.getElementById('simulations-intro').innerHTML = simsIntroHtml;
         }
 
         // Load contact
@@ -182,56 +173,6 @@ function createGalleryItem(item) {
     
     article.appendChild(img);
     article.appendChild(info);
-    
-    return article;
-}
-
-// Load simulations
-async function loadSimulations() {
-    try {
-        const response = await fetch(`${config.contentPath}simulations.json`);
-        if (!response.ok) return;
-        
-        const simulations = await response.json();
-        const simsContainer = document.getElementById('simulations-grid');
-        
-        simulations.items.forEach(item => {
-            const simItem = createSimulationItem(item);
-            simsContainer.appendChild(simItem);
-        });
-    } catch (error) {
-        console.error('Error loading simulations:', error);
-    }
-}
-
-// Create simulation item element
-function createSimulationItem(item) {
-    const article = document.createElement('article');
-    article.className = 'simulation-item';
-    
-    const title = document.createElement('h3');
-    title.className = 'simulation-title';
-    title.textContent = item.title;
-    
-    const description = document.createElement('p');
-    description.className = 'simulation-description';
-    description.textContent = item.description;
-    
-    if (item.url) {
-        const link = document.createElement('a');
-        link.href = item.url;
-        link.className = 'simulation-link';
-        link.textContent = 'View simulation';
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        
-        article.appendChild(title);
-        article.appendChild(description);
-        article.appendChild(link);
-    } else {
-        article.appendChild(title);
-        article.appendChild(description);
-    }
     
     return article;
 }
