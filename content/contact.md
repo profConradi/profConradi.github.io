@@ -1,6 +1,6 @@
 For inquiries about artwork licensing, prints, or educational collaborations:
 
-**Email:** [your-email@example.com](mailto:your-email@example.com)
+**Email:** [📩](mailto:conradi.simone@gmail.com)
 
 ### Fine art prints
 
