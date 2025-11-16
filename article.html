@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="article-title">Article – Simone Conradi</title>
+    <meta name="description" content="Scientific articles on mathematics and physics by Simone Conradi">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- MathJax for equation rendering -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                packages: {'[+]': ['ams']}
+            },
+            svg: {
+                fontCache: 'global'
+            },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        console.log('MathJax initial typesetting complete');
+                    });
+                }
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-content">
+            <a href="index.html" class="logo">Simone Conradi</a>
+            <div class="nav-links">
+                <a href="index.html#about">About</a>
+                <a href="index.html#blog">Articles</a>
+                <a href="index.html#math-art">Mathematical art</a>
+                <a href="index.html#simulations">Simulations</a>
+                <a href="index.html#contact">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Article Content -->
+    <article class="article-page">
+        <div class="article-container">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb">
+                <a href="index.html#blog">← Back to articles</a>
+            </nav>
+
+            <!-- Article Header -->
+            <header class="article-page-header">
+                <div class="article-meta" id="article-meta">
+                    <!-- Metadata loaded dynamically -->
+                </div>
+                <h1 class="article-page-title" id="article-page-title">Loading...</h1>
+            </header>
+
+            <!-- Article Body -->
+            <div class="article-content" id="article-content">
+                <!-- Content loaded from markdown -->
+            </div>
+
+            <!-- Article Footer -->
+            <footer class="article-footer">
+                <nav class="breadcrumb">
+                    <a href="index.html#blog">← Back to articles</a>
+                </nav>
+            </footer>
+        </div>
+    </article>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Simone Conradi. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Configuration
+        const config = {
+            contentPath: 'content/',
+            articlesPath: 'content/articles/'
+        };
+
+        // Get article ID from URL
+        function getArticleId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+
+        // Load article metadata
+        async function loadArticleMetadata(articleId) {
+            try {
+                const response = await fetch(`${config.contentPath}articles.json`);
+                if (!response.ok) return null;
+
+                const articles = await response.json();
+                return articles.items.find(item => item.slug === articleId);
+            } catch (error) {
+                console.error('Error loading article metadata:', error);
+                return null;
+            }
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', options);
+        }
+
+        // Load and render article
+        async function loadArticle() {
+            const articleId = getArticleId();
+
+            if (!articleId) {
+                document.getElementById('article-page-title').textContent = 'Article not found';
+                document.getElementById('article-content').innerHTML = '<p>No article specified.</p>';
+                return;
+            }
+
+            try {
+                // Load metadata
+                const metadata = await loadArticleMetadata(articleId);
+
+                if (metadata) {
+                    // Update page title
+                    document.getElementById('article-title').textContent = `${metadata.title} – Simone Conradi`;
+                    document.getElementById('article-page-title').textContent = metadata.title;
+
+                    // Display metadata
+                    const metaContainer = document.getElementById('article-meta');
+                    const metaHTML = `
+                        <time datetime="${metadata.date}">${formatDate(metadata.date)}</time>
+                        ${metadata.readTime ? `<span class="article-read-time"> · ${metadata.readTime}</span>` : ''}
+                        ${metadata.tags && metadata.tags.length > 0 ? `
+                            <div class="article-tags">
+                                ${metadata.tags.map(tag => `<span class="article-tag">${tag}</span>`).join('')}
+                            </div>
+                        ` : ''}
+                    `;
+                    metaContainer.innerHTML = metaHTML;
+                } else {
+                    document.getElementById('article-page-title').textContent = 'Loading...';
+                }
+
+                // Load article content
+                const contentResponse = await fetch(`${config.articlesPath}${articleId}.md`);
+                if (!contentResponse.ok) {
+                    throw new Error('Article not found');
+                }
+
+                const markdown = await contentResponse.text();
+                const html = marked.parse(markdown);
+                document.getElementById('article-content').innerHTML = html;
+
+                // Trigger MathJax typesetting after content is loaded
+                if (window.MathJax) {
+                    MathJax.typesetPromise().then(() => {
+                        console.log('MathJax typesetting complete');
+                    }).catch((err) => console.error('MathJax error:', err));
+                }
+
+            } catch (error) {
+                console.error('Error loading article:', error);
+                document.getElementById('article-page-title').textContent = 'Article not found';
+                document.getElementById('article-content').innerHTML = '<p>Sorry, this article could not be loaded.</p>';
+            }
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', loadArticle);
+    </script>
+</body>
+</html>

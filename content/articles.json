@@ -1,0 +1,12 @@
+{
+  "items": [
+    {
+      "title": "Introduction to Complex Polynomial Dynamics",
+      "slug": "complex-polynomial-dynamics",
+      "date": "2025-01-15",
+      "summary": "An exploration of how polynomial roots in the complex plane create intricate visual patterns, combining rigorous mathematics with computational visualization.",
+      "tags": ["complex analysis", "dynamical systems", "visualization"],
+      "readTime": "12 min"
+    }
+  ]
+}

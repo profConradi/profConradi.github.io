@@ -7,6 +7,20 @@
     <meta name="description" content="Simone Conradi reveals mathematics' hidden beauty through computational art and educational physics simulations.">
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- MathJax for equation rendering -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 </head>
 <body>
     <!-- Navigation -->
@@ -15,6 +29,7 @@
             <a href="#" class="logo">Simone Conradi</a>
             <div class="nav-links">
                 <a href="#about">About</a>
+                <a href="#blog">Articles</a>
                 <a href="#math-art">Mathematical art</a>
                 <a href="#simulations">Simulations</a>
                 <a href="#contact">Contact</a>
@@ -41,6 +56,20 @@
                 <div class="about-image">
                     <div class="image-frame"></div>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blog Section -->
+    <section id="blog" class="section blog-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Scientific articles</h2>
+                <p class="section-intro">Explorations in mathematics, physics, and computational methods</p>
+            </div>
+
+            <div class="articles-grid" id="articles-grid">
+                <!-- Article items loaded dynamically -->
             </div>
         </div>
     </section>
