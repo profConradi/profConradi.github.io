@@ -31,7 +31,7 @@ where $t_1, t_2 \in S^1$ (the unit circle) and coefficients $a_i$ vary continuou
 Instead of iterating the polynomial, I compute the density of roots as parameters vary. For each point $w$ in the complex plane, I determine how many parameter combinations $(t_1, t_2)$ yield $w$ as a root:
 
 $$
-\rho(w) = \left|\left\{(t_1, t_2) \in S^1 \times S^1 : \exists k \text{ such that } p(w; t_1, t_2) = 0\right\}\right|
+\rho(w) = |\left\{(t_1, t_2) \in S^1 \times S^1 : \exists k \text{ such that } p(w; t_1, t_2) = 0\right\}|
 $$
 
 This density function $\rho(w)$ creates the flowing, organic structures visible in the artwork.
