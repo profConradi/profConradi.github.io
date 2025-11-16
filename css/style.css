@@ -419,6 +419,33 @@ a:hover {
     border-top: 1px solid var(--color-border);
 }
 
+/* Articles Page */
+.articles-page {
+    padding-top: 5rem;
+    padding-bottom: var(--space-xl);
+    min-height: calc(100vh - 200px);
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: var(--space-xl);
+    padding: var(--space-xl) var(--space-md);
+}
+
+.page-header h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    margin-bottom: var(--space-md);
+    font-weight: 400;
+}
+
+.page-intro {
+    font-size: 1.2rem;
+    color: var(--color-text-light);
+    max-width: var(--reading-width);
+    margin: 0 auto;
+}
+
 .articles-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));

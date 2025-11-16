@@ -9,7 +9,6 @@ const config = {
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     loadContent();
-    loadArticles();
     loadGallery();
     initSmoothScroll();
 });
@@ -43,85 +42,6 @@ async function loadContent() {
     } catch (error) {
         console.error('Error loading content:', error);
     }
-}
-
-// Load articles
-async function loadArticles() {
-    try {
-        const response = await fetch(`${config.contentPath}articles.json`);
-        if (!response.ok) return;
-
-        const articles = await response.json();
-        const articlesContainer = document.getElementById('articles-grid');
-
-        articles.items.forEach(item => {
-            const articleCard = createArticleCard(item);
-            articlesContainer.appendChild(articleCard);
-        });
-    } catch (error) {
-        console.error('Error loading articles:', error);
-    }
-}
-
-// Create article card element
-function createArticleCard(item) {
-    const article = document.createElement('article');
-    article.className = 'article-card';
-
-    const header = document.createElement('div');
-    header.className = 'article-header';
-
-    const date = document.createElement('time');
-    date.className = 'article-date';
-    date.textContent = formatDate(item.date);
-    date.setAttribute('datetime', item.date);
-
-    const tags = document.createElement('div');
-    tags.className = 'article-tags';
-    if (item.tags && item.tags.length > 0) {
-        item.tags.forEach(tag => {
-            const tagSpan = document.createElement('span');
-            tagSpan.className = 'article-tag';
-            tagSpan.textContent = tag;
-            tags.appendChild(tagSpan);
-        });
-    }
-
-    header.appendChild(date);
-    if (item.readTime) {
-        const readTime = document.createElement('span');
-        readTime.className = 'article-read-time';
-        readTime.textContent = ` · ${item.readTime}`;
-        header.appendChild(readTime);
-    }
-
-    const title = document.createElement('h3');
-    title.className = 'article-title';
-    title.textContent = item.title;
-
-    const summary = document.createElement('p');
-    summary.className = 'article-summary';
-    summary.textContent = item.summary;
-
-    const link = document.createElement('a');
-    link.href = `article.html?id=${item.slug}`;
-    link.className = 'article-link';
-    link.textContent = 'Read article →';
-
-    article.appendChild(header);
-    article.appendChild(tags);
-    article.appendChild(title);
-    article.appendChild(summary);
-    article.appendChild(link);
-
-    return article;
-}
-
-// Format date for display
-function formatDate(dateString) {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', options);
 }
 
 // Load gallery items
