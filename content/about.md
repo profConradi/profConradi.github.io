@@ -1,4 +1,4 @@
-Simone Conradi holds a PhD in theoretical physics from the University of Genoa (2008). After a decade in railway automation, he provided consulting on mathematical models and machine learning for finance. Now teaching computer science at ITIS Delpozzo in Cuneo, he integrates Python into mathematics and physics education. He authored *Artificial Intelligence* (Zanichelli, 2022).
+Simone Conradi holds a PhD in theoretical physics from the University of Genoa (2008). After a decade in industry, he provided consulting on mathematical models and machine learning. Now teaching computer science at ITIS Delpozzo in Cuneo, he integrates Python into mathematics and physics education. He authored *Artificial Intelligence* (Zanichelli, 2022).
 
 ### The art of mathematical discovery
 
