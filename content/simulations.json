@@ -1,0 +1,34 @@
+{
+  "items": [
+    {
+      "title": "Pendulum dynamics",
+      "description": "Interactive simulation exploring simple and chaotic pendulum motion. Students can adjust initial conditions and observe how small changes lead to dramatically different trajectories in phase space.",
+      "url": ""
+    },
+    {
+      "title": "Wave interference",
+      "description": "Visualize constructive and destructive interference patterns. Adjust wave parameters to understand how superposition creates complex patterns from simple harmonic motion.",
+      "url": ""
+    },
+    {
+      "title": "Fourier series visualization",
+      "description": "Build complex periodic functions from simple sine and cosine waves. See how mathematical decomposition reveals the harmonic structure underlying any periodic signal.",
+      "url": ""
+    },
+    {
+      "title": "Orbital mechanics",
+      "description": "Explore gravitational dynamics and orbital motion. Adjust masses, velocities, and positions to understand how celestial bodies interact through gravitational forces.",
+      "url": ""
+    },
+    {
+      "title": "Statistical distributions",
+      "description": "Interactive exploration of probability distributions and the central limit theorem. Generate random samples and observe how distributions emerge from randomness.",
+      "url": ""
+    },
+    {
+      "title": "Complex function mapping",
+      "description": "Visualize how complex functions transform the complex plane. See conformal mappings and understand how analytic functions preserve angles while distorting distances.",
+      "url": ""
+    }
+  ]
+}

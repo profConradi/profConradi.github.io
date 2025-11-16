@@ -1,0 +1,34 @@
+{
+  "items": [
+    {
+      "title": "Stellar flux",
+      "image": "creature125_2__dimensioni_medie.jpeg",
+      "equation": "1024z^7 + (500t₂ - 500t₁)z^18 + 148z^14 - 332.75z^10 + [500t₁² - 500t₁t₂ + 500t₂² + 500t₁t₂ + 500] z^3 + 20.796875z^8 - 0.118164062z",
+      "description": "Complex polynomial roots create flowing, organic structures with aurora-like color gradients. The star-like form emerges from precise mathematical relationships in the complex plane."
+    },
+    {
+      "title": "Bubble chamber bloom",
+      "image": "creature137_1__dimensioni_medie.jpeg",
+      "equation": "4t₁z² + (3000z - 288z^7) + 4t₂²(z - p₁m₂t₁) - 3000z - p₁08z^7 - p₁08t₁z⁷ - 8000z² + p₁08t₂1z² + 0.18843",
+      "description": "Concentric layers reveal the delicate membrane-like quality of mathematical structures. The iridescent colors encode parameter angles, transforming abstract mathematics into visual language."
+    },
+    {
+      "title": "Polynomial roots mandala",
+      "image": "creature116_2__dimensioni_medie.jpeg",
+      "equation": "16z^15 + (10 - 10t₂) z^12 + (10t₁² - 10t₁² - 10t₂ - 10) z^9 + 0.488300018310517z^3",
+      "description": "Dense regions alternate with voids in the complex plane. The warm palette and organic boundaries emerge from millions of computed polynomial roots, revealing hidden mathematical symmetries."
+    },
+    {
+      "title": "Spectral braid",
+      "image": "creature139_3__dimensioni_medie.jpeg",
+      "equation": "z^12 + (20t₁² - 20t₁² - 20t₁² - 20t₁² - 20t₂² + 20t₁ - 20t₂) z^5 + (20t₂ - 20) z^7 - 50z² + 5t",
+      "description": "Flowing ribbons interweave in patterns that echo topological braids. Each strand represents a trajectory of polynomial roots as parameters vary continuously on the unit circle."
+    },
+    {
+      "title": "Translucent memoir",
+      "image": "creature92_1__dimensioni_medie.jpeg",
+      "equation": "Details to be added",
+      "description": "Delicate curves on a light background create an ethereal composition. The minimalist aesthetic allows the pure mathematical structure to speak without distraction."
+    }
+  ]
+}
