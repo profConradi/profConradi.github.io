@@ -4,7 +4,7 @@
 class AttractorAnimation {
     constructor(canvas) {
         this.canvas = canvas;
-        this.numParticles = 50000;
+        this.numParticles = 20000;
         this.particles = [];
         this.time = 0;
         this.cameraAngle = Math.PI / 4;
