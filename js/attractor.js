@@ -4,16 +4,16 @@
 class AttractorAnimation {
     constructor(canvas) {
         this.canvas = canvas;
-        this.numParticles = 8000;
+        this.numParticles = 50000;
         this.particles = [];
         this.time = 0;
         this.cameraAngle = Math.PI / 4;
-        this.cameraRadius = 4;
+        this.cameraRadius = 3;
 
         // Attractor parameters (from the notebook)
         this.a = 2.51;
         this.b = 0.01;
-        this.scale = 2.0;
+        this.scale = 2.5;
         this.dt = 0.015;
 
         this.initParticles();
@@ -28,7 +28,7 @@ class AttractorAnimation {
                 x: (Math.random() - 0.5) * 2,
                 y: (Math.random() - 0.5) * 2,
                 z: (Math.random() - 0.5) * 2,
-                size: Math.random() * 0.5 + 0.2
+                size: Math.random() * 0.3 + 0.1
             });
         }
 
