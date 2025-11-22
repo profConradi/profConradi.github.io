@@ -19,6 +19,12 @@
       "description": ""
     },
     {
+      "title": "Julia Set",
+      "image": "1c88c330419955b6f1c91c9f0d90c0971db00c4f4f9c75cf6048a8a868512ee3.jpeg",
+      "equation": "1c88c330 419955b6 f1c91c9f 0d90c097 1db00c4f 4f9c75cf 6048a8a8 68512ee3",
+      "description": ""
+    },
+    {
       "title": "Sepals",
       "image": "7493f87c9939161ffebb9a7f60f660a2fb93712896604b321dac9396696d3362.jpeg",
       "equation": "7493f87c 9939161f febb9a7f 60f660a2 fb937128 96604b32 1dac9396 696d3362",
@@ -70,6 +76,12 @@
       "title": "Slovenia",
       "image": "e008eed53a4bc505128e4830b9f497ca2a1dc07211d64389d938497b05a2a60e.jpeg",
       "equation": "e008eed5 3a4bc505 128e4830 b9f497ca 2a1dc072 11d64389 d938497b 05a2a60e",
+      "description": ""
+    },
+    {
+      "title": "Eigenfish",
+      "image": "4dd877d24790396eb0873d1453f5f5efa38f9bdd4dbfce85ec23f43074264ca0.jpeg",
+      "equation": "4dd877d2 4790396e b0873d14 53f5f5ef a38f9bdd 4dbfce85 ec23f430 74264ca0",
       "description": ""
     },
     {
