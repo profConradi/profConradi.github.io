@@ -66,10 +66,11 @@ async function loadGallery() {
 function createGalleryItem(item) {
     const article = document.createElement('article');
     article.className = 'gallery-item';
-    
+
     const img = document.createElement('img');
     img.src = `${config.imagesPath}${item.image}`;
-    img.alt = item.title;
+    // SEO-optimized alt text with keywords
+    img.alt = `${item.title} - Mathematical art visualization of ${item.equation || 'polynomial equations'} in the complex plane`;
     img.className = 'gallery-image';
     
     const info = document.createElement('div');
