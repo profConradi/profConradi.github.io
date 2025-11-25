@@ -1,5 +1,3 @@
-# Darwin è superato e altre bugie che la scuola non dovrebbe tollerare
-
 Capita di assistere a un intervento rivolto a studenti maggiorenni di un istituto superiore italiano. Questa e altre esperienze recenti mi hanno fatto riflettere su tre derive problematiche con cui la scuola, luogo di formazione del pensiero critico, non dovrebbe avere nulla a che vedere.
 
 <figure>
