@@ -1,6 +1,14 @@
 {
   "items": [
     {
+      "title": "Darwin è superato e altre bugie che la scuola non dovrebbe tollerare",
+      "slug": "darwin",
+      "date": "2025-11-25",
+      "summary": "La scuola italiana tollera falsità scientifiche (come Darwin è superato) diffuse da coach e counsellor invitati come esperti. Confonde educazione con persuasione, sostituendo rigore epistemologico con tecniche motivazionali. Serve fact-checking sugli esterni, privilegiando credenziali accademiche verificabili. La posta in gioco: formare pensiero critico autonomo, non consumatori di narrative preconfezionate.",
+      "tags": ["scuola", "educazione", "scienza"],
+      "readTime": "5 min"
+    },
+    {
       "title": "Nils Aall Barricelli: A Pioneer of Digital Artificial Life",
       "slug": "barricelli-artificial-life",
       "date": "2024-08-19",
@@ -47,14 +55,6 @@
       "summary": "A computational model simulating fractal patterns formed during dielectric breakdown, implementing the Pietronero model to generate structures similar to lightning and electrical treeing.",
       "tags": ["physics", "fractals", "simulation", "computational physics"],
       "readTime": "7 min"
-    },
-    {
-      "title": "Darwin è superato e altre bugie che la scuola non dovrebbe tollerare",
-      "slug": "darwin",
-      "date": "2025-11-25",
-      "summary": "La scuola italiana tollera falsità scientifiche (come Darwin è superato) diffuse da coach e counsellor invitati come esperti. Confonde educazione con persuasione, sostituendo rigore epistemologico con tecniche motivazionali. Serve fact-checking sugli esterni, privilegiando credenziali accademiche verificabili. La posta in gioco: formare pensiero critico autonomo, non consumatori di narrative preconfezionate.",
-      "tags": ["scuola", "educazione", "scienza"],
-      "readTime": "5 min"
     }
   ]
 }
