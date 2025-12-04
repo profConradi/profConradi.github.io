@@ -29,13 +29,13 @@ Un intervento, per esempio sulla violenza di genere, dovrebbe fornire dati socio
 
 Il caso specifico è sintomatico di una tendenza più ampia e preoccupante. Sempre più spesso le scuole italiane invitano figure ibride — coach, counsellor, formatori motivazionali — per trattare temi educativi complessi che richiederebbero competenze accademiche specifiche.
 
-Questo accade per diverse ragioni strutturali. La scuola italiana è sotto-finanziata, oberata da adempimenti burocratici, priva di tempo per la formazione seria. I coach e i counsellor offrono pacchetti formativi chiavi in mano, spesso gratuiti o a basso costo, con grande capacità comunicativa e nessuna problematizzazione. Sono "facili" da gestire. Non disturbano, non creano conflitti epistemologici, non mettono in discussione le certezze consolidate.
+Questo accade per diverse ragioni strutturali. La scuola italiana è sotto-finanziata, oberata da adempimenti burocratici, con poco tempo per la formazione seria. I coach e i counsellor offrono pacchetti formativi chiavi in mano, spesso gratuiti o a basso costo, con grande capacità comunicativa e nessuna problematizzazione. Sono "facili" da gestire. Non disturbano, non creano conflitti epistemologici, non mettono in discussione le certezze consolidate.
 
 Ma la facilità ha un prezzo. Il coaching si basa su framework teorici proprietari, spesso autoreferenziali, raramente sottoposti a scrutinio peer-review. I coach non pubblicano su riviste scientifiche, non dibattono in contesti accademici, non sottopongono le loro metodologie a falsificazione empirica. Operano in un mercato dove l'unico criterio di validazione è il successo commerciale e la soddisfazione soggettiva del cliente.
 
 Quando queste figure entrano nella scuola, portano con sé questa logica. **Il risultato è una progressiva sostituzione del rigore epistemologico con la retorica dell'empowerment, della conoscenza verificabile con la "saggezza" esperienziale, del pensiero critico con l'adesione emotiva**.
 
-Particolarmente grave è il fatto che queste figure spesso godono di visibilità mediatica locale, connessioni politico-istituzionali, patrocini di enti pubblici. Tutto questo crea un'aura di autorevolezza che maschera l'assenza di credenziali accademiche verificabili. Una scuola che non fa fact-checking sugli esperti esterni diventa permeabile a qualunque figura sufficientemente abile nel self-marketing.
+Particolarmente grave è il fatto che queste figure spesso godono di visibilità mediatica locale, connessioni politico-istituzionali, patrocini di enti pubblici. Tutto questo crea un'aura di autorevolezza che maschera le eventuali credenziali accademiche verificabili. Una scuola che non fa fact-checking sugli esperti esterni diventa permeabile a qualunque figura sufficientemente abile nel self-marketing.
 
 ## Cosa dovrebbe fare una scuola
 
