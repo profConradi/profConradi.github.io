@@ -35,7 +35,7 @@ Ma la facilità ha un prezzo. Il coaching si basa su framework teorici proprieta
 
 Quando queste figure entrano nella scuola, portano con sé questa logica. **Il risultato è una progressiva sostituzione del rigore epistemologico con la retorica dell'empowerment, della conoscenza verificabile con la "saggezza" esperienziale, del pensiero critico con l'adesione emotiva**.
 
-Particolarmente grave è il fatto che queste figure spesso godono di visibilità mediatica locale, connessioni politico-istituzionali, patrocini di enti pubblici. Tutto questo crea un'aura di autorevolezza che maschera le eventuali credenziali accademiche verificabili. Una scuola che non fa fact-checking sugli esperti esterni diventa permeabile a qualunque figura sufficientemente abile nel self-marketing.
+Tutto questo crea un'aura di autorevolezza che maschera le eventuali credenziali accademiche verificabili. Una scuola che non fa fact-checking sugli esperti esterni diventa permeabile a qualunque figura sufficientemente abile nel self-marketing.
 
 ## Cosa dovrebbe fare una scuola
 
