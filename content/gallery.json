@@ -1,6 +1,18 @@
 {
   "items": [
     {
+      "title": "The Fractal Library of Babel",
+      "image": "5a427acb00180a0c8ccc5ffe8ff649095d34253e7cf8a5217c620ec2ccbfadee.jpeg",
+      "equation": "5a427acb 00180a0c 8ccc5ffe 8ff64909 5d34253e 7cf8a521 7c620ec2 ccbfadee",
+      "description": ""
+    },
+    {
+      "title": "IFS Galaxy",
+      "image": "64ee5b7eb9e2c70d5d65214f58a519c6ce4a69ead0e33bbb1ad52bdb4e29dbc5.jpeg",
+      "equation": "64ee5b7e b9e2c70d 5d65214f 58a519c6 ce4a69ea d0e33bbb 1ad52bdb 4e29dbc5",
+      "description": ""
+    },
+    {
       "title": "Traffic Jams Simulation (Nagel-Schreckenberg)",
       "image": "5e2f646507063927d471cea5c9349099bd0aae995e5df8ec8dfa92957c6943ad.jpeg",
       "equation": "5e2f6465 07063927 d471cea5 c9349099 bd0aae99 5e5df8ec 8dfa9295 7c6943ad",
