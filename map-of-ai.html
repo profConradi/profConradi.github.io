@@ -121,6 +121,7 @@ form.chat input{flex:1;min-width:0;font-family:"Courier New",Courier,monospace;f
   border-radius:255px 14px 225px 14px/14px 225px 14px 255px;padding:3px 14px 4px}
 #home:hover{background-color:color-mix(in srgb,var(--yellow) 28%,transparent)}
 #home:focus-visible{outline:2px dashed var(--blue);outline-offset:3px}
+body.film #home{display:none!important}
 @media (max-width:760px){#home{left:8px;font-size:18px;padding:2px 10px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -604,8 +605,8 @@ SC.xor={init(st){st.fn='xor';st.h=[[60,190],[470,330]];st.drag=-1},
   txt('1973:',510,368,{size:21,col:C.blue});txt('Lighthill',510,392,{size:21,col:C.blue});txt('report',510,416,{size:21,col:C.blue})}};
 
 /* --- GPT --- */
-const GPTD={'^':{a:.38,full:.22,long:.2,still:.16,banana:.04},a:{story:.5,journey:.22,sequence:.16,puzzle:.12},story:{of:.6,with:.25,'.':.15},
- journey:{of:.7,'.':.3},sequence:{of:1},puzzle:{'.':.6,with:.4},full:{of:1},long:{story:.55,journey:.45},still:{unfinished:.6,young:.4},unfinished:{'.':1},young:{'.':1},
+const GPTD={'^':{a:.45,full:.27,still:.23,banana:.05},a:{story:.4,journey:.2,long:.2,sequence:.1,puzzle:.1},long:{story:.55,journey:.45},story:{of:.6,with:.25,'.':.15},
+ journey:{of:.7,'.':.3},sequence:{of:1},puzzle:{'.':.6,with:.4},full:{of:1},still:{unfinished:.6,young:.4},unfinished:{'.':1},young:{'.':1},
  of:{summers:.35,ideas:.3,winters:.2,people:.15},with:{surprises:.5,setbacks:.5},summers:{and:.6,'.':.4},ideas:{and:.55,'.':.45},winters:{and:.55,'.':.45},people:{and:.55,'.':.45},
  and:{surprises:.4,comebacks:.35,setbacks:.25},surprises:{'.':1},comebacks:{'.':1},setbacks:{'.':1},banana:{'.':1}};
 SC.gpt={init(st){st.gen=[];st.T=1;st.mode=0;st.pick=null},
@@ -1153,6 +1154,7 @@ Object.assign(CONTENT,{
   line:'AlphaFold does not show how the chain folds, only the shape it ends up in. For biologists, that is already a great deal.'}});
 
 /* ================= stato generale ================= */
+const FILM=new URLSearchParams(location.search).get('film');let VCLOCK=null;const NOW=()=>VCLOCK===null?performance.now():VCLOCK;
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $=id=>document.getElementById(id);
 const cv=$('map'),ctx=cv.getContext('2d'),panel=$('panel'),bar=$('bar'),bub=$('bub'),marks=$('marks');
@@ -1179,10 +1181,10 @@ function genTiles(budget){const t0=performance.now();while(wantQ.length&&perform
  if(tiles.size>MAXT){const arr=[...tiles.entries()].sort((a,b)=>a[1].last-b[1].last);for(let i=0;i<tiles.size-MAXT&&i<arr.length;i++)if(arr[i][1].last<frameNo)tiles.delete(arr[i][0])}}
 
 /* ================= telecamera ================= */
-function area(){const mob=innerWidth<=760;const bh=bar.offsetHeight;if(mob){const ph=panel.offsetHeight;return{x:0,y:0,w:W,h:Math.max(120,H-bh-ph-10)}}
+function area(){if(FILM)return filmArea();const mob=innerWidth<=760;const bh=bar.offsetHeight;if(mob){const ph=panel.offsetHeight;return{x:0,y:0,w:W,h:Math.max(120,H-bh-ph-10)}}
  return{x:0,y:0,w:Math.max(200,W-panel.offsetWidth-24),h:H-bh}}
 function fitRect(x,y,w,h){const a=area();return{x:x+w/2,y:y+h/2,z:Math.min(a.w/w,a.h/h)*0.97}}
-function viewOf(i){const st=STOPS[i];if(st.k==='intro')return fitRect(180,60,3300,1700);if(st.k==='end')return fitRect(10950,prof(2,11800)-980,2500,1300);
+function viewOf(i){const st=STOPS[i];if(FILM&&st.n)return FILM==='p'?fitRect(st.dir>0?st.px-420:st.px-340,st.py-700,760,780):fitRect(st.dir>0?st.px-470:st.px-740,st.py-700,1210,760);if(st.k==='intro')return fitRect(180,60,3300,1700);if(st.k==='end')return fitRect(10950,prof(2,11800)-980,2500,1300);
  if(innerWidth<=760)return fitRect(st.dir>0?st.px-450:st.px-350,st.py-700,800,790);return fitRect(st.dir>0?st.px-470:st.px-740,st.py-720,1210,920)}
 const overview=()=>fitRect(-100,-60,WW+200,WH+120);
 function toScreen(wx,wy){const a=area();return[a.x+a.w/2+(wx-cam.x)*cam.z,a.y+a.h/2+(wy-cam.y)*cam.z]}
@@ -1197,7 +1199,7 @@ function renderLive(S,L){const kk=Math.min(3,Math.max(.5,dpr*cam.z));const bw=Ma
 const SNOWR=[[11700,700,13600,3500],[0,2650,7400,4300],[0,3700,1900,5700]];let FLAKES=[];
 function makeFlakes(){FLAKES=[];const r=mulberry(77);for(const R of SNOWR){const n=Math.floor((R[2]-R[0])*(R[3]-R[1])/14000);for(let i=0;i<n;i++)FLAKES.push({R,x:R[0]+r()*(R[2]-R[0]),y:r()*(R[3]-R[1]),sp:40+r()*50,ph:r()*6})}}
 let curT=1830;
-function draw(){frameNo++;const a=area(),k=dpr*cam.z;const ox=dpr*(a.x+a.w/2)-k*cam.x,oy=dpr*(a.y+a.h/2)-k*cam.y;
+function draw(){if(FILM&&typeof FILMSKIP!=='undefined'&&FILMSKIP)return false;frameNo++;const a=area(),k=dpr*cam.z;const ox=dpr*(a.x+a.w/2)-k*cam.x,oy=dpr*(a.y+a.h/2)-k*cam.y;
  ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=C.paper;ctx.fillRect(0,0,cv.width,cv.height);
  const wx0=-ox/k,wy0=-oy/k,wx1=(cv.width-ox)/k,wy1=(cv.height-oy)/k;
  // livello base, sempre pronto
@@ -1245,7 +1247,7 @@ function teseoSide(x,base,dir,ph,walk){const s=1.25;const X=u=>x+dir*u*s,Y=v=>ba
  for(const d of[-2,0,2])seg(X(25),Y(8),X(34),Y(8+d*1.6),{w:1,passes:1,col:C.red})}
 let bubOn=false,bubUntil=0;
 function lineOf(i){const S=STOPS[i];const c=CONTENT[S.k||S.n];return c&&c.line}
-function bubble(on){const l=lineOf(cur);bubOn=on&&!!l&&!ov&&innerWidth>760;if(bubOn){$('bubt').textContent=l;bubUntil=performance.now()+14000}bub.classList.toggle('on',bubOn);placeBubble()}
+function bubble(on){if(FILM)on=false;const l=lineOf(cur);bubOn=on&&!!l&&!ov&&innerWidth>760;if(bubOn){$('bubt').textContent=l;bubUntil=performance.now()+14000}bub.classList.toggle('on',bubOn);placeBubble()}
 function placeBubble(){if(!bubOn)return;const p=pathAt(TS.s);const[sx,sy]=toScreen(p.x,p.y);const a=area();const bw=bub.offsetWidth,bh=bub.offsetHeight;
  let x=sx-34,y=sy+22,up=false;const S=STOPS[cur];if(y+bh>a.y+a.h-6){y=a.y+a.h-bh-6;if(S.n)y=Math.max(y,toScreen(0,S.py-72)[1]);if(y<sy-10){y=Math.max(8,sy-40*cam.z-bh-10);up=true}}x=Math.max(8,Math.min(a.x+a.w-bw-8,x));y=Math.max(8,y);
  bub.style.left=x+'px';bub.style.top=y+'px';bub.classList.toggle('up',up);bub.style.setProperty('--tx',Math.max(14,Math.min(bw-30,sx-x-8))+'px')}
@@ -1267,7 +1269,7 @@ const LOOKS2=LOOKS;
 function drawPeople(cvp){const list=JSON.parse(cvp.dataset.people);const W0=500,H0=104;const k=Math.min(3,(cvp.clientWidth||352)/W0*dpr);cvp.width=Math.round(W0*k);cvp.height=Math.round(H0*k);
  const c=cvp.getContext('2d');c.setTransform(k,0,0,k,0,0);P.ctx=c;P.budget=Infinity;P.used=0;P.dry=false;P.minw=0;P.scale=0;const n=list.length;const w=W0/Math.max(n,3);
  list.forEach(([name,key],i)=>{const cx=i*w+34;person(cx,30,0.6,{...LOOKS2[key],bottom:104});const lines=wrapLines(name,w-80,22);lines.forEach((l,q)=>txt(l,cx+44,54+q*21-(lines.length-1)*10,{size:22,col:C.ink}))})}
-function showPanel(i){document.querySelectorAll('.stop').forEach(s=>s.classList.toggle('active',+s.dataset.i===i&&!ov));$('ovsec').classList.toggle('active',ov);
+function showPanel(i){if(FILM)filmCaption(i);document.querySelectorAll('.stop').forEach(s=>s.classList.toggle('active',+s.dataset.i===i&&!ov));$('ovsec').classList.toggle('active',ov);
  const s=document.querySelector(`.stop[data-i="${i}"]`);if(s&&!ov){s.querySelectorAll('canvas.people').forEach(drawPeople);panel.scrollTop=0}
  const S=STOPS[i];$('sr').textContent=ov?'Whole map':(S.n?`Stop ${S.n} of 19, ${S.y}: ${S.title}`:(S.k==='intro'?'Start of the trail':'The lookout'));
  $('prev').disabled=i===0&&!ov;$('next').disabled=i===STOPS.length-1&&!ov;$('ovbtn').textContent=ov?'back to the trail':'whole map';$('ovbtn').setAttribute('aria-pressed',ov);
@@ -1281,11 +1283,11 @@ function go(i){i=Math.max(0,Math.min(STOPS.length-1,i));if(ov){setOverview(false
  const dur=adj?Math.min(2.8,1.05+dist/5200):Math.min(2.1,1.1+chord/9000);
  let zm=Math.min(from.z,to.z)*Math.min(1,a.w*.9/(Math.abs(to.x-from.x)+900),a.h*.9/(Math.abs(to.y-from.y)+900));if(adj)zm=Math.max(zm,Math.min(from.z,to.z)*.32);
  const pA=pathAt(sA),pB=pathAt(sB);
- tr={t0:performance.now(),dur:dur*1000,from,to,adj,sA,sB,offA:[from.x-pA.x,from.y-pA.y],offB:[to.x-pB.x,to.y-pB.y],zm};TS.hide=!adj;needs=true}
+ tr={t0:NOW(),dur:dur*1000,from,to,adj,sA,sB,offA:[from.x-pA.x,from.y-pA.y],offB:[to.x-pB.x,to.y-pB.y],zm};TS.hide=!adj;needs=true}
 function setOverview(on,target){if(on===ov&&target===undefined)return;
- if(on){ov=true;bubble(false);showPanel(cur);const from={...cam},to=overview();if(reduce){cam=to;tr=null}else tr={t0:performance.now(),dur:1300,from,to,adj:false,zm:to.z,ovt:true};needs=true;mmDraw();return}
+ if(on){ov=true;bubble(false);showPanel(cur);const from={...cam},to=overview();if(reduce){cam=to;tr=null}else tr={t0:NOW(),dur:1300,from,to,adj:false,zm:to.z,ovt:true};needs=true;mmDraw();return}
  ov=false;const i=target===undefined?cur:target;const from={...cam},to=viewOf(i);cur=i;showPanel(i);mmDraw();TS.s=STOPS[i].ts;TS.dir=STOPS[i].dir;TS.walk=false;
- if(reduce){cam=to;tr=null;arrive();return}tr={t0:performance.now(),dur:1400,from,to,adj:false,zm:to.z};TS.hide=true;needs=true}
+ if(reduce){cam=to;tr=null;arrive();return}tr={t0:NOW(),dur:1400,from,to,adj:false,zm:to.z};TS.hide=true;needs=true}
 function arrive(){TS.hide=false;TS.walk=false;TS.dir=STOPS[cur].dir;const S=STOPS[cur];if(S.done){const L=ensureLive(S);L.dirty=true}needs=true;setTimeout(()=>{if(!tr&&!ov)bubble(true)},reduce?0:350)}
 function stepTr(now){const u=Math.min(1,(now-tr.t0)/tr.dur),e=ease(u);const{from,to}=tr;
  const lzA=Math.log(from.z),lzB=Math.log(to.z),lm=Math.log(tr.zm),mid=(lzA+lzB)/2;let lz=lzA+(lzB-lzA)*e;if(lm<mid)lz+=(lm-mid)*Math.sin(Math.PI*e);cam.z=Math.exp(lz);
@@ -1345,21 +1347,50 @@ function snapshots(){for(const S of STOPS)if(S.done){const st={el:null};SC[S.sce
 function rebuild(){tiles.clear();snapshots();buildWorld();makeBase();for(const k in live)live[k].dirty=true;needs=true}
 function retheme(){readAll();makeGrain();$('loading').classList.add('on');setTimeout(()=>{rebuild();$('loading').classList.remove('on');mmDraw();document.querySelectorAll('.stop.active canvas.people').forEach(drawPeople)},30)}
 let lastT=0;
-function loop(now){const dt=Math.min(.05,(now-lastT)/1000||0);lastT=now;time+=dt;
+function tickAll(now,dt){time+=dt;
  if(tr){stepTr(now);needs=true;mmDraw()}
  const S=STOPS[cur];const L=S.done&&live[S.n];if(L&&L.st.anim&&SC[S.scene].tick){SC[S.scene].tick(L.st,dt);L.dirty=true;needs=true}
  if(bubOn&&now>bubUntil)bubble(false);
- if(needs||(!reduce&&ambOn)){needs=false;ambOn=draw();placeBubble();placeMarks()}
- genTiles(tr?4:10);requestAnimationFrame(loop)}
+ if(needs||(!reduce&&ambOn)){needs=false;ambOn=draw();placeBubble();placeMarks()}}
+function loop(now){const dt=Math.min(.05,(now-lastT)/1000||0);lastT=now;tickAll(now,dt);genTiles(tr?4:10);requestAnimationFrame(loop)}
 let ambOn=false;
-async function start(){readAll();makeGrain();sizeCanvas();buildPanel();mmBuild();
+async function start(){if(FILM)filmSetup();readAll();makeGrain();sizeCanvas();buildPanel();mmBuild();
  const h=location.hash.slice(1);if(h.startsWith('stop-')){const n=+h.slice(5);const i=STOPS.findIndex(S=>S.n===n);if(i>=0)cur=i}else if(h==='end')cur=STOPS.length-1;
  try{await Promise.race([Promise.all(['400 30px Caveat','600 30px Caveat','400 18px Newsreader','500 30px Newsreader'].map(f=>document.fonts.load(f))),new Promise(r=>setTimeout(r,3000))])}catch(_){}
  rebuild();$('loading').classList.remove('on');
  showPanel(cur);cam=viewOf(cur);TS.s=STOPS[cur].ts;TS.dir=STOPS[cur].dir;curT=STOPS[cur].t;mmDraw();
  if(h==='map')setOverview(true);else arrive();
- ready=true;requestAnimationFrame(loop)}
+ ready=true;if(FILM){VCLOCK=0;filmReady()}else requestAnimationFrame(loop)}
 start();
+
+/* ================= modalità film: orologio virtuale e didascalie, per la cattura del video ================= */
+function filmSetup(){const _r=mulberry(20260923);Math.random=_r;const p=FILM==='p';document.body.classList.add('film',p?'film-p':'film-l');
+ const st=document.createElement('style');st.textContent=`
+ body.film #panel,body.film #bub,body.film #marks,body.film #prev,body.film #next,body.film #ovbtn,body.film #fold,body.film #theme,body.film #mmnote{display:none!important}
+ #fcap{position:fixed;left:0;right:0;z-index:8;background-color:var(--paper);background-image:var(--grain,none);display:flex;flex-direction:column;justify-content:center}
+ #fcap .yy{font-family:var(--hand);font-weight:600;color:var(--red);line-height:1}
+ #fcap .tt{font-family:var(--serif);font-weight:500;line-height:1.08;letter-spacing:-.01em;color:var(--ink)}
+ #fcap .nn{position:absolute;font-family:var(--hand);color:var(--muted)}
+ body.film-l #fcap{top:auto;bottom:0;height:118px;right:auto;width:640px;padding:0 0 0 30px}
+ body.film-l #fcap .yy{font-size:40px}body.film-l #fcap .tt{font-size:38px;margin-top:4px}body.film-l #fcap .nn{right:10px;top:16px;font-size:24px}
+ body.film-l #bar{height:118px;padding:0 34px 0 660px;border-top:1.4px solid var(--line)}body.film-l #mm{height:78px}
+ body.film-p #fcap{top:0;height:190px;padding:0 26px;border-bottom:1.4px solid var(--line)}
+ body.film-p #fcap .yy{font-size:40px}body.film-p #fcap .tt{font-size:34px;margin-top:6px}body.film-p #fcap .nn{right:22px;top:22px;font-size:24px}
+ body.film-p #bar{height:84px;padding:0 20px}body.film-p #mm{height:60px}`;document.head.appendChild(st);
+ const c=document.createElement('div');c.id='fcap';c.innerHTML='<div class="yy"></div><div class="tt"></div><div class="nn"></div>';document.body.appendChild(c)}
+function filmArea(){const p=FILM==='p';return p?{x:0,y:190,w:W,h:H-190-84}:{x:0,y:0,w:W,h:H-118}}
+let FCAP=null;
+function filmCaption(i){if(FCAP)return;const S=STOPS[i];const c=document.getElementById('fcap');if(!c)return;
+ let yy,tt,nn='';if(S.n){yy=CONTENT[S.n].year;tt=S.title;nn=S.n+' / 19'}else if(S.k==='intro'){yy='1843 to today';tt='A map of artificial intelligence'}else{yy='today';tt='The lookout'}
+ c.querySelector('.yy').textContent=yy;c.querySelector('.tt').textContent=tt;c.querySelector('.nn').textContent=nn}
+function filmSetCaption(yy,tt,nn){FCAP=null;const c=document.getElementById('fcap');c.querySelector('.yy').textContent=yy;c.querySelector('.tt').textContent=tt;c.querySelector('.nn').textContent=nn||'';FCAP=1}
+function filmReady(){mmDraw();needs=true;draw()}
+let FILMSKIP=false;
+window.filmStep=function(dt,skip){FILMSKIP=!!skip;VCLOCK+=dt*1000;needs=true;tickAll(VCLOCK,dt);if(!skip){let n=0;while(wantQ.length&&n<60){genTiles(1e9);needs=true;draw();n++}}FILMSKIP=false;return !!tr};
+window.filmAct=function(i,a,v){const S=STOPS[i];const L=ensureLive(S);const sc=SC[S.scene];const el=L.st.el&&L.st.el.querySelector(`[data-act="${a}"]`);
+ if(a==='say')sc.say(L.st,v);else sc.act&&sc.act(L.st,a,v,el);L.dirty=true;needs=true};
+window.filmSet=function(i,fn){const S=STOPS[i];const L=ensureLive(S);fn(L.st);L.dirty=true;needs=true};
+window.filmOverview=function(){ov=true;showPanel(cur);cam=overview();tr=null;needs=true;mmDraw()};
 
 </script>
 </body>
