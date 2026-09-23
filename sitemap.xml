@@ -48,11 +48,47 @@
         <priority>0.8</priority>
     </url>
 
-    <!-- Individual Article Page -->
+    <!-- Individual articles -->
     <url>
-        <loc>https://profconradi.github.io/article.html</loc>
-        <lastmod>2025-11-22</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.7</priority>
+        <loc>https://profconradi.github.io/article.html?id=darwin</loc>
+        <lastmod>2025-11-25</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://profconradi.github.io/article.html?id=barricelli-artificial-life</loc>
+        <lastmod>2024-08-19</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://profconradi.github.io/article.html?id=llm-introduction</loc>
+        <lastmod>2023-11-29</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://profconradi.github.io/article.html?id=why-teach-ai-in-schools</loc>
+        <lastmod>2023-09-17</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://profconradi.github.io/article.html?id=second-law-thermodynamics</loc>
+        <lastmod>2023-09-20</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://profconradi.github.io/article.html?id=ai-textbook</loc>
+        <lastmod>2023-09-15</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://profconradi.github.io/article.html?id=dielectric-breakdown</loc>
+        <lastmod>2023-09-14</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.6</priority>
     </url>
 </urlset>

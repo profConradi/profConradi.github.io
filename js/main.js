@@ -69,9 +69,14 @@ function createGalleryItem(item) {
 
     const img = document.createElement('img');
     img.src = `${config.imagesPath}${item.image}`;
-    // SEO-optimized alt text with keywords
-    img.alt = `${item.title} - Mathematical art visualization of ${item.equation || 'polynomial equations'} in the complex plane`;
+    // Alt text describes the piece; the equation field holds the work's uid, not readable prose
+    img.alt = item.description
+        ? `${item.title} – ${item.description}`
+        : `${item.title} – computational mathematical art by Simone Conradi`;
     img.className = 'gallery-image';
+    // The gallery is far below the fold: let the browser fetch what it needs
+    img.loading = 'lazy';
+    img.decoding = 'async';
     
     const info = document.createElement('div');
     info.className = 'gallery-info';
@@ -103,7 +108,13 @@ function initSmoothScroll() {
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
+            const href = this.getAttribute('href');
+            // A bare '#' is the logo: back to the top, and never a selector
+            if (href === '#') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+            const target = document.querySelector(href);
             if (target) {
                 const navHeight = document.querySelector('.nav').offsetHeight;
                 const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - navHeight;
