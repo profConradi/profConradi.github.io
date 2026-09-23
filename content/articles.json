@@ -1,11 +1,29 @@
 {
   "items": [
     {
+      "title": "A Map of Artificial Intelligence",
+      "slug": "map-of-ai",
+      "url": "map-of-ai.html",
+      "date": "2026-09-23",
+      "summary": "An interactive hand-drawn map of the history of artificial intelligence. Nineteen stops along a trail that climbs from Ada Lovelace's Note G in 1843 to ChatGPT, over the hills of each AI summer and down into the two snowy winters.",
+      "tags": [
+        "AI",
+        "history of AI",
+        "interactive",
+        "visualization"
+      ],
+      "readTime": "interactive"
+    },
+    {
       "title": "Darwin è superato e altre bugie che la scuola non dovrebbe tollerare",
       "slug": "darwin",
       "date": "2025-11-25",
       "summary": "La scuola italiana tollera falsità scientifiche (come Darwin è superato) diffuse da coach e counsellor invitati come esperti. Confonde educazione con persuasione, sostituendo rigore epistemologico con tecniche motivazionali. Serve fact-checking sugli esterni, privilegiando credenziali accademiche verificabili. La posta in gioco: formare pensiero critico autonomo, non consumatori di narrative preconfezionate.",
-      "tags": ["scuola", "educazione", "scienza"],
+      "tags": [
+        "scuola",
+        "educazione",
+        "scienza"
+      ],
       "readTime": "5 min"
     },
     {
@@ -13,7 +31,12 @@
       "slug": "barricelli-artificial-life",
       "date": "2024-08-19",
       "summary": "Nils Aall Barricelli, pioneer of digital evolution, created numerical organisms capable of reproducing and evolving, anticipating artificial intelligence and artificial life. His research, initially unrecognized, is now acknowledged as fundamental to computer science development.",
-      "tags": ["artificial life", "history of AI", "evolution", "computer science"],
+      "tags": [
+        "artificial life",
+        "history of AI",
+        "evolution",
+        "computer science"
+      ],
       "readTime": "10 min"
     },
     {
@@ -21,7 +44,12 @@
       "slug": "llm-introduction",
       "date": "2023-11-29",
       "summary": "A clear and accessible introduction to the language models behind ChatGPT and other AI assistants, featuring Andrej Karpathy's excellent explainer on System 1 vs System 2 thinking in AI.",
-      "tags": ["AI", "LLM", "ChatGPT", "machine learning"],
+      "tags": [
+        "AI",
+        "LLM",
+        "ChatGPT",
+        "machine learning"
+      ],
       "readTime": "8 min"
     },
     {
@@ -29,7 +57,12 @@
       "slug": "why-teach-ai-in-schools",
       "date": "2023-09-17",
       "summary": "The motivations for why AI must enter traditional school subjects. Exploring the relationship between humans and computers, and why AI literacy is essential for all citizens, not just future scientists.",
-      "tags": ["AI education", "pedagogy", "ethics", "civic education"],
+      "tags": [
+        "AI education",
+        "pedagogy",
+        "ethics",
+        "civic education"
+      ],
       "readTime": "15 min"
     },
     {
@@ -37,7 +70,12 @@
       "slug": "second-law-thermodynamics",
       "date": "2023-09-20",
       "summary": "An agent-based simulation exploring the second law of thermodynamics through a money exchange model. Discover how entropy increases and equilibrium distributions emerge from simple random interactions.",
-      "tags": ["physics", "thermodynamics", "simulation", "statistical mechanics"],
+      "tags": [
+        "physics",
+        "thermodynamics",
+        "simulation",
+        "statistical mechanics"
+      ],
       "readTime": "12 min"
     },
     {
@@ -45,7 +83,12 @@
       "slug": "ai-textbook",
       "date": "2023-09-15",
       "summary": "A textbook on artificial intelligence for high school students, covering history, ethics, Python programming, data science tools, and machine learning with scikit-learn.",
-      "tags": ["AI education", "textbook", "Python", "machine learning"],
+      "tags": [
+        "AI education",
+        "textbook",
+        "Python",
+        "machine learning"
+      ],
       "readTime": "5 min"
     },
     {
@@ -53,7 +96,12 @@
       "slug": "dielectric-breakdown",
       "date": "2023-09-14",
       "summary": "A computational model simulating fractal patterns formed during dielectric breakdown, implementing the Pietronero model to generate structures similar to lightning and electrical treeing.",
-      "tags": ["physics", "fractals", "simulation", "computational physics"],
+      "tags": [
+        "physics",
+        "fractals",
+        "simulation",
+        "computational physics"
+      ],
       "readTime": "7 min"
     }
   ]

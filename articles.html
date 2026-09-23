@@ -111,9 +111,10 @@
             summary.textContent = item.summary;
 
             const link = document.createElement('a');
-            link.href = `article.html?id=${item.slug}`;
+            // Items with a url point to a standalone page; the others to a markdown article
+            link.href = item.url || `article.html?id=${item.slug}`;
             link.className = 'article-link';
-            link.textContent = 'Read article →';
+            link.textContent = item.url ? 'Open →' : 'Read article →';
 
             article.appendChild(header);
             article.appendChild(tags);
