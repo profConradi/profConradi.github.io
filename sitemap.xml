@@ -40,6 +40,14 @@
         <priority>0.8</priority>
     </url>
 
+    <!-- Large Language Models: A Map with Theseus (standalone interactive page) -->
+    <url>
+        <loc>https://profconradi.github.io/map-of-llms.html</loc>
+        <lastmod>2026-09-24</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+
     <!-- A Map of Artificial Intelligence (standalone interactive page) -->
     <url>
         <loc>https://profconradi.github.io/map-of-ai.html</loc>

@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Large language models — a map with Theseus</title>
+<meta name="description" content="Bilingual (English and Italian), an interactive hand-drawn map of the ideas behind large language models: fifteen stops from generative models to tokens, temperature, scale, assistants, prompts, agents and hallucination, each with a small experiment to play with.">
+<meta name="author" content="Simone Conradi">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://profconradi.github.io/map-of-llms.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://profconradi.github.io/map-of-llms.html">
+<meta property="og:title" content="Large language models — a map with Theseus">
+<meta property="og:description" content="Bilingual (English and Italian), an interactive hand-drawn map of the ideas behind large language models: fifteen stops from generative models to tokens, temperature, scale, assistants, prompts, agents and hallucination, each with a small experiment to play with.">
+<meta property="og:site_name" content="Simone Conradi">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Large language models — a map with Theseus">
+<meta name="twitter:description" content="Bilingual (English and Italian), an interactive hand-drawn map of the ideas behind large language models: fifteen stops from generative models to tokens, temperature, scale, assistants, prompts, agents and hallucination, each with a small experiment to play with.">
+<meta name="twitter:creator" content="@S_Conradi">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#ECEEE8; --ink:#2A2C2E; --muted:#5C605C; --blue:#2C5A8C; --red:#B5452F;
+  --yellow:#E2BC45; --green:#6A9878; --line:#C6C9C0; --sheet:#F8F7F1; --snow:#FFFFFF;
+  --hand:"Caveat","Segoe Print","Bradley Hand","Comic Sans MS",cursive;
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  --barh:64px;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#1C2025; --ink:#DCDFD8; --muted:#A4AAA3; --blue:#8DB5DD; --red:#E8927C;
+    --yellow:#D8B64E; --green:#8DBB9A; --line:#3A4048; --sheet:#252A31; --snow:#DCE5EE;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#1C2025; --ink:#DCDFD8; --muted:#A4AAA3; --blue:#8DB5DD; --red:#E8927C;
+  --yellow:#D8B64E; --green:#8DBB9A; --line:#3A4048; --sheet:#252A31; --snow:#DCE5EE;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;height:100%;background-color:var(--paper);background-image:var(--grain,none);color:var(--ink);font-family:var(--serif);overflow:hidden;overscroll-behavior:none}
+#map{position:fixed;left:0;top:0;display:block;touch-action:none;outline:none}
+#panel{position:fixed;right:12px;top:calc(12px + env(safe-area-inset-top,0px));bottom:calc(var(--barh) + 10px + env(safe-area-inset-bottom,0px));width:392px;
+  overflow-y:auto;overscroll-behavior:contain;padding:20px 24px 18px;background-color:var(--paper);background-image:var(--grain,none);
+  border:1.6px solid var(--ink);border-radius:14px 6px 16px 8px/8px 16px 6px 14px;z-index:5}
+.stop,#ovsec{display:none}.stop.active,#ovsec.active{display:block}
+.year{font-family:var(--hand);font-size:34px;font-weight:600;color:var(--red);line-height:1;margin:0 0 4px}
+h1{font-size:36px;font-weight:500;line-height:1.05;margin:4px 0 12px;letter-spacing:-.01em}
+h2{font-size:29px;font-weight:500;line-height:1.1;margin:0 0 12px;letter-spacing:-.005em}
+#panel p{font-size:17px;line-height:1.46;margin:0 0 10px;hyphens:auto}
+#panel p.sub{font-size:21px;line-height:1.3;color:var(--muted);font-style:italic}
+#panel p.note,#panel p.soon{font-size:15.5px;color:var(--muted);font-style:italic;border-top:1.2px dashed var(--line);padding-top:8px;margin-top:10px}
+#panel p.soon{border:0;padding:0}
+canvas.people{display:block;width:100%;aspect-ratio:500/104;margin:10px 0 4px}
+.ctrl{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin-top:10px}
+.hint{font-family:var(--hand);font-size:22px;color:var(--blue);margin-top:6px;line-height:1.1}
+button.h,#bar button{font-family:var(--hand);font-size:21px;line-height:1.15;background:transparent;color:var(--ink);border:1.6px solid var(--ink);
+  border-radius:255px 14px 225px 14px/14px 225px 14px 255px;padding:3px 14px 4px;cursor:pointer}
+button.h:hover,#bar button:hover{background:color-mix(in srgb,var(--yellow) 28%,transparent)}
+button[aria-pressed="true"]{background:color-mix(in srgb,var(--yellow) 55%,transparent)}
+button:disabled{opacity:.35;cursor:default}
+button:focus-visible,input:focus-visible{outline:2px dashed var(--blue);outline-offset:3px}
+label.rng{font-family:var(--hand);font-size:21px;display:flex;align-items:center;gap:8px}
+input[type=range]{accent-color:var(--red);width:150px}
+#ovlist{list-style:none;padding:0;margin:8px 0 0}
+#ovlist li{margin:0 0 4px}
+.ovb{font-family:var(--serif);font-size:16.5px;text-align:left;background:none;border:0;color:var(--ink);padding:3px 4px;cursor:pointer;width:100%;border-radius:6px}
+.ovb:hover{background:color-mix(in srgb,var(--yellow) 28%,transparent)}
+.ovb .n{display:inline-block;min-width:26px;font-family:var(--hand);font-size:21px;color:var(--red);font-weight:600}
+.ovb .yy{font-family:var(--hand);font-size:20px;color:var(--muted);margin-right:4px}
+#bar{position:fixed;left:0;right:0;bottom:0;height:calc(var(--barh) + env(safe-area-inset-bottom,0px));padding:0 12px env(safe-area-inset-bottom,0px);display:flex;align-items:center;gap:10px;
+  border-top:1.2px solid var(--line);background-color:var(--paper);background-image:var(--grain,none);z-index:6}
+#bar .nav{font-size:24px;padding:0 14px}
+#mm{flex:1;position:relative;height:54px;min-width:0}
+#mmc{position:absolute;inset:0;width:100%;height:100%}
+#mmdots{position:absolute;inset:0}
+#bar .md{position:absolute;width:14px;height:14px;padding:0;border:1.4px solid var(--ink);border-radius:50%;background:var(--paper);cursor:pointer}
+#bar .md.cur{background:var(--red);border-color:var(--red);transform:scale(1.3)}
+#bar .md:hover{background:var(--yellow)}
+#mmnote{position:absolute;left:4px;bottom:-3px;font-family:var(--hand);font-size:14px;color:var(--muted);pointer-events:none;white-space:nowrap}
+#marks{position:fixed;inset:0;pointer-events:none;z-index:4;display:none}
+#marks.on{display:block}
+.mk{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;min-width:34px;height:34px;padding:0 8px;font-family:var(--hand);font-size:21px;font-weight:600;
+  color:var(--ink);background:var(--sheet);border:1.8px solid var(--ink);border-radius:50% 46% 52% 48%;cursor:pointer}
+.mk:hover,.mk.cur{background:var(--yellow);color:#2A2C2E}
+#bub{position:fixed;left:0;top:0;max-width:min(340px,80vw);padding:9px 15px 11px;font-family:var(--hand);font-size:20px;line-height:1.15;color:var(--ink);background:var(--sheet);
+  border:1.6px solid var(--ink);border-radius:18px 8px 20px 10px/10px 20px 8px 18px;opacity:0;transform:translateY(6px);transition:opacity .35s,transform .35s;pointer-events:none;z-index:7;cursor:pointer}
+#bub.on{opacity:1;transform:none;pointer-events:auto}
+#bub b{display:block;font-weight:600;font-size:17px;color:var(--red);margin-bottom:2px}
+#bub::after{content:"";position:absolute;top:-9px;left:var(--tx,30px);width:16px;height:16px;background:var(--sheet);border-left:1.6px solid var(--ink);border-top:1.6px solid var(--ink);transform:rotate(45deg) skewX(8deg)}
+#bub.up::after{top:auto;bottom:-9px;border:0;border-right:1.6px solid var(--ink);border-bottom:1.6px solid var(--ink)}
+#loading{position:fixed;inset:0;display:none;align-items:center;justify-content:center;font-family:var(--hand);font-size:34px;color:var(--muted);background:var(--paper);z-index:20}
+#loading.on{display:flex}
+#fold{display:none}
+form.chat{display:flex;gap:8px;width:100%}
+form.chat input{flex:1;min-width:0;font-family:"Courier New",Courier,monospace;font-size:16px;padding:6px 10px;border:1.6px solid var(--ink);border-radius:6px 3px 7px 4px;background:var(--sheet);color:var(--ink)}
+#panel p.tline{display:none;font-family:var(--hand);font-size:20px;line-height:1.15;color:var(--ink);border-left:3px solid var(--red);padding-left:10px}
+#panel p.tline b{color:var(--red);font-weight:600;margin-right:4px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.ctrl .defbox,.ctrl .quiz{flex:1 1 100%}
+.defbox{padding:8px 12px;border:1.4px dashed var(--line);border-radius:6px 3px 7px 4px}
+.defbox .dt{font-size:16px;line-height:1.4}.defbox .ds{font-family:var(--hand);font-size:18px;color:var(--blue);margin-top:4px;line-height:1.1}
+.quiz .q{font-size:19px;line-height:1.3;margin:2px 0 10px}.quiz .opts{display:flex;flex-direction:column;gap:8px}
+.quiz .opts button{font-family:var(--serif);font-size:16px;text-align:left;padding:6px 12px;line-height:1.3}
+.quiz .opts button.ok{background:color-mix(in srgb,var(--green) 40%,transparent)}.quiz .opts button.no{background:color-mix(in srgb,var(--red) 30%,transparent)}
+.sh{display:none}
+.quiz .why{font-family:var(--hand);font-size:20px;color:var(--blue);min-height:44px;margin-top:8px;line-height:1.15}
+@media (max-width:760px){
+  .lg{display:none}.sh{display:inline}
+  :root{--barh:96px}
+  #panel p.tline{display:block}
+  #bar{flex-wrap:wrap;align-content:center;row-gap:2px}
+  #mm{order:-1;flex:1 1 100%;height:38px}
+  #bar .md{width:11px;height:11px}
+  .mk{min-width:26px;height:26px;font-size:16px;padding:0 5px}
+  #panel{left:8px;right:8px;width:auto;top:auto;bottom:calc(var(--barh) + 8px + env(safe-area-inset-bottom,0px));max-height:38vh;padding:12px 16px 10px}
+  #panel.folded{display:none}
+  #fold{display:inline-block;font-size:18px!important;padding:2px 10px!important}
+  h1{font-size:28px}h2{font-size:24px}.year{font-size:28px}#panel p{font-size:16px}
+  #bar{gap:6px;padding:0 8px env(safe-area-inset-bottom,0px)}#bar button{font-size:18px;padding:2px 9px}#bar .nav{padding:0 10px}
+  #mmnote{display:none}
+}
+#home{position:fixed;left:12px;top:calc(12px + env(safe-area-inset-top,0px));z-index:6;font-family:var(--hand);font-size:21px;line-height:1.15;
+  text-decoration:none;color:var(--ink);background-color:var(--paper);background-image:var(--grain,none);border:1.6px solid var(--ink);
+  border-radius:255px 14px 225px 14px/14px 225px 14px 255px;padding:3px 14px 4px}
+#home:hover{background-color:color-mix(in srgb,var(--yellow) 28%,transparent)}
+#home:focus-visible{outline:2px dashed var(--blue);outline-offset:3px}
+body.film #home{display:none!important}
+@media (max-width:760px){#home{left:8px;font-size:18px;padding:2px 10px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<a id="home" href="articles.html">← articles</a>
+<canvas id="map" role="img" aria-label="A hand-drawn landscape: the history of artificial intelligence as a trail from 1843 to today. Hills are periods of enthusiasm, snowy valleys are the two AI winters. The text for each stop is in the side panel."></canvas>
+<div id="marks" aria-label="Stops on the map"></div>
+<aside id="panel" aria-label="Stop details">
+ <div id="stops"></div>
+ <section id="ovsec" aria-label="Whole map"><div class="year">1843 to today</div><h2>The whole map</h2><p>Pick a stop on the map or in this list.</p><ol id="ovlist"></ol></section>
+</aside>
+<div id="bub" role="status" aria-live="polite"><b>Theseus</b><span id="bubt"></span></div>
+<nav id="bar" aria-label="Trail navigation">
+ <button class="nav" id="prev" aria-label="Previous stop">←</button>
+ <div id="mm"><canvas id="mmc" aria-hidden="true"></canvas><div id="mmdots"></div><span id="mmnote"></span></div>
+ <button class="nav" id="next" aria-label="Next stop">→</button>
+ <button id="ovbtn" aria-pressed="false">whole map</button>
+ <button id="fold" aria-expanded="true">hide text</button>
+ <button id="theme" aria-label="Switch between light and dark theme">theme</button>
+ <button id="lang"></button>
+</nav>
+<div id="sr" class="sr" aria-live="polite"></div>
+<div id="loading" class="on">…</div>
+<script>
+
+"use strict";
+let LANG=(()=>{try{const v=localStorage.getItem('llm-map-lang');if(v==='it'||v==='en')return v}catch(e){}return(navigator.language||'').toLowerCase().startsWith('it')?'it':'en'})();
+document.documentElement.lang=LANG;
+const LX=(en,it)=>LANG==='it'?it:en;
+const HAND='"Caveat","Segoe Print","Bradley Hand","Comic Sans MS",cursive';
+const HS=1.06;
+const SERIF='"Newsreader",Georgia,serif';
+const C={};
+function isDark(){const t=document.documentElement.dataset.theme;if(t==='dark')return true;if(t==='light')return false;return matchMedia('(prefers-color-scheme: dark)').matches}
+function readColors(){const cs=getComputedStyle(document.documentElement);for(const k of['paper','ink','muted','blue','red','yellow','green','line'])C[k]=cs.getPropertyValue('--'+k).trim();C.dark=isDark()}
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function hsh(){let h=2166136261>>>0;for(let i=0;i<arguments.length;i++){h^=(Math.round(arguments[i])|0);h=Math.imul(h,16777619)}return h>>>0}
+const P={ctx:null,budget:Infinity,used:0,dry:false,minw:0,scale:0,
+  take(len){const u0=this.used;this.used+=len;if(this.dry)return 0;if(this.budget===Infinity)return 1;return Math.max(0,Math.min(1,(this.budget-u0)/len))}};
+function plen(p){let L=0;for(let i=1;i<p.length;i++)L+=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);return L}
+function cut(p,f){if(f>=1)return p;const L=plen(p)*f;let acc=0;const o=[p[0]];for(let i=1;i<p.length;i++){const d=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);if(acc+d>=L){const r=d?(L-acc)/d:0;o.push([p[i-1][0]+(p[i][0]-p[i-1][0])*r,p[i-1][1]+(p[i][1]-p[i-1][1])*r]);return o}acc+=d;o.push(p[i])}return o}
+function smooth(ctx,q){ctx.beginPath();ctx.moveTo(q[0][0],q[0][1]);if(q.length<3){for(let i=1;i<q.length;i++)ctx.lineTo(q[i][0],q[i][1])}else{for(let i=1;i<q.length-1;i++){ctx.quadraticCurveTo(q[i][0],q[i][1],(q[i][0]+q[i+1][0])/2,(q[i][1]+q[i+1][1])/2)}ctx.lineTo(q[q.length-1][0],q[q.length-1][1])}ctx.stroke()}
+function stroke(pts,o={}){if(pts.length<2)return;const L=plen(pts)||1;const f=P.take(L*(o.speed??1));if(f<=0)return;const ctx=P.ctx;
+  const n=pts.length-1;const r=mulberry(hsh(pts[0][0]/3,pts[0][1]/3,pts[n][0]/3,pts[n][1]/3,n,o.seed||0));
+  const passes=o.passes??2,j=o.jit??0.8,w=o.w??1.5,a=o.a??0.9;
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=o.col||C.ink;if(o.dash)ctx.setLineDash(o.dash);
+  for(let p=0;p<passes;p++){ctx.globalAlpha=a*(p?0.42:1);ctx.lineWidth=Math.max(P.minw,w*(p?0.7:1));const q=pts.map(t=>[t[0]+(r()-.5)*2*j,t[1]+(r()-.5)*2*j]);smooth(ctx,cut(q,f))}
+  ctx.restore()}
+function seg(x1,y1,x2,y2,o={}){const L=Math.hypot(x2-x1,y2-y1);if(L<0.5)return;const n=Math.max(2,Math.ceil(L/16));const r=mulberry(hsh(x1/3,y1/3,x2/3,y2/3,9));
+  const bow=(r()-.5)*Math.min(L*0.03,6)*(o.bow??1);const nx=-(y2-y1)/L,ny=(x2-x1)/L;const pts=[];
+  for(let i=0;i<=n;i++){const t=i/n,b=Math.sin(Math.PI*t)*bow;pts.push([x1+(x2-x1)*t+nx*b,y1+(y2-y1)*t+ny*b])}stroke(pts,o)}
+function resample(pts,closed,step=14){const a=closed?[...pts,pts[0]]:pts;const out=[];for(let i=0;i<a.length-1;i++){const[x1,y1]=a[i],[x2,y2]=a[i+1];const L=Math.hypot(x2-x1,y2-y1);const n=Math.max(1,Math.ceil(L/step));for(let k=(i?1:0);k<=n;k++){const t=k/n;out.push([x1+(x2-x1)*t,y1+(y2-y1)*t])}}return out}
+function path(pts,o={},closed=false){stroke(resample(pts,closed),o)}
+function curve(pts,o={}){stroke(pts,o)}
+function ellPoly(cx,cy,rx,ry,n=28){const p=[];for(let i=0;i<n;i++){const a=i/n*Math.PI*2;p.push([cx+Math.cos(a)*rx,cy+Math.sin(a)*ry])}return p}
+function ell(cx,cy,rx,ry,o={}){if(o.solid)solid(ellPoly(cx,cy,rx,ry,36),o.solid);if(o.fill)wash(ellPoly(cx,cy,rx,ry),o.fill,o.fa??0.55);if(o.hatch)hatch(ellPoly(cx,cy,rx,ry),o.hatch);if(o.nostroke)return;
+  const r=mulberry(hsh(cx/3,cy/3,rx*3,ry*3,3));const a0=r()*Math.PI*2,over=o.over??(0.3+r()*0.3);const n=Math.max(12,Math.ceil((rx+ry)*Math.PI/7));const wob=o.wob??0.035,ph=r()*6;const pts=[];
+  for(let i=0;i<=n;i++){const a=a0+(Math.PI*2+over)*i/n;const k=1+Math.sin(a*2+ph)*wob*0.5+(i/n-0.5)*wob;pts.push([cx+Math.cos(a)*rx*k,cy+Math.sin(a)*ry*k])}stroke(pts,o)}
+function box(x,y,w,h,o={}){const p=[[x,y],[x+w,y],[x+w,y+h],[x,y+h]];if(o.solid)solid(p,o.solid);if(o.fill)wash(p,o.fill,o.fa??0.5);if(o.hatch)hatch(p,o.hatch);if(!o.nostroke)path(p,o,true)}
+function solid(poly,col){raw(10,ctx=>{ctx.fillStyle=col;ctx.beginPath();poly.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fill()})}
+function wash(poly,col,a=0.45){const f=P.take(25);if(f<=0)return;const ctx=P.ctx;const r=mulberry(hsh(poly[0][0]/3,poly[0][1]/3,poly.length,77));
+  ctx.save();ctx.fillStyle=col;if(!C.dark)ctx.globalCompositeOperation='multiply';
+  for(let k=0;k<3;k++){ctx.globalAlpha=a*f*(k?0.3:0.55);ctx.beginPath();poly.forEach((p,i)=>{const x=p[0]+(r()-.5)*3.5,y=p[1]+(r()-.5)*3.5;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.closePath();ctx.fill()}ctx.restore()}
+function hatch(poly,o={}){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const[x,y]of poly){x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y)}
+  const cx=(x0+x1)/2,cy=(y0+y1)/2,R=Math.hypot(x1-x0,y1-y0)/2+2,ang=(o.ang??-50)*Math.PI/180,gap=o.gap??6;if(P.scale&&gap*P.scale<1.3){if(P.dry)return;const c=P.ctx;c.save();c.fillStyle=o.col||C.ink;c.globalAlpha=(o.a??0.45)*0.22;c.beginPath();poly.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.closePath();c.fill();c.restore();return}const n=Math.floor(2*R/gap);if(n<1)return;
+  const f=P.take(n*3);if(f<=0)return;const ctx=P.ctx;const r=mulberry(hsh(cx/3,cy/3,R,gap*10));const dx=Math.cos(ang),dy=Math.sin(ang),nx=-dy,ny=dx;
+  ctx.save();ctx.beginPath();poly.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.clip();
+  ctx.strokeStyle=o.col||C.ink;ctx.lineWidth=o.w??0.9;ctx.globalAlpha=o.a??0.45;ctx.lineCap='round';ctx.beginPath();const m=Math.ceil(n*f);
+  for(let i=0;i<m;i++){const d=-R+i*gap+(r()-.5)*gap*0.5;const px=cx+nx*d,py=cy+ny*d;const e=R*(0.92+r()*0.08);ctx.moveTo(px-dx*e+(r()-.5)*2,py-dy*e+(r()-.5)*2);ctx.lineTo(px+dx*e+(r()-.5)*2,py+dy*e+(r()-.5)*2)}
+  ctx.stroke();ctx.restore()}
+function txt(s,x,y,o={}){s=String(s);const f=P.take(Math.max(8,s.length*3.5));if(f<=0)return;const ctx=P.ctx;ctx.save();
+  ctx.font=`${o.wt||400} ${(o.size||22)*(o.font?1:HS)}px ${o.font||HAND}`;ctx.fillStyle=o.col||C.ink;ctx.textAlign=o.align||'left';ctx.textBaseline=o.base||'alphabetic';ctx.globalAlpha=o.a??1;
+  if(o.rot){ctx.translate(x,y);ctx.rotate(o.rot);x=0;y=0}ctx.fillText(f<1?s.slice(0,Math.ceil(s.length*f)):s,x,y);ctx.restore()}
+function wrapLines(s,maxW,size,font=HAND,wt=400){const ctx=P.ctx;ctx.save();ctx.font=`${wt} ${size*(font===HAND?HS:1)}px ${font}`;const words=String(s).split(' ');const lines=[];let cur='';
+  for(const w of words){const t=cur?cur+' '+w:w;if(ctx.measureText(t).width>maxW&&cur){lines.push(cur);cur=w}else cur=t}if(cur)lines.push(cur);ctx.restore();return lines}
+function para(s,x,y,maxW,o={}){const size=o.size||22;const lines=wrapLines(s,maxW,size,o.font||HAND,o.wt||400);lines.forEach((l,i)=>txt(l,x,y+i*(o.lh||size*1.12),o));return lines.length*(o.lh||size*1.12)}
+function raw(len,fn){const f=P.take(len);if(f<=0)return;const ctx=P.ctx;ctx.save();fn(ctx,f);ctx.restore()}
+function dot(x,y,r,col){raw(4,ctx=>{ctx.fillStyle=col||C.ink;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()})}
+function arrow(x1,y1,x2,y2,o={}){seg(x1,y1,x2,y2,o);const a=Math.atan2(y2-y1,x2-x1),h=o.head??9;seg(x2,y2,x2-Math.cos(a-0.45)*h,y2-Math.sin(a-0.45)*h,{...o,bow:0});seg(x2,y2,x2-Math.cos(a+0.45)*h,y2-Math.sin(a+0.45)*h,{...o,bow:0})}
+function bez(a,b,c,d,n=18){const p=[];for(let i=0;i<=n;i++){const t=i/n,u=1-t;p.push([u*u*u*a[0]+3*u*u*t*b[0]+3*u*t*t*c[0]+t*t*t*d[0],u*u*u*a[1]+3*u*u*t*b[1]+3*u*t*t*c[1]+t*t*t*d[1]])}return p}
+function arcPts(cx,cy,rx,ry,a0,a1,n=16){const p=[];for(let i=0;i<=n;i++){const a=a0+(a1-a0)*i/n;p.push([cx+Math.cos(a)*rx,cy+Math.sin(a)*ry])}return p}
+function star(x,y,r,o={}){for(let k=0;k<3;k++){const a=k*Math.PI/3+0.3;seg(x-Math.cos(a)*r,y-Math.sin(a)*r,x+Math.cos(a)*r,y+Math.sin(a)*r,{w:1.1,passes:1,...o})}}
+
+/* ---------- figure: persone e robot ---------- */
+const LOOKS={russell:{hair:'short',glasses:true,coat:'green'},norvig:{hair:'bald',mustache:true,coat:'red'},
+  ada:{hair:'ringlets',dress:true,coat:'blue'},babbage:{hair:'side',tie:'bow',coat:'ink'},
+  turing:{hair:'wavy',tie:'tie',coat:'green'},mcculloch:{hair:'bald',beard:'long',tie:'tie'},pitts:{hair:'short',glasses:true,coat:'blue'},
+  shannon:{hair:'wavy',tie:'tie',coat:'blue'},rosenblatt:{hair:'short',glasses:false,tie:'tie',coat:'green'},weizenbaum:{hair:'side',mustache:true,coat:'ink'},
+  hart:{hair:'short',glasses:true,coat:'blue'},nilsson:{hair:'side',glasses:true,tie:'tie'},raphael:{hair:'wavy',coat:'green'},
+  minsky:{hair:'bald',glasses:true,coat:'ink'},papert:{hair:'curly',beard:'short',coat:'green'},lighthill:{hair:'side',tie:'bow',coat:'blue'},
+  shortliffe:{hair:'short',tie:'tie',coat:'blue'},mcdermott:{hair:'wavy',beard:'short'},
+  rumelhart:{hair:'short',beard:'short',glasses:true},hinton:{hair:'side',coat:'blue'},williams:{hair:'wavy',glasses:true,coat:'green'},
+  lecun:{hair:'bald',glasses:true,coat:'blue'},kasparov:{hair:'wavy',tie:'tie',coat:'ink'},hsu:{hair:'short',glasses:true,coat:'blue'},
+  feifei:{hair:'long',coat:'red'},krizhevsky:{hair:'short',coat:'green'},sutskever:{hair:'bald',coat:'blue'},
+  lee:{hair:'short',tie:'tie',coat:'ink'},hassabis:{hair:'short',coat:'blue'},silver:{hair:'wavy',glasses:true,coat:'green'},
+  vaswani:{hair:'short',glasses:true,coat:'blue'},radford:{hair:'wavy',coat:'green'},jumper:{hair:'short',glasses:true,coat:'green'},baker:{hair:'side',glasses:true,coat:'blue'},
+  mccarthy:{hair:'side',glasses:true,tie:'tie',coat:'blue'},rochester:{hair:'short',glasses:true,tie:'bow',coat:'ink'},newell:{hair:'wavy',tie:'tie',coat:'green'},simon:{hair:'side',glasses:true,tie:'tie',coat:'blue'},
+  anon:{hair:'short',coat:'blue'}
+};
+function person(x,y,s=1,o={}){const S=v=>v*s;const bottom=o.bottom??y+S(118);
+  const sh=[[x-S(54),bottom],[x-S(52),y+S(74)],[x-S(38),y+S(52)],[x-S(12),y+S(41)],[x+S(12),y+S(41)],[x+S(38),y+S(52)],[x+S(52),y+S(74)],[x+S(54),bottom]];
+  const coat=o.coat?(C[o.coat]||o.coat):null;
+  if(o.dress){const d=[[x-S(56),bottom],[x-S(54),y+S(70)],[x-S(40),y+S(50)],[x-S(20),y+S(44)],[x,y+S(56)],[x+S(20),y+S(44)],[x+S(40),y+S(50)],[x+S(54),y+S(70)],[x+S(56),bottom]];
+    if(coat)wash(d,coat,.4);hatch(d,{gap:S(6),a:.3,ang:-65});path(d,{w:1.5});
+    for(let i=0;i<7;i++){const a=Math.PI*(0.15+0.7*i/6);ell(x+Math.cos(a)*S(22)*-1+0,y+S(47)+Math.sin(a)*S(5),S(3),S(2.2),{w:.9,passes:1})}}
+  else{if(coat)wash(sh,coat,.33);hatch(sh,{gap:S(7),a:.22,ang:-60});path(sh,{w:1.5});
+    path([[x-S(12),y+S(41)],[x-S(2),y+S(66)]],{w:1.2});path([[x+S(12),y+S(41)],[x+S(2),y+S(66)]],{w:1.2});
+    seg(x-S(24),y+S(49),x-S(10),y+S(86),{w:1.1,passes:1});seg(x+S(24),y+S(49),x+S(10),y+S(86),{w:1.1,passes:1});
+    if(o.tie==='bow'){path([[x-S(10),y+S(40)],[x-S(10),y+S(50)],[x+S(10),y+S(40)],[x+S(10),y+S(50)]],{w:1.2},true);dot(x,y+S(45),S(2.2))}
+    else if(o.tie){const t=[[x-S(4),y+S(44)],[x+S(4),y+S(44)],[x+S(6),y+S(78)],[x,y+S(86)],[x-S(6),y+S(78)]];wash(t,C.red,.5);path(t,{w:1.1},true)}}
+  seg(x-S(10),y+S(24),x-S(11),y+S(42),{w:1.3});seg(x+S(10),y+S(24),x+S(11),y+S(42),{w:1.3});
+  const hr=S(24),vr=S(29);
+  // capelli dietro
+  if(o.hair==='long'){const hp=[[x-S(28),y-S(6)],[x-S(34),y+S(30)],[x-S(40),y+S(56)],[x-S(20),y+S(52)],[x+S(20),y+S(52)],[x+S(40),y+S(56)],[x+S(34),y+S(30)],[x+S(28),y-S(6)]];hatch(hp,{gap:S(3.5),a:.55,ang:80});path(hp,{w:1.2})}
+  ell(x,y,hr,vr,{w:1.6,solid:C.paper});
+  const lk=o.look||[0,0];
+  // capelli sopra
+  const top=(a0,a1,rx,ry,dy=0)=>arcPts(x,y+dy,rx,ry,a0,a1,18);
+  switch(o.hair){
+    case 'short':{const p=[...top(Math.PI*1.05,Math.PI*1.95,S(26),S(32)),...top(Math.PI*1.9,Math.PI*1.1,S(22),S(19),-S(6))];hatch(p,{gap:S(3),a:.6,ang:-20});path(p,{w:1.2},true);break}
+    case 'side':{const p=[...top(Math.PI*1.02,Math.PI*1.98,S(26),S(32)),[x+S(20),y-S(14)],[x-S(8),y-S(20)],[x-S(22),y-S(10)]];hatch(p,{gap:S(3),a:.55,ang:10});path(p,{w:1.2},true);break}
+    case 'wavy':{const p=top(Math.PI*1.0,Math.PI*2.0,S(27),S(33));const w=[];for(let i=0;i<=8;i++){const t=i/8;w.push([x+S(26)-t*S(52),y-S(14)+Math.sin(t*Math.PI*4)*S(3)])}const q=[...p,...w];hatch(q,{gap:S(3.2),a:.55,ang:-35});path(q,{w:1.2},true);break}
+    case 'curly':{for(let i=0;i<9;i++){const a=Math.PI*(1.05+0.9*i/8);ell(x+Math.cos(a)*S(25),y+Math.sin(a)*S(29),S(6),S(6),{w:1,passes:1})}break}
+    case 'bald':{curve(top(Math.PI*0.9,Math.PI*1.1,S(26),S(28)),{w:1.1});curve(top(Math.PI*-0.1,Math.PI*0.1,S(26),S(28)),{w:1.1});break}
+    case 'ringlets':{const p=[...top(Math.PI*1.0,Math.PI*2.0,S(27),S(32)),[x+S(18),y-S(8)],[x,y-S(22)],[x-S(18),y-S(8)]];hatch(p,{gap:S(3),a:.6,ang:70});path(p,{w:1.2},true);
+      for(const sx of[-1,1])for(let i=0;i<3;i++)ell(x+sx*S(29),y+S(2)+i*S(9),S(5),S(5),{w:1,passes:1,hatch:{gap:S(2.5),a:.5}});break}
+    case 'long':{const p=[...top(Math.PI*1.0,Math.PI*2.0,S(27),S(32)),[x+S(20),y-S(10)],[x,y-S(18)],[x-S(20),y-S(10)]];hatch(p,{gap:S(3),a:.55,ang:75});path(p,{w:1.2},true);break}
+  }
+  // viso
+  dot(x-S(9)+lk[0]*S(1.5),y+S(1)+lk[1]*S(1.2),S(2.2));dot(x+S(9)+lk[0]*S(1.5),y+S(1)+lk[1]*S(1.2),S(2.2));
+  seg(x-S(13),y-S(6),x-S(5),y-S(7),{w:1,passes:1});seg(x+S(5),y-S(7),x+S(13),y-S(6),{w:1,passes:1});
+  path([[x+S(1),y+S(4)],[x-S(3),y+S(12)],[x+S(2),y+S(13)]],{w:1,passes:1});
+  if(o.glasses){ell(x-S(9),y+S(1),S(7),S(6),{w:1,passes:1});ell(x+S(9),y+S(1),S(7),S(6),{w:1,passes:1});seg(x-S(2),y,x+S(2),y,{w:1,passes:1})}
+  if(o.mustache)path([[x-S(8),y+S(18)],[x,y+S(15)],[x+S(8),y+S(18)]],{w:2});
+  if(o.beard){const b=o.beard==='long'?[[x-S(22),y+S(6)],[x-S(20),y+S(28)],[x-S(8),y+S(50)],[x,y+S(56)],[x+S(8),y+S(50)],[x+S(20),y+S(28)],[x+S(22),y+S(6)],[x+S(10),y+S(24)],[x-S(10),y+S(24)]]:[[x-S(22),y+S(6)],[x-S(18),y+S(24)],[x,y+S(33)],[x+S(18),y+S(24)],[x+S(22),y+S(6)],[x+S(10),y+S(22)],[x-S(10),y+S(22)]];
+    solid(b,C.paper);hatch(b,{gap:S(2.8),a:.6,ang:80});path(b,{w:1.1},true)}
+  else curve(arcPts(x,y+S(14),S(6),S(3),0.2,Math.PI-0.2,6),{w:1.1,passes:1});
+}
+function robot(x,y,s=1,o={}){const S=v=>v*s;const lk=o.look||[0,0];
+  seg(x,y-S(24),x,y-S(44),{w:1.3});ell(x,y-S(48),S(5),S(5),{fill:C.red,fa:.7});
+  box(x-S(28),y-S(24),S(56),S(44),{w:1.6,solid:C.paper});
+  ell(x-S(11),y-S(4),S(8),S(8),{w:1.2});ell(x+S(11),y-S(4),S(8),S(8),{w:1.2});dot(x-S(11)+lk[0]*S(3),y-S(4)+lk[1]*S(3),S(2.6));dot(x+S(11)+lk[0]*S(3),y-S(4)+lk[1]*S(3),S(2.6));
+  for(let i=0;i<4;i++)seg(x-S(10)+i*S(6.6),y+S(10),x-S(10)+i*S(6.6),y+S(15),{w:1,passes:1});
+  const b=[[x-S(32),y+S(28)],[x+S(32),y+S(28)],[x+S(34),y+S(90)],[x-S(34),y+S(90)]];wash(b,o.col||C.blue,.35);hatch(b,{gap:S(6),a:.2});path(b,{w:1.5},true);
+  seg(x,y+S(20),x,y+S(28),{w:1.3});ell(x,y+S(55),S(10),S(10),{w:1.2});seg(x,y+S(55),x+S(6),y+S(49),{w:1.2,col:C.red});
+  seg(x-S(32),y+S(36),x-S(52),y+S(70),{w:1.4});seg(x+S(32),y+S(36),x+S(52),y+S(70),{w:1.4})}
+
+
+/* ---------- canvas e resa ---------- */
+let stageScale=1;
+function fit(cv,W,H){const dpr=window.devicePixelRatio||1;const k=Math.min(3,Math.max(1,dpr*stageScale*(cv.clientWidth?cv.clientWidth/W:1)));const bw=Math.round(W*k),bh=Math.round(H*k);
+  if(cv.width!==bw||cv.height!==bh){cv.width=bw;cv.height=bh}cv.getContext('2d').setTransform(k,0,0,k,0,0)}
+/* ================= scene ================= */
+const SC={};
+const fmt=(v,d=2)=>{const t=v.toFixed(d).replace('-','−');return LANG==='it'?t.replace('.',','):t};
+const SUP={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+const sup=n=>String(n).split('').map(c=>SUP[c]||c).join('');
+function rotPts(pts,x,y,a){const c=Math.cos(a),s=Math.sin(a);return pts.map(([u,v])=>[x+u*c-v*s,y+u*s+v*c])}
+
+
+/* utilità aggiuntive: ingranaggio, taglio di un poligono con un semipiano */
+function gear(cx,cy,R,n,ang,o={}){const p=[];const th=Math.min(9,R*0.18);for(let i=0;i<n;i++){const a=ang+i*2*Math.PI/n,d=Math.PI/n;
+  for(const[aa,rr]of[[a-d*0.5,R],[a-d*0.3,R+th],[a+d*0.3,R+th],[a+d*0.5,R]])p.push([cx+Math.cos(aa)*rr,cy+Math.sin(aa)*rr]);
+  p.push([cx+Math.cos(a+d)*R,cy+Math.sin(a+d)*R])}
+  if(o.fill)wash(p,o.fill,.35);path(p,{w:1.4},true);ell(cx,cy,R*0.62,R*0.62,{w:1,passes:1});ell(cx,cy,R*0.16,R*0.16,{w:1.3,hatch:{gap:2.5,a:.6}});
+  for(let k=0;k<5;k++){const a=ang+k*2*Math.PI/5;seg(cx+Math.cos(a)*R*0.16,cy+Math.sin(a)*R*0.16,cx+Math.cos(a)*R*0.62,cy+Math.sin(a)*R*0.62,{w:1.1,passes:1})}}
+function clipHalf(poly,f){const out=[];for(let i=0;i<poly.length;i++){const a=poly[i],b=poly[(i+1)%poly.length];const fa=f(a),fb=f(b);if(fa>=0)out.push(a);if((fa>=0)!==(fb>=0)){const t=fa/(fa-fb);out.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t])}}return out}
+
+
+/* ================= geografia ================= */
+// il parametro t non è il tempo: vale 0 all'inizio, n alla tappa n (una scala di avanzamento lungo il sentiero)
+const WW=10100, WH=6450, AMP=900, BASES=[1500,3500,5500];
+const ANCH=[
+ [[0,-0.6],[900,0],[2300,1],[3900,2],[5500,3],[7100,4],[8700,5],[10100,5.6]],
+ [[0,10.6],[2300,10],[3900,9],[5500,8],[7100,7],[8700,6],[10100,5.4]],
+ [[0,10.4],[2300,11],[3900,12],[5500,13],[7100,14],[8700,15],[10100,15.6]]];
+function tOf(b,x){const A=ANCH[b];if(x<=A[0][0])return A[0][1];for(let i=1;i<A.length;i++)if(x<=A[i][0]){const[x0,t0]=A[i-1],[x1,t1]=A[i];return t0+(t1-t0)*(x-x0)/(x1-x0)}return A[A.length-1][1]}
+// profilo decorativo del terreno (0–1): non misura nulla
+const WLV=[[-0.6,.12],[0,.14],[1,.2],[2,.28],[3,.24],[4,.34],[5,.3],[5.5,.36],[6,.5],[7,.72],[7.6,.6],[8,.42],[9,.38],[10,.34],[10.5,.3],[11,.36],[12,.42],[13,.46],[13.6,.3],[14,.1],[14.4,.2],[15,.7],[15.6,.76]];
+function lev(t){if(t<=WLV[0][0])return WLV[0][1];for(let i=1;i<WLV.length;i++)if(t<=WLV[i][0]){const[a,la]=WLV[i-1],[b,lb]=WLV[i];const u=(t-a)/(b-a);const s=u*u*(3-2*u);return la+(lb-la)*s}return WLV[WLV.length-1][1]}
+function prof(b,x){return BASES[b]-lev(tOf(b,x))*AMP+16*Math.sin(x/310+b*1.7)+9*Math.sin(x/97+b*2.3)}
+const groundY=(b,x)=>prof(b,x)-70;
+// "nebbia" della palude delle allucinazioni: al posto degli inverni della mappa di riferimento
+function winterness(t){return Math.max(0,1-Math.abs(t-14)/0.9)}
+
+/* ---- sentiero ---- */
+const PATH=[];
+function bz(a,b,c,d,u){const v=1-u;return[v*v*v*a[0]+3*v*v*u*b[0]+3*v*u*u*c[0]+u*u*u*d[0],v*v*v*a[1]+3*v*v*u*b[1]+3*v*u*u*c[1]+u*u*u*d[1]]}
+(function build(){
+ const leg=(b,xa,xb)=>{const st=xa<xb?20:-20;for(let x=xa;st>0?x<=xb:x>=xb;x+=st)PATH.push({x,y:prof(b,x),t:tOf(b,x),b})};
+ const bend=(P0,P1,P2,P3,ta,tb,n,tag)=>{for(let i=1;i<n;i++){const u=i/n,p=bz(P0,P1,P2,P3,u);PATH.push({x:p[0],y:p[1],t:ta+(tb-ta)*u,b:tag})}};
+ leg(0,440,9640);
+ bend([9640,prof(0,9640)],[10080,prof(0,9640)+280],[10080,prof(1,9640)-340],[9640,prof(1,9640)],tOf(0,9640),tOf(1,9640),90,'r');
+ leg(1,9640,600);
+ bend([600,prof(1,600)],[70,prof(1,600)+260],[70,prof(2,600)-300],[600,prof(2,600)],tOf(1,600),tOf(2,600),90,'l');
+ leg(2,600,9640);
+ let s=0;PATH[0].s=0;for(let i=1;i<PATH.length;i++){s+=Math.hypot(PATH[i].x-PATH[i-1].x,PATH[i].y-PATH[i-1].y);PATH[i].s=s}
+})();
+const PLEN=PATH[PATH.length-1].s;
+function pathAt(s){s=Math.max(0,Math.min(PLEN,s));let lo=0,hi=PATH.length-1;while(hi-lo>1){const m=(lo+hi)>>1;if(PATH[m].s<s)lo=m;else hi=m}
+ const a=PATH[lo],b=PATH[hi];const u=b.s>a.s?(s-a.s)/(b.s-a.s):0;return{x:a.x+(b.x-a.x)*u,y:a.y+(b.y-a.y)*u,t:a.t+(b.t-a.t)*u,dx:b.x-a.x}}
+function sOnLeg(b,x){let best=0,bd=1e9;for(const p of PATH)if(p.b===b){const d=Math.abs(p.x-x);if(d<bd){bd=d;best=p.s}}return best}
+const PGRID=new Map();for(const p of PATH){const k=Math.floor(p.x/200)+':'+Math.floor(p.y/200);if(!PGRID.has(k))PGRID.set(k,[]);PGRID.get(k).push(p)}
+function nearPath(x,y,d){const gx=Math.floor(x/200),gy=Math.floor(y/200);for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){const L=PGRID.get((gx+i)+':'+(gy+j));if(L)for(const p of L)if(Math.hypot(p.x-x,p.y-y)<d)return true}return false}
+
+/* ---- tappe ---- */
+const CT=()=>CONTENT[LANG];
+const STOPS=[{k:'intro',b:0,x:900,t:0}];
+[['map',0,2300],['gen',0,3900],['llm',0,5500],['bpe',0,7100],['train',0,8700],['temp',1,8700],['scale',1,7100],['assist',1,5500],['ctx',1,3900],['prompt',1,2300],
+ ['mm',2,2300],['maze',2,3900],['agent',2,5500],['hall',2,7100],['quiz',2,8700]].forEach(([scene,b,x],i)=>STOPS.push({n:i+1,b,x,t:i+1,y:String(i+1),done:1,scene,get title(){return CT()[this.n].h2}}));
+for(const st of STOPS){st.px=st.x;st.py=prof(st.b,st.x);st.s=sOnLeg(st.b,st.x);st.dir=st.b===1?-1:1;
+ if(st.n){st.sx=st.px-340;st.sy=st.py-640;st.ox=st.sx+20;st.oy=st.sy+20}
+ st.ts=Math.max(0,st.s-360)}
+STOPS[0].ts=STOPS[0].s-300;
+
+/* ================= tavolozza per regione ================= */
+const PAL={engine:['#C4893E','#D9A15A'],brick:['#B5452F','#E0896F'],logic:['#6F8FB3','#8FAED0'],summer1:['#86B05A','#9CC471'],
+ winter:['#A9C3DA','#9FB9D3'],summer2:['#E39A4A','#E7A866'],castle:['#9A9CA3','#A6AAB2'],
+ woods:['#4E8F68','#6FB08A'],go:['#B9A78B','#C4B498'],bridge:['#4FA3A3','#6FBDBD'],protein:['#6DBFAE','#85CFBF'],
+ city:['#8B74C4','#A08BD6'],gold:['#E2B33C','#E2BC55'],water:['#5A93C8','#7FB0DD'],trail:['#D2B98A','#8E7A55'],
+ meadow:['#86B05A','#9CC471'],workshop:['#C4893E','#D9A15A'],hills:['#E39A4A','#E7A866'],village:['#8B74C4','#A08BD6'],
+ garden:['#6DBFAE','#85CFBF'],maze:['#4E8F68','#6FB08A'],marsh:['#A9C3DA','#9FB9D3'],lookout:['#9A9CA3','#A6AAB2']};
+const RC=k=>PAL[k][C.dark?1:0];
+function rgba(hex,a){const h=hex.replace('#','');const n=parseInt(h.length===3?h.split('').map(c=>c+c).join(''):h,16);return`rgba(${n>>16&255},${n>>8&255},${n&255},${a})`}
+function bandGrad(c,b){const g=c.createLinearGradient(0,0,WW,0);for(let x=0;x<=WW;x+=200)g.addColorStop(x/WW,RC(regionOf(tOf(b,x))));return g}
+const REGIONS=[[-0.6,2.5,'meadow'],[2.5,5.5,'workshop'],[5.5,7.5,'hills'],[7.5,10.5,'village'],[10.5,11.5,'garden'],[11.5,13.5,'maze'],[13.5,14.5,'marsh'],[14.5,15.6,'lookout']];
+function regionOf(t){for(const[a,b,r]of REGIONS)if(t<b)return r;return'lookout'}
+const WINTRY=r=>r==='marsh';
+
+/* ================= elenco di disegno ================= */
+const ITEMS=[],EXCL=[],CHIM=[],WINS=[];
+function add(x0,y0,x1,y1,fn){ITEMS.push({x0,y0,x1,y1,fn})}
+const excl=(x0,y0,x1,y1)=>EXCL.push([x0,y0,x1,y1]);
+const inExcl=(x,y,m=0)=>EXCL.some(r=>x>r[0]-m&&x<r[2]+m&&y>r[1]-m&&y<r[3]+m);
+const noise=(x,k)=>0.5+0.3*Math.sin(x/530+k)+0.2*Math.sin(x/173+k*2.1);
+
+/* ---- alberi ---- */
+function treeRound(x,y,s,col){seg(x,y,x+1,y-38*s,{w:2.2});const cy=y-62*s;ell(x,cy,34*s,30*s,{fill:col,fa:.55,w:1.6,hatch:{gap:6,a:.18,ang:-40}})}
+function treeCone(x,y,s,col,snow){seg(x,y,x,y-18*s,{w:2});const p=[[x-30*s,y-16*s],[x,y-118*s],[x+30*s,y-16*s]];wash(p,col,.55);hatch(p,{gap:6,a:.2,ang:60});path(p,{w:1.6},true);
+ if(snow){const q=[[x-14*s,y-72*s],[x,y-118*s],[x+14*s,y-72*s],[x+5*s,y-80*s],[x-4*s,y-74*s]];solid(q,C.snow);path([[x-14*s,y-72*s],[x-4*s,y-76*s],[x+5*s,y-80*s],[x+14*s,y-72*s]],{w:1,passes:1,col:C.blue})}}
+function treeBare(x,y,s){seg(x,y,x+2,y-90*s,{w:2.2});for(const[a,l,h]of[[-.7,40,50],[.6,36,62],[-.4,28,76],[.5,24,30]])seg(x+1,y-h*s,x+1+Math.sin(a)*l*s,y-h*s-Math.cos(a)*l*s,{w:1.2,passes:1})}
+function treeCypress(x,y,s,col){const p=[[x-10*s,y],[x-14*s,y-60*s],[x,y-120*s],[x+14*s,y-60*s],[x+10*s,y]];wash(p,col,.5);hatch(p,{gap:5,a:.2,ang:80});path(p,{w:1.4},true)}
+function bush(x,y,s,col){ell(x,y-14*s,26*s,16*s,{fill:col,fa:.5,w:1.3})}
+function pine(x,y,s,col){seg(x,y,x+8*s,y-60*s,{w:2});for(const[dx,dy,r]of[[-18,-58,24],[24,-70,20],[4,-88,18]])ell(x+dx*s,y+dy*s,r*s,9*s,{fill:col,fa:.6,w:1.2})}
+function plantTree(x,y,t,r){const reg=regionOf(t);const s=0.8+r()*0.5;
+ switch(reg){
+  case'meadow':return r()<.7?treeRound(x,y,s,r()<.3?RC('gold'):RC('summer1')):bush(x,y,s,RC('summer1'));
+  case'workshop':return r()<.5?treeRound(x,y,s,RC('engine')):bush(x,y,s,RC('summer1'));
+  case'hills':return r()<.7?treeRound(x,y,s,RC('summer2')):treeRound(x,y,s,RC('gold'));
+  case'village':return r()<.6?treeCypress(x,y,s,RC('logic')):bush(x,y,s,RC('city'));
+  case'garden':return r()<.6?bush(x,y,s*1.2,RC('protein')):treeRound(x,y,s,RC('bridge'));
+  case'maze':return treeCone(x,y,s*1.1,RC('woods'),false);
+  case'marsh':return r()<.5?treeBare(x,y,s):bush(x,y,s,RC('winter'));
+  case'lookout':return r()<.5?pine(x,y,s,RC('woods')):bush(x,y,s,RC('go'));
+ }}
+const DENS={meadow:.8,workshop:.5,hills:.7,village:.45,garden:.8,maze:1.3,marsh:.5,lookout:.4};
+
+/* ---- cartelli e scritte ---- */
+function signpost(x,y,l1,l2,col){seg(x,y,x,y-250,{w:3});const bd=[[x-150,y-250],[x+150,y-244],[x+146,y-150],[x-148,y-156]];solid(bd,C.sheet);wash(bd,col,.35);path(bd,{w:2},true);
+ txt(l1,x,y-203,{size:48,align:'center',wt:600});txt(l2,x,y-164,{size:32,align:'center',col:C.muted})}
+function regionLabel(x,y,name,years){add(x-850,y-160,x+850,y+80,()=>{txt(name,x,y,{size:120,align:'center',wt:600,a:.72});txt(years,x,y+64,{size:54,align:'center',col:C.muted})});excl(x-800,y-140,x+800,y+80)}
+
+/* ---- luoghi delle tappe (X = bordo sinistro dell'area di 340, g = suolo) ---- */
+const PLACES={};
+// 1 · una mappa ripiegata su un leggio e una rosa dei venti
+PLACES[1]=(X,g)=>{seg(X+70,g,X+120,g-190,{w:2.4});seg(X+270,g,X+220,g-190,{w:2.4});seg(X+170,g,X+170,g-180,{w:2});
+ const m=[[X+40,g-360],[X+130,g-340],[X+210,g-365],[X+300,g-345],[X+300,g-170],[X+210,g-190],[X+130,g-165],[X+40,g-185]];solid(m,C.sheet);wash(m,RC('meadow'),.35);path(m,{w:2},true);
+ seg(X+130,g-340,X+130,g-165,{w:1.2,passes:1});seg(X+210,g-365,X+210,g-190,{w:1.2,passes:1});
+ curve(bez([X+60,g-230],[X+120,g-330],[X+200,g-210],[X+280,g-320]),{w:2,col:C.red,dash:[8,8]});star(X+280,g-320,10,{col:C.red});
+ const cx=X+290,cy=g-440;ell(cx,cy,30,30,{w:1.6,solid:C.sheet});for(let k=0;k<4;k++){const a=k*Math.PI/2;const tip=[cx+Math.cos(a)*46,cy+Math.sin(a)*46],l=[cx+Math.cos(a+.5)*10,cy+Math.sin(a+.5)*10],r=[cx+Math.cos(a-.5)*10,cy+Math.sin(a-.5)*10];if(k===3)wash([tip,l,r],C.red,.7);path([tip,l,r],{w:1.4},true)}
+ txt('N',cx,cy-52,{size:30,align:'center',wt:600})};
+// 2 · un cavalletto con una tela e una tavolozza: creare cose nuove
+PLACES[2]=(X,g)=>{seg(X+100,g,X+150,g-330,{w:2.4});seg(X+250,g,X+195,g-330,{w:2.4});seg(X+172,g-10,X+172,g-300,{w:2});
+ const c=[[X+60,g-390],[X+290,g-390],[X+290,g-190],[X+60,g-190]];solid(c,C.sheet);path(c,{w:2},true);
+ for(const[dx,dy,r,col]of[[110,-310,28,'brick'],[180,-270,36,'gold'],[240,-330,24,'bridge'],[140,-230,18,'woods']])ell(X+dx,g+dy,r,r*.8,{fill:RC(col),fa:.6,w:1.1});
+ const pal=ellPoly(X+70,g-60,56,30,24);wash(pal,RC('go'),.6);path(pal,{w:1.6},true);for(const[dx,col]of[[-30,'brick'],[-6,'gold'],[18,'bridge']])ell(X+70+dx,g-66,8,6,{fill:RC(col),fa:.9,w:1})};
+// 3 · una macchina da scrivere: il testo successivo è un punto di domanda
+PLACES[3]=(X,g)=>{const b=[[X+40,g],[X+300,g],[X+280,g-110],[X+60,g-110]];solid(b,C.sheet);wash(b,C.ink,.15);path(b,{w:2.2},true);
+ for(let r=0;r<3;r++)for(let c=0;c<8-r;c++)ell(X+85+c*26+r*13,g-82+r*24,9,9,{w:1.2,solid:C.sheet});
+ const pap=[[X+100,g-110],[X+100,g-310],[X+240,g-310],[X+240,g-110]];solid(pap,C.sheet);path(pap,{w:1.8},true);box(X+60,g-132,220,22,{w:1.8,fill:C.ink,fa:.2});
+ txt(LX('the ___','il ___'),X+170,g-250,{size:34,align:'center'});txt('?',X+170,g-180,{size:48,align:'center',col:C.red,wt:600})};
+// 4 · mattoncini di testo: i token
+PLACES[4]=(X,g)=>{const rows=LX([['un','believ','able'],['tok','en','s'],['re','open','ed']],[['in','credi','bile'],['gat','t','ini'],['ri','apert','ura']]);
+ const ctx=P.ctx;rows.forEach((row,r)=>{let x=X+20+r*18;const y=g-r*62;row.forEach((t,k)=>{ctx.save();ctx.font=`600 ${34*HS}px ${HAND}`;const w=Math.max(46,ctx.measureText(t).width+22);ctx.restore();
+  box(x,y-58,w,58,{w:1.8,solid:C.sheet,fill:RC(k===1?'gold':'workshop'),fa:.35});txt(t,x+w/2,y-18,{size:34,align:'center',wt:600});x+=w+6})})};
+// 5 · una biblioteca con il camino: dove si legge il testo per l'addestramento
+PLACES[5]=(X,g)=>{const w=[[X+20,g],[X+20,g-220],[X+320,g-220],[X+320,g]];wash(w,RC('brick'),.4);hatch(w,{gap:10,a:.15,ang:0});path(w,{w:2.2},true);
+ path([[X,g-220],[X+170,g-300],[X+340,g-220]],{w:2.2});const ch=[[X+250,g-262],[X+250,g-360],[X+284,g-360],[X+284,g-245]];wash(ch,RC('brick'),.55);path(ch,{w:1.8},true);CHIM.push([X+267,g-366]);
+ for(let r=0;r<3;r++){seg(X+46,g-40-r*56,X+294,g-40-r*56,{w:1.4});let x=X+52;const rr=mulberry(r+5);while(x<X+284){const bw=8+rr()*10,bh=26+rr()*16;box(x,g-40-r*56-bh,bw,bh,{w:.9,passes:1,fill:RC(['brick','gold','bridge','woods'][Math.floor(rr()*4)]),fa:.55});x+=bw+2}}};
+// 6 · un dado e un termometro: il caso e la temperatura
+PLACES[6]=(X,g)=>{const d=[[X+30,g],[X+160,g],[X+160,g-130],[X+30,g-130]];solid(d,C.sheet);path(d,{w:2.2},true);
+ const top=[[X+30,g-130],[X+70,g-165],[X+200,g-165],[X+160,g-130]];solid(top,C.sheet);wash(top,C.ink,.08);path(top,{w:2},true);const sd=[[X+160,g],[X+200,g-35],[X+200,g-165],[X+160,g-130]];wash(sd,C.ink,.15);path(sd,{w:2},true);
+ for(const[u,v]of[[.25,.25],[.75,.25],[.5,.5],[.25,.75],[.75,.75]])dot(X+30+u*130,g-130+v*130,8,C.ink);
+ const tx=X+280;ell(tx,g-40,30,30,{w:2,solid:C.sheet,fill:C.red,fa:.8});box(tx-14,g-360,28,300,{w:2,solid:C.sheet});box(tx-6,g-210,12,160,{nostroke:true,fill:C.red,fa:.8});
+ for(let k=0;k<8;k++)seg(tx-14,g-340+k*36,tx-4,g-340+k*36,{w:1.2,passes:1});txt('T',tx+22,g-330,{size:40,wt:600,col:C.red})};
+// 7 · torri di cubi sempre più alte: la scala
+PLACES[7]=(X,g)=>{[[30,1],[100,3],[170,6],[240,10]].forEach(([dx,n])=>{for(let k=0;k<n;k++){const y=g-k*38;box(X+dx,y-36,60,36,{w:1.4,solid:C.sheet,fill:RC('hills'),fa:.3+k*.03})}});
+ arrow(X+10,g-60,X+300,g-430,{w:2,col:C.red,dash:[10,8]})};
+// 8 · una casa con un fumetto: l'assistente
+PLACES[8]=(X,g)=>{const h=[[X+40,g],[X+40,g-170],[X+300,g-170],[X+300,g]];solid(h,C.sheet);wash(h,RC('village'),.35);path(h,{w:2.2},true);path([[X+20,g-170],[X+170,g-280],[X+320,g-170]],{w:2.2});
+ box(X+145,g-90,50,90,{w:1.6,fill:C.ink,fa:.12});for(const wx of[X+70,X+230]){box(wx,g-140,40,40,{w:1.4});WINS.push([wx,g-140,40,40])}
+ const bb=ellPoly(X+190,g-390,120,56,28);solid(bb,C.sheet);path(bb,{w:2},true);path([[X+140,g-342],[X+120,g-300],[X+178,g-336]],{w:2});txt(LX('How can I help?','Come posso aiutarti?'),X+190,g-380,{size:28,align:'center'})};
+// 9 · un nastro di carta che passa per una finestra: il contesto
+PLACES[9]=(X,g)=>{box(X+100,g-400,150,150,{w:3,solid:C.sheet});seg(X+175,g-400,X+175,g-250,{w:1.2});seg(X+100,g-325,X+250,g-325,{w:1.2});seg(X+175,g-250,X+175,g,{w:3});
+ const top=[],bot=[];for(let k=0;k<=30;k++){const u=k/30,x=X+10+u*320,y=g-130+Math.sin(u*9)*16;top.push([x,y]);bot.push([x,y+44])}
+ const band=[...top,...bot.slice().reverse()];solid(band,C.sheet);wash(band,RC('gold'),.3);stroke(top,{w:2});stroke(bot,{w:2});
+ for(let k=1;k<12;k++){const p=top[k*2+3]||top[top.length-1],q=bot[k*2+3]||bot[bot.length-1];seg(p[0],p[1]+4,q[0],q[1]-4,{w:1,passes:1,a:.6})}
+ box(X+120,g-160,110,100,{w:2.6,col:C.red,dash:[8,6]})};
+// 10 · una cassetta delle lettere con una lettera: il prompt
+PLACES[10]=(X,g)=>{seg(X+170,g,X+170,g-200,{w:4});const mb=[[X+90,g-200],[X+250,g-200],[X+250,g-300],[X+90,g-300]];solid(mb,C.sheet);wash(mb,RC('brick'),.45);path(mb,{w:2.2},true);
+ curve(arcPts(X+170,g-300,80,40,Math.PI,2*Math.PI,16),{w:2.2});seg(X+250,g-280,X+280,g-280,{w:2});const fl=[[X+280,g-280],[X+280,g-340],[X+320,g-325],[X+280,g-310]];wash(fl,C.red,.8);path(fl,{w:1.4},true);
+ const lt=rotPts([[-70,-45],[70,-45],[70,45],[-70,45]],X+140,g-410,-.15);solid(lt,C.sheet);path(lt,{w:1.8},true);path(rotPts([[-70,-45],[0,5],[70,-45]],X+140,g-410,-.15),{w:1.4})};
+// 11 · un occhio, un altoparlante e un foglio: tre modalità
+PLACES[11]=(X,g)=>{const e=[];for(let k=0;k<=20;k++){const a=Math.PI*k/20;e.push([X+170+Math.cos(a)*120,g-340-Math.sin(a)*62])}for(let k=1;k<20;k++){const a=Math.PI*k/20;e.push([X+170-Math.cos(a)*120,g-340+Math.sin(a)*62])}
+ solid(e,C.sheet);path(e,{w:2.2},true);ell(X+170,g-340,44,44,{w:1.8,fill:RC('garden'),fa:.7});ell(X+170,g-340,17,17,{w:1,fill:C.ink,fa:.9});
+ const sp=[[X+30,g-150],[X+70,g-150],[X+120,g-190],[X+120,g-40],[X+70,g-80],[X+30,g-80]];solid(sp,C.sheet);path(sp,{w:2},true);for(const r of[26,48])curve(arcPts(X+128,g-115,r,r*1.2,-.8,.8,10),{w:1.8});
+ const pp=[[X+220,g-190],[X+320,g-190],[X+320,g-30],[X+220,g-30]];solid(pp,C.sheet);path(pp,{w:1.8},true);for(let k=0;k<6;k++)seg(X+234,g-165+k*22,X+306-(k%2)*20,g-165+k*22,{w:1.1,passes:1})};
+// 12 · il labirinto di Shannon, in prospettiva
+PLACES[12]=(X,g)=>{const O=[X+10,g-8],a=[60,0],bb=[18,-22];const Q=(i,j)=>[O[0]+i*a[0]+j*bb[0],O[1]+i*a[1]+j*bb[1]];
+ const fl=[Q(0,0),Q(5,0),Q(5,5),Q(0,5)];wash(fl,RC('summer1'),.25);hatch(fl,{gap:9,a:.12,ang:10});
+ const W=[[0,0,5,0],[0,1,0,5],[0,5,5,5],[5,0,5,4],[1,1,3,1],[2,2,2,4],[3,3,5,3],[1,2,1,4],[4,4,4,5],[3,1,3,2],[4,1,4,2]];
+ for(const[i0,j0,i1,j1]of W){const p=Q(i0,j0),q=Q(i1,j1);const h=[[p[0],p[1]],[q[0],q[1]],[q[0],q[1]-12],[p[0],p[1]-12]];wash(h,RC('woods'),.55);path(h,{w:1.1,passes:1},true)}
+ const m=Q(4.5,4.5);ell(m[0],m[1]-4,8,5,{fill:C.muted,fa:.8,w:1.1});const s=Q(.5,.5);txt(LX('start','partenza'),s[0]-20,s[1]+34,{size:22,col:C.muted})};
+// 13 · una cassetta degli attrezzi e un ciclo: gli strumenti dell'agente
+PLACES[13]=(X,g)=>{const tb=[[X+40,g],[X+300,g],[X+300,g-110],[X+40,g-110]];solid(tb,C.sheet);wash(tb,RC('brick'),.5);path(tb,{w:2.2},true);path([[X+120,g-110],[X+130,g-150],[X+210,g-150],[X+220,g-110]],{w:2.4});
+ const wr=rotPts([[-8,-90],[8,-90],[8,40],[-8,40]],X+110,g-230,.5);solid(wr,C.sheet);path(wr,{w:1.8},true);const hd=rotPts([[0,-96]],X+110,g-230,.5)[0];ell(hd[0],hd[1],20,20,{w:1.8,solid:C.sheet});ell(hd[0],hd[1],7,7,{w:1.2,solid:C.paper});
+ seg(X+250,g-130,X+220,g-300,{w:5});const hm=rotPts([[-40,-14],[40,-14],[40,14],[-40,14]],X+218,g-306,-.18);solid(hm,C.sheet);wash(hm,C.ink,.3);path(hm,{w:1.8},true);
+ curve(arcPts(X+170,g-410,110,40,0.4,2*Math.PI-0.4,30),{w:2.2,col:C.blue});const q=arcPts(X+170,g-410,110,40,2*Math.PI-0.4,2*Math.PI-0.4,1)[0];arrow(q[0]-16,q[1]-10,q[0],q[1],{w:2.2,col:C.blue,head:12})};
+// 14 · un miraggio: una palma e il suo riflesso ingannevole
+PLACES[14]=(X,g)=>{const palm=(x,y,s,f,o)=>{curve(bez([x,y],[x+10*s,y-80*s*f],[x-10*s,y-160*s*f],[x+15*s,y-220*s*f]),{w:3*s,...o});
+  for(const a of[-2.5,-1.9,-1.3,-0.7,-0.2]){const hx=x+15*s,hy=y-220*s*f;curve(bez([hx,hy],[hx+Math.cos(a)*40*s,hy+(Math.sin(a)*30*s-20*s)*f],[hx+Math.cos(a)*80*s,hy+Math.sin(a)*40*s*f],[hx+Math.cos(a)*100*s,hy+(Math.sin(a)*40*s+20*s)*f]),{w:1.8*s,...o})}};
+ const isl=ellPoly(X+140,g-190,90,16,24);wash(isl,RC('go'),.6);path(isl,{w:1.6},true);palm(X+130,g-194,1,1,{});
+ const wat=[[X+10,g-180],[X+330,g-180],[X+330,g+20],[X+10,g+20]];wash(wat,RC('water'),.18);palm(X+130,g-180,.9,-.8,{col:C.blue,dash:[6,8],a:.6});
+ for(const[x,y]of[[X+280,g-360],[X+310,g-280],[X+250,g-250]])txt('?',x,y,{size:56,col:C.red,wt:600,a:.8})};
+// 15 · la torretta del belvedere
+PLACES[15]=(X,g)=>{const legs=[[X+20,g],[X+60,g-330],[X+100,g-330],[X+140,g]];path([legs[0],legs[1]],{w:2.2});path([legs[3],legs[2]],{w:2.2});
+ for(let k=1;k<6;k++){const y=g-k*55;const a=20+40*k/6,b=140-40*k/6;seg(X+a,y,X+b,y,{w:1.2,passes:1});seg(X+a,y,X+b-8,y-55,{w:1,passes:1})}
+ box(X+40,g-360,80,30,{w:1.8,solid:C.sheet,fill:RC('gold'),fa:.4});seg(X+80,g-360,X+120,g-400,{w:4});seg(X+80,g-360,X+80,g-450,{w:1.6});wash([[X+80,g-450],[X+130,g-436],[X+80,g-420]],RC('brick'),.7);
+ txt(LX('exit','uscita'),X+220,g-200,{size:40,col:C.red,wt:600});arrow(X+200,g-190,X+150,g-150,{w:2,col:C.red})};
+
+/* ---- foglio di una tappa ---- */
+const SNAP={};
+function sheet(st){const x0=st.sx,y0=st.sy,px=st.px,py=st.py;
+ add(x0-60,y0-120,x0+740,py+40,()=>{seg(px-300,py-80,px-300,py+8,{w:3.2});seg(px+300,py-80,px+300,py+8,{w:3.2});
+  const R=[[x0,y0],[x0+680,y0],[x0+680,y0+560],[x0,y0+560]];wash(R.map(([x,y])=>[x+10,y+12]),C.ink,.1);solid(R,C.sheet);path(R,{w:2.2},true);
+  for(const[tx,rot]of[[x0+40,-.3],[x0+640,.28]]){const q=rotPts([[-34,-12],[34,-12],[34,12],[-34,12]],tx,y0+2,rot);wash(q,RC('gold'),.55)}
+  txt(st.y,x0+4,y0-24,{size:52,col:C.red,wt:600});const tt=st.title;txt(tt,x0+(st.n>9?78:50),y0-24,{size:Math.min(46,600/Math.max(1,tt.length*0.47)),wt:600});
+  const ctx=P.ctx;
+  if(st.done&&SNAP[st.n]){ctx.save();ctx.translate(st.ox,st.oy);SC[st.scene].draw(SNAP[st.n]);ctx.restore()}
+  else{txt(st.y,x0+340,y0+260,{size:150,align:'center',col:C.red,a:.35,wt:600});para(st.title,x0+340,y0+340,520,{size:46,align:'center'});
+   box(x0+40,y0+40,600,480,{w:1.2,passes:1,dash:[8,10],a:.5});txt('experiment coming soon',x0+340,y0+480,{size:30,align:'center',col:C.muted})}});
+ excl(x0-40,y0-100,x0+720,py+30)}
+
+/* ================= costruzione del mondo ================= */
+function buildWorld(){
+ ITEMS.length=0;EXCL.length=0;CHIM.length=0;WINS.length=0;
+ for(const st of STOPS){if(st.n){excl(st.sx-40,st.sy-100,st.sx+720,st.py+30);const X=st.dir>0?st.px+380:st.px-720;excl(X-40,st.py-480,X+380,st.py+70);const tx=st.px-st.dir*360;excl(tx-90,st.py-140,tx+90,st.py+30)}}
+ excl(200,100,3900,560);
+ add(200,80,4000,560,()=>{txt(LX('Large language models','I grandi modelli linguistici'),420,330,{size:170,wt:600});txt(LX('a map of the main ideas, drawn in pencil','una mappa delle idee principali, disegnata a matita'),430,450,{size:72,col:C.muted})});
+ add(5500,120,5950,540,()=>{ell(5725,330,80,80,{fill:RC('gold'),fa:.6,w:1.8});for(let k=0;k<12;k++){const a=k*Math.PI/6;seg(5725+Math.cos(a)*100,330+Math.sin(a)*100,5725+Math.cos(a)*140,330+Math.sin(a)*140,{w:1.6,passes:1})}});
+ const cloud=(x,y,s,col)=>{for(let k=0;k<4;k++)ell(x-90*s+k*60*s,y-(k%2)*28*s,62*s,42*s,{fill:col,fa:.12,w:1.2,passes:1,a:.6})};
+ add(7300,160,8300,420,()=>cloud(7800,300,1,C.blue));
+ for(let b=0;b<3;b++){
+  const B=BASES[b],bottom=b<2?B+1950:WH;
+  for(let x=0;x<WW;x+=1700){const top=[];for(let xx=x-20;xx<=x+1720;xx+=60)top.push([xx,groundY(b,xx)-(b?260+620*lev(tOf(b,xx)):380)-140*noise(xx,b*3)]);
+   const poly=[...top,[x+1720,groundY(b,x+1720)+20],[x-20,groundY(b,x-20)+20]];
+   add(x-60,Math.min(...top.map(p=>p[1]))-20,x+1760,B+40,()=>{if(b)solid(poly,C.paper);wash(poly,C.muted,b?.2:.14);hatch(poly,{gap:22,a:.08,ang:20});stroke(top,{w:1.3,a:.4,passes:1})})}
+  for(let x=0;x<WW;x+=1700){const top=[];for(let xx=x-20;xx<=x+1720;xx+=34)top.push([xx,groundY(b,xx)]);const poly=[...top,[x+1720,bottom],[x-20,bottom]];
+   add(x-40,Math.min(...top.map(p=>p[1]))-10,x+1760,bottom,()=>{solid(poly,C.paper);raw(30,c=>{const fillP=()=>{c.beginPath();poly.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.closePath();c.fill()};
+    c.globalCompositeOperation=C.dark?'source-over':'multiply';c.globalAlpha=C.dark?.3:.44;c.fillStyle=bandGrad(c,b);fillP();
+    c.globalCompositeOperation='source-over';c.globalAlpha=1;const fg=c.createLinearGradient(0,B-150,0,B+1150);fg.addColorStop(0,rgba(C.paper,0));fg.addColorStop(1,rgba(C.paper,.62));c.fillStyle=fg;fillP()})})}
+  for(let x=0;x<WW;x+=400){const top=[];for(let xx=x;xx<=x+400;xx+=34)top.push([xx,groundY(b,xx)]);const wt=WINTRY(regionOf(tOf(b,x+200)));const band=[...top,...top.slice().reverse().map(([u,v])=>[u,v+170])];
+   add(x-20,Math.min(...top.map(p=>p[1]))-10,x+420,Math.max(...top.map(p=>p[1]))+180,()=>hatch(band,{gap:15,a:wt?.25:.16,ang:-38,col:wt?C.blue:C.ink}))}
+  for(let x=0;x<WW;x+=800){const top=[];for(let xx=x;xx<=x+810;xx+=26)top.push([xx,groundY(b,xx)]);add(x-10,Math.min(...top.map(p=>p[1]))-10,x+820,Math.max(...top.map(p=>p[1]))+10,()=>stroke(top,{w:2.4}))}
+  for(const off of[260,520,820]){for(let x=0;x<WW;x+=1600){const ln=[];for(let xx=x;xx<=x+1610;xx+=40)ln.push([xx,groundY(b,xx)+off+30*Math.sin(xx/400+off)]);if(ln[0][1]>bottom-40)continue;
+   add(x-10,Math.min(...ln.map(p=>p[1]))-10,x+1620,Math.max(...ln.map(p=>p[1]))+10,()=>stroke(ln,{w:1.1,a:.3,passes:1,dash:[3,14]}))}}
+  const seg0=PATH.filter(p=>p.b===b||(b===1&&p.b==='r')||(b===2&&p.b==='l'));
+  for(let i=0;i<seg0.length-1;i+=40){const ch=seg0.slice(i,i+41);const L=[],R=[];
+   ch.forEach((p,k)=>{const q=ch[Math.min(k+1,ch.length-1)],o=ch[Math.max(k-1,0)];const dx=q.x-o.x,dy=q.y-o.y,l=Math.hypot(dx,dy)||1;const nx=-dy/l,ny=dx/l;L.push([p.x+nx*18,p.y+ny*18]);R.push([p.x-nx*18,p.y-ny*18])});
+   const strip=[...L,...R.slice().reverse()];const xs=ch.map(p=>p.x),ys=ch.map(p=>p.y);
+   add(Math.min(...xs)-40,Math.min(...ys)-40,Math.max(...xs)+40,Math.max(...ys)+40,()=>{wash(strip,RC('trail'),.55);stroke(L,{w:1.3,a:.65,passes:1});stroke(R,{w:1.3,a:.65,passes:1});
+    stroke(ch.map(p=>[p.x,p.y]),{w:1.1,a:.35,passes:1,dash:[4,16]})})}
+  for(const st of STOPS)if(st.n&&st.b===b){const X=st.dir>0?st.px+380:st.px-720;const g=prof(b,X+170)-34;const f=PLACES[st.n];
+   if(f)add(X-60,g-480,X+400,g+80,()=>f(X,g));sheet(st)}
+  if(b===0){add(300,prof(0,480)-360,700,prof(0,480)+40,()=>{const g=prof(0,480)+8;seg(380,g,380,g-230,{w:3.2});seg(580,g,580,g-230,{w:3.2});curve(bez([360,g-200],[420,g-280],[540,g-280],[600,g-200]),{w:3});txt(LX('Start','Partenza'),480,g-226,{size:54,align:'center',wt:600})})}
+  const RL=[[[3100,LX('Definition meadow','Il prato delle definizioni'),LX('stops 1–2','tappe 1–2')],[7100,LX('The workshop','L’officina'),LX('stops 3–5','tappe 3–5')]],
+   [[7900,LX('Dice hills','Le colline dei dadi'),LX('stops 6–7','tappe 6–7')],[3900,LX('Chat village','Il villaggio della chat'),LX('stops 8–10','tappe 8–10')]],
+   [[2300,LX('Garden of the senses','Il giardino dei sensi'),LX('stop 11','tappa 11')],[4700,LX('Agent maze','Il labirinto degli agenti'),LX('stops 12–13','tappe 12–13')],[7100,LX('Fog marsh','La palude della nebbia'),LX('stop 14','tappa 14')],[8900,LX('The lookout','Il belvedere'),LX('stop 15','tappa 15')]]][b];
+  for(const[x,n,y]of RL)regionLabel(x,B+(b===2?560:b===1?330:420),n,y);
+  const r=mulberry(101+b*7);const T=[];
+  for(let x=120;x<WW-80;x+=70){const t=tOf(b,x);const d=DENS[regionOf(t)];for(let row=0;row<5;row++){if(r()>d*0.45)continue;const tx=x+r()*60,ty=groundY(b,tx)+40+row*150+r()*90;if(ty>bottom-60)continue;
+   if(inExcl(tx,ty,30)||nearPath(tx,ty,70)||nearPath(tx,ty-60,70))continue;T.push([tx,ty,tOf(b,tx),r()*1e9|0])}}
+  T.sort((a,c)=>a[1]-c[1]);for(const[tx,ty,t,sd]of T)add(tx-50,ty-150,tx+50,ty+10,()=>plantTree(tx,ty,t,mulberry(sd)));
+ }
+}
+
+/* ================= scene ================= */
+/* ---------- helpers: labirinto, topo, formaggio ---------- */
+const DIRS=[[1,0],[0,1],[-1,0],[0,-1]];// E S W N
+function makeMaze(seed){const r=mulberry(seed);const N=5;const open=Array.from({length:N*N},()=>[false,false,false,false]);const seen=new Set([0]);const stack=[0];
+  while(stack.length){const c=stack[stack.length-1];const x=c%N,y=Math.floor(c/N);const nb=[];DIRS.forEach(([dx,dy],d)=>{const nx=x+dx,ny=y+dy;if(nx>=0&&ny>=0&&nx<N&&ny<N&&!seen.has(ny*N+nx))nb.push([d,ny*N+nx])});
+   if(!nb.length){stack.pop();continue}const[d,n]=nb[Math.floor(r()*nb.length)];open[c][d]=true;open[n][(d+2)%4]=true;seen.add(n);stack.push(n)}
+  for(let k=0;k<3;k++){const c=Math.floor(r()*N*N);const d=Math.floor(r()*2);const x=c%N,y=Math.floor(c/N);const nx=x+DIRS[d][0],ny=y+DIRS[d][1];if(nx<N&&ny<N){open[c][d]=true;open[ny*N+nx][(d+2)%4]=true}}
+  return open}
+function mouse(x,y,a,K=1.5){const rp=(pts)=>rotPts(pts.map(([u,v])=>[u*K,v*K]),x,y,a);const body=rp(ellPoly(0,0,15,9,20));solid(body,C.paper);wash(body,C.muted,.35);path(body,{w:1.4},true);
+  const hd=rp([[12,-6],[24,0],[12,6]]);path(hd,{w:1.3},true);for(const s of[-1,1]){const e=rp([[10,s*7]])[0];ell(e[0],e[1],6.5*K/1.5,6.5*K/1.5,{w:1.1,passes:1,solid:C.paper})}
+  const t=rp([[-15,0],[-24,-5],[-31,3],[-38,-2]]);curve(resample(t,false,4),{w:1.1,passes:1});const n=rp([[24,0]])[0];dot(n[0],n[1],2.6*K/1.5);
+  for(const s of[-1,0,1]){const a1=rp([[24,0]])[0],a2=rp([[33,s*4]])[0];seg(a1[0],a1[1],a2[0],a2[1],{w:.9,passes:1,col:C.red})}}
+function cheese(x,y){const p=[[x-22,y+12],[x+22,y+12],[x+22,y-8],[x-22,y+2]];wash(p,C.yellow,.9);path(p,{w:1.4},true);seg(x-22,y+2,x-22,y-6,{w:1.2});seg(x-22,y-6,x+22,y-8,{w:1.2});dot(x-6,y+6,3,C.muted);dot(x+9,y+3,2.4,C.muted);dot(x+2,y-2,1.8,C.muted)}
+function mazeWalls(open,ox,oy,cs,o={}){const N=5;for(let c=0;c<25;c++){const x=ox+(c%N)*cs,y=oy+Math.floor(c/N)*cs;
+   if(!open[c][0])seg(x+cs,y,x+cs,y+cs,{w:o.w||2.6});if(!open[c][1])seg(x,y+cs,x+cs,y+cs,{w:o.w||2.6});
+   if(c%N===0)seg(x,y,x,y+cs,{w:o.w||2.6});if(c<N)seg(x,y,x+cs,y,{w:o.w||2.6})}}
+function bars(list,x0,y0,rowH,maxW,o={}){// list: [label,p,highlight]
+  list.forEach(([lab,p,hi],k)=>{const yy=y0+k*rowH;txt(lab,x0-12,yy+rowH*0.62,{size:o.size||24,align:'right',col:hi?C.red:C.ink,wt:hi?600:400});
+   const bw=Math.max(2,p*maxW);const q=[[x0,yy+3],[x0+bw,yy+3],[x0+bw,yy+rowH-9],[x0,yy+rowH-9]];wash(q,hi?C.red:(o.col||C.blue),.42);hatch(q,{gap:6,a:.18});path(q,{w:1.2},true);
+   txt(o.fmt?o.fmt(p):Math.round(p*100)+'%',x0+bw+8,yy+rowH*0.6,{size:21})})}
+
+let COVW,MAPN,MAPL,NT1,NT2,BPEC,TRS,TRW,TMP,SCL,STG,OUTB,OUTC,CTXM,PRP,PRA,PRL,AGS,HAL,QZ,PFX,NEWW,SCLN,PRN;
+const I18N={en:{COVW:{1:'token',3:'prompt',5:'training',7:'sampling',9:'context',11:'LLM',13:'agent',15:'tool',17:'image patch',19:'assistant',21:'temperature',23:'hallucination'},
+MAPN:{
+ ml:{t:'Machine learning',d:'Programs that get better at a task by learning from examples (data), instead of following rules written by hand.',s:'after T. Mitchell, Machine Learning, 1997',go:5},
+ dl:{t:'Deep learning',d:'Machine learning with artificial neural networks made of many layers, each transforming the output of the one before.',s:'after LeCun, Bengio & Hinton, “Deep learning”, Nature, 2015',go:5},
+ gen:{t:'Generative AI',d:'Models that learn the structure of their training data and use it to produce new content of the same kind: text, images, audio, video, code. Today almost always deep learning, but not by definition.',s:'after NIST AI 600-1, Generative AI Profile, 2024',go:2},
+ llm:{t:'Large language model (LLM)',d:'A neural network with very many parameters, trained on huge amounts of text to estimate the probability of the next token given the previous ones.',s:'after Jurafsky & Martin, Speech and Language Processing, 3rd ed. draft',go:3},
+ mm:{t:'Multimodal LLM',d:'An LLM that accepts other kinds of data besides text (images, audio, video) and in some cases also produces them.',s:'e.g. OpenAI, GPT-4 Technical Report, 2023',go:11},
+ token:{t:'Token',d:'The unit of text a model reads and writes: a word, a piece of a word, a punctuation mark. In English, about ¾ of a word on average.',s:'OpenAI Help Center, “What are tokens and how to count them?”',go:4},
+ prompt:{t:'Prompt',d:'The input you give a model: a question, an instruction, a text to work on, possibly with images or files.',s:'after the prompting guides of Anthropic and OpenAI',go:10},
+ assistant:{t:'AI assistant',d:'An application built around an LLM, on a website or in an app, that converses in natural language to carry out tasks: answering, writing and revising, analysing data, coding.',s:'after Ouyang et al., “Training language models to follow instructions”, 2022',go:8},
+ agent:{t:'Agent',d:'Classic: anything that perceives its environment and acts on it. Today: an LLM in a program that runs the tools the model calls, feeds back the results and repeats until a final answer or a step limit.',s:'Russell & Norvig, AIMA; Anthropic, “Building effective agents”, 2024',go:13},
+ hall:{t:'Hallucination',d:'Output that sounds plausible but is false or not supported by the sources, stated with the same confidence as correct output.',s:'after Kalai et al., “Why language models hallucinate”, 2025; NIST: “confabulation”',go:14}},
+MAPL:{token:'token',prompt:'prompt',assistant:'AI assistant',agent:'agent',hall:'hallucination'},
+NT1:[[' cheese',.31],[' way',.24],[' exit',.15],[' bell',.12],[' goal',.10],[' wall',.08]],
+NT2:{' cheese':[[' at',.27],['.',.25],[' behind',.16],[' in',.14],[' after',.12],[' again',.06]],
+ ' way':[[' out',.44],[' to',.25],[' through',.13],[' home',.08],['.',.06],[' back',.04]],
+ ' exit':[['.',.33],[' after',.22],[' in',.17],[' on',.12],[' again',.10],[' quickly',.06]],
+ ' bell':[['.',.30],[' and',.26],[' at',.18],[' ringing',.12],[' in',.09],[' again',.05]],
+ ' goal':[['.',.36],[' after',.24],[' square',.16],[' in',.12],[' again',.08],[' first',.04]],
+ ' wall':[[' and',.34],['.',.24],[' again',.16],[' with',.14],[' first',.08],[' twice',.04]]},
+BPEC:[['token',6],['tokens',4],['broken',3],['spoken',2],['open',4],['opened',2],['maze',3],['mazes',2],['amaze',1]],
+TRS:['the mouse explores the maze .','the mouse hits a wall and turns .','the mouse remembers the way .','the maze has twenty five squares .','the mouse finds the goal .','a relay remembers the last exit .','the bell rings at the goal .','the mouse follows the relays to the goal .','a wall moves and the mouse explores again .','the mouse learns the maze .'],
+TRW:['the','mouse','a','maze','remembers','explores'],
+TMP:[['cheese',3.0],['way',2.4],['exit',1.9],['bell',1.6],['goal',1.4],['wall',1.1],['moon',-0.5],['piano',-1.2]],
+SCL:[['GPT-1',2018,117e6,null,'about 117 million parameters; tokens not stated in these terms'],['GPT-2',2019,1.5e9,null,'1.5 billion parameters'],['GPT-3',2020,175e9,300e9,'175 billion parameters, 300 billion training tokens'],['Chinchilla',2022,70e9,1.4e12,'70 billion parameters, 1.4 trillion tokens: beat larger models'],['Llama 3.1 405B',2024,405e9,15.6e12,'405 billion parameters, about 15.6 trillion tokens']],
+STG:[['pre-training','predict the next token','on trillions of tokens'],['instruction tuning','imitate example','dialogues'],['RLHF','prefer answers that','people ranked higher']],
+OUTB:'Write a short poem about a cat on a roof.\nWrite a short poem about a dog in the rain.\nWrite a short poem about a bird in a cage.\n\nThese writing prompts are suitable for pupils aged 8 to 10 and can be…',
+OUTC:'Left at the wall, then left once more,\na copper whisker finds the door;\nthe first run wanders, lost and slow,\nthe second knows which way to go.',
+CTXM:[['sys','system: You are a helpful tutor for students.',12],['u','What is a token?',6],['a','A piece of text, often part of a word.',11],['u','How many tokens per word?',7],['a','About 4/3 per English word, on average.',12],['u','And in Italian?',5],['a','Usually more: many tokenizers favour English.',9],['u','What was my first question?',7]],
+PRP:[['Explain tokens.'],['I’m a fifth-year student learning how large language models work. ','Explain what a token is.'],[' Answer in three bullet points, 50 words at most.'],[' Show how the sentence “Theseus found the cheese.” could be split.'],[' If you are not sure of something, say so.']],
+PRA:['“Token” has several meanings. In computer security, a token is a piece of data that proves who you are, such as a session token. In blockchains, a token is a digital asset. In linguistics, a token is a single occurrence of a word in a text…',
+ 'In a language model, a token is the basic unit of text the model reads and writes. Before any processing, a tokenizer splits the text into tokens, which can be whole words, pieces of words or punctuation marks. The model then predicts one token at a time, and…',
+ '• A token is the unit of text an LLM reads and writes.\n• It can be a word, part of a word or punctuation.\n• In English, one token is about ¾ of a word on average.',
+ '• A token is the unit of text an LLM reads and writes.\n• It can be a word, part of a word or punctuation.\n• In English, one token is about ¾ of a word on average.\nExample: [The][seus][ found][ the][ cheese][.] (the exact split depends on the tokenizer)',
+ '• A token is the unit of text an LLM reads and writes.\n• It can be a word, part of a word or punctuation.\n• In English, one token is about ¾ of a word on average.\nExample: [The][seus][ found][ the][ cheese][.] (the exact split depends on the tokenizer)'],
+PRL:['vague','+ context and task','+ format','+ example','+ permission to be unsure'],
+AGS:[
+ ['llm','model','search("Shannon Theseus maze squares")','tool call'],
+ ['prog','program','result: “…explores its surroundings, a 25-square maze.” (MIT Technology Review)','runs the tool'],
+ ['llm','model','write_file("notes.txt", "Theseus maze: 25 squares, 5 × 5")','tool call'],
+ ['prog','program','result: file saved','runs the tool'],
+ ['llm','model','Shannon’s maze had 25 squares (5 × 5). I saved this in notes.txt.','final answer']],
+HAL:[['Claude Shannon was born in 1916 in Michigan.',true,'True: Petoskey, Michigan, 30 April 1916.'],
+ ['His 1937 master’s thesis applied Boolean algebra to relay circuits.',true,'True: MIT, “A Symbolic Analysis of Relay and Switching Circuits”.'],
+ ['In 1948 he published “A Mathematical Theory of Communication”.',true,'True: Bell System Technical Journal, 1948.'],
+ ['He also wrote “Computing Machinery and Intelligence” (1950).',false,'False: that paper is by Alan Turing.'],
+ ['In 1950 he built Theseus, a mouse that learned mazes.',true,'True: Bell Labs, filmed in 1952.'],
+ ['In 1956 he won the Nobel Prize in Physics for information theory.',false,'False: no Nobel. The 1956 physics prize went to the transistor’s inventors.']],
+QZ:[['What does an LLM learn during pre-training?',['To estimate the probability of the next token from the previous ones','To look up answers in a database of facts','To classify images into categories'],'Pre-training is next-token prediction on huge amounts of text.'],
+ ['Which of these is a token?',['A piece of text: a word, part of a word or punctuation','Always exactly one whole word','Always exactly one letter'],'In English a token is about ¾ of a word on average.'],
+ ['What happens if you raise the temperature?',['Less probable tokens are chosen more often','The model becomes more accurate','The model reads more text'],'High T flattens the distribution; low T sharpens it.'],
+ ['What makes a model generative rather than discriminative?',['It can produce new examples that resemble its training data','It is always more accurate','It never makes predictions'],'Discriminative models learn a boundary; generative models learn the distribution.'],
+ ['What does an assistant send to the model at each turn?',['System instructions and the conversation so far, within the context window','Only your last message','Nothing: the model remembers everything by itself'],'The model has no memory between calls: the app resends the text.'],
+ ['A multimodal LLM…',['accepts more than one kind of data, e.g. text and images','must be able to produce videos','is made of several LLMs voting'],'Input and output modalities can differ: GPT-4 read images but wrote only text.'],
+ ['When does an LLM agent’s loop stop?',['When the model writes a final answer instead of a tool call, or a step limit is reached','After exactly three steps','When the goal has been verified by a person'],'The model decides it has finished, and it can be wrong.'],
+ ['What is a hallucination?',['Plausible but false or unsupported content, stated confidently','An error that only happens with images','A message the model refuses to answer'],'So: check facts, numbers, names and references on primary sources.']],
+PFX:'Theseus found the',
+NEWW:'reopened',
+SCLN:{8:'100 million',9:'1 billion',10:'10 billion',11:'100 billion',12:'1 trillion',13:'10 trillion',14:'100 trillion'},
+PRN:['ambiguous: which “token”?','right topic, but long and unfocused','short and in the requested format','the example makes it concrete','same answer here; it matters when facts are uncertain']},
+it:{COVW:{1:'token',3:'prompt',5:'addestramento',7:'campionamento',9:'contesto',11:'LLM',13:'agente',15:'strumento',17:'patch',19:'assistente',21:'temperatura',23:'allucinazione'},
+MAPN:{
+ ml:{t:'Machine learning',d:'Programmi che migliorano in un compito imparando da esempi (dati), invece di seguire regole scritte a mano.',s:'da T. Mitchell, Machine Learning, 1997',go:5},
+ dl:{t:'Deep learning',d:'Machine learning con reti neurali artificiali formate da molti strati, ciascuno dei quali trasforma l’uscita del precedente.',s:'da LeCun, Bengio e Hinton, «Deep learning», Nature, 2015',go:5},
+ gen:{t:'IA generativa',d:'Modelli che apprendono la struttura dei dati di addestramento e la usano per produrre contenuti nuovi dello stesso tipo: testo, immagini, audio, video, codice. Oggi quasi sempre deep learning, ma non per definizione.',s:'da NIST AI 600-1, Generative AI Profile, 2024',go:2},
+ llm:{t:'Large language model (LLM)',d:'Una rete neurale con moltissimi parametri, addestrata su enormi quantità di testo a stimare la probabilità del token successivo dati i precedenti.',s:'da Jurafsky e Martin, Speech and Language Processing, 3ª ed. (bozza)',go:3},
+ mm:{t:'LLM multimodale',d:'Un LLM che accetta in ingresso, oltre al testo, dati di altra natura (immagini, audio, video) e in alcuni casi li produce anche in uscita.',s:'per esempio OpenAI, GPT-4 Technical Report, 2023',go:11},
+ token:{t:'Token',d:'L’unità di testo che un modello legge e scrive: una parola, un pezzo di parola, un segno di punteggiatura. In inglese vale in media circa ¾ di parola.',s:'OpenAI Help Center, «What are tokens and how to count them?»',go:4},
+ prompt:{t:'Prompt',d:'L’input che si dà a un modello: una domanda, un’istruzione, un testo da elaborare, eventualmente con immagini o file.',s:'dalle guide al prompting di Anthropic e OpenAI',go:10},
+ assistant:{t:'Assistente IA',d:'Un’applicazione costruita attorno a un LLM, su un sito web o in un’app, che dialoga in linguaggio naturale per svolgere compiti: rispondere, scrivere e revisionare testi, analizzare dati, programmare.',s:'da Ouyang et al., «Training language models to follow instructions», 2022',go:8},
+ agent:{t:'Agente',d:'In senso classico: qualunque cosa percepisca il proprio ambiente e agisca su di esso. Oggi: un LLM in un programma che esegue gli strumenti chiamati dal modello, gli restituisce i risultati e ripete fino a una risposta finale o a un limite di passi.',s:'Russell e Norvig, AIMA; Anthropic, «Building effective agents», 2024',go:13},
+ hall:{t:'Allucinazione',d:'Un contenuto che sembra plausibile ma è falso o non sostenuto dalle fonti, presentato con la stessa sicurezza dei contenuti corretti.',s:'da Kalai et al., «Why language models hallucinate», 2025; il NIST parla di «confabulation»',go:14}},
+MAPL:{token:'token',prompt:'prompt',assistant:'assistente IA',agent:'agente',hall:'allucinazione'},
+PFX:'Teseo trovò il',
+NT1:[[' formaggio',.31],[' passaggio',.24],[' campanello',.15],[' muro',.12],[' traguardo',.10],[' modo',.08]],
+NT2:{' formaggio':[['.',.30],[' dopo',.22],[' in',.16],[' nascosto',.14],[' al',.12],[' ancora',.06]],
+ ' passaggio':[[' giusto',.40],[' verso',.22],['.',.14],[' segreto',.12],[' tra',.08],[' libero',.04]],
+ ' campanello':[['.',.33],[' e',.25],[' in',.17],[' alla',.12],[' dopo',.09],[' finale',.04]],
+ ' muro':[[' e',.34],['.',.24],[' di',.16],[' davanti',.14],[' ancora',.08],[' due',.04]],
+ ' traguardo':[['.',.36],[' dopo',.24],[' in',.16],[' al',.12],[' finale',.08],[' giusto',.04]],
+ ' modo':[[' di',.44],[' per',.25],[' giusto',.13],['.',.08],[' più',.06],[' migliore',.04]]},
+BPEC:[['gatto',6],['gatti',4],['gattino',2],['matto',3],['matti',2],['fatto',4],['fatti',2],['piatto',2],['patto',1]],
+NEWW:'gattini',
+TRS:['il topo esplora il labirinto .','il topo tocca un muro e gira .','il topo ricorda la strada .','il labirinto ha venticinque caselle .','il topo trova il formaggio .','un relè ricorda l’ultima uscita .','il campanello suona alla meta .','il topo segue i relè fino alla meta .','un muro si sposta e il topo esplora di nuovo .','il topo impara il labirinto .'],
+TRW:['il','topo','un','labirinto','ricorda','esplora'],
+TMP:[['formaggio',3.0],['passaggio',2.4],['campanello',1.9],['muro',1.6],['traguardo',1.4],['modo',1.1],['luna',-0.5],['pianoforte',-1.2]],
+SCL:[['GPT-1',2018,117e6,null,'circa 117 milioni di parametri; token non dichiarati in questi termini'],['GPT-2',2019,1.5e9,null,'1,5 miliardi di parametri'],['GPT-3',2020,175e9,300e9,'175 miliardi di parametri, 300 miliardi di token di addestramento'],['Chinchilla',2022,70e9,1.4e12,'70 miliardi di parametri, 1.400 miliardi di token: batté modelli più grandi'],['Llama 3.1 405B',2024,405e9,15.6e12,'405 miliardi di parametri, circa 15.600 miliardi di token']],
+SCLN:{8:'100 milioni',9:'1 miliardo',10:'10 miliardi',11:'100 miliardi',12:'1000 miliardi',13:'10.000 miliardi',14:'100.000 miliardi'},
+STG:[['pre-addestramento','prevedere il token','successivo'],['instruction tuning','imitare dialoghi','di esempio'],['RLHF','preferire le risposte','scelte dalle persone']],
+OUTB:'Scrivi una breve poesia su un gatto sul tetto.\nScrivi una breve poesia su un cane sotto la pioggia.\nScrivi una breve poesia su un uccello in gabbia.\n\nQuesti spunti di scrittura sono adatti ad alunni dagli 8 ai 10 anni e possono…',
+OUTC:'Tocca il muro e gira, piano piano,\ncol baffo di rame sonda ogni vano;\nla prima volta vaga, lento e incerto,\nla seconda va dritto, ormai esperto.',
+CTXM:[['sys','sistema: Sei un tutor disponibile per studenti.',12],['u','Che cos’è un token?',6],['a','Un pezzo di testo, spesso parte di una parola.',11],['u','Quanti token per parola?',7],['a','In inglese circa 4/3 per parola, in media.',12],['u','E in italiano?',5],['a','Di solito di più: molti tokenizer favoriscono l’inglese.',9],['u','Qual era la mia prima domanda?',7]],
+PRP:[['Spiega i token.'],['Sono uno studente di quinta e sto studiando come funzionano i grandi modelli linguistici. ','Spiega che cos’è un token.'],[' Rispondi con tre punti elenco, al massimo 50 parole.'],[' Mostra come potrebbe essere divisa la frase «Teseo trovò il formaggio.».'],[' Se non sei sicuro di qualcosa, dillo.']],
+PRA:['«Token» ha diversi significati. In sicurezza informatica un token è un dato che dimostra la tua identità, come un token di sessione. Nelle blockchain un token è un bene digitale. In linguistica un token è una singola occorrenza di una parola in un testo…',
+ 'In un modello linguistico il token è l’unità di base del testo che il modello legge e scrive. Prima di qualunque elaborazione, un tokenizer divide il testo in token, che possono essere parole intere, pezzi di parole o segni di punteggiatura. Il modello poi prevede un token alla volta, e…',
+ '• Un token è l’unità di testo che un LLM legge e scrive.\n• Può essere una parola, un pezzo di parola o punteggiatura.\n• In inglese un token vale in media circa ¾ di parola.',
+ '• Un token è l’unità di testo che un LLM legge e scrive.\n• Può essere una parola, un pezzo di parola o punteggiatura.\n• In inglese un token vale in media circa ¾ di parola.\nEsempio: [Te][seo][ trov][ò][ il][ form][aggio][.] (la divisione esatta dipende dal tokenizer)',
+ '• Un token è l’unità di testo che un LLM legge e scrive.\n• Può essere una parola, un pezzo di parola o punteggiatura.\n• In inglese un token vale in media circa ¾ di parola.\nEsempio: [Te][seo][ trov][ò][ il][ form][aggio][.] (la divisione esatta dipende dal tokenizer)'],
+PRL:['vago','+ contesto e compito','+ formato','+ esempio','+ permesso di dire «non so»'],
+PRN:['ambiguo: quale «token»?','argomento giusto, ma lungo e dispersivo','breve e nel formato richiesto','l’esempio lo rende concreto','qui non cambia nulla; conta quando i fatti sono incerti'],
+AGS:[['llm','modello','search("Shannon Theseus maze squares")','chiamata'],['prog','programma','risultato: “…explores its surroundings—a 25-square maze.” (MIT Technology Review)','esegue'],['llm','modello','write_file("note.txt", "Teseo: 25 caselle (5 × 5)")','chiamata'],['prog','programma','risultato: file salvato','esegue'],['llm','modello','Il labirinto di Shannon aveva 25 caselle (5 × 5). L’ho scritto in note.txt.','risposta finale']],
+HAL:[['Claude Shannon nacque nel 1916 nel Michigan.',true,'Vero: Petoskey, Michigan, 30 aprile 1916.'],
+ ['La sua tesi del 1937 applicava l’algebra di Boole ai circuiti a relè.',true,'Vero: MIT, «A Symbolic Analysis of Relay and Switching Circuits».'],
+ ['Nel 1948 pubblicò «A Mathematical Theory of Communication».',true,'Vero: Bell System Technical Journal, 1948.'],
+ ['Scrisse anche «Computing Machinery and Intelligence» (1950).',false,'Falso: quell’articolo è di Alan Turing.'],
+ ['Nel 1950 costruì Teseo, un topo che imparava i labirinti.',true,'Vero: Bell Labs, filmato nel 1952.'],
+ ['Nel 1956 vinse il Nobel per la fisica per la teoria dell’informazione.',false,'Falso: nessun Nobel; la fisica 1956 premiò gli inventori del transistor.']],
+QZ:[['Che cosa impara un LLM durante il pre-addestramento?',['A stimare la probabilità del token successivo dati i precedenti','A cercare le risposte in una banca dati di fatti','A classificare immagini in categorie'],'Il pre-addestramento è previsione del token successivo su enormi quantità di testo.'],
+ ['Quale di questi è un token?',['Un pezzo di testo: una parola, parte di una parola o punteggiatura','Sempre esattamente una parola intera','Sempre esattamente una lettera'],'In inglese un token vale in media circa ¾ di parola.'],
+ ['Che cosa succede se alzi la temperatura?',['I token meno probabili vengono scelti più spesso','Il modello diventa più preciso','Il modello legge più testo'],'T alta appiattisce la distribuzione; T bassa la rende più appuntita.'],
+ ['Che cosa rende un modello generativo anziché discriminativo?',['Sa produrre esempi nuovi simili ai dati di addestramento','È sempre più preciso','Non fa mai previsioni'],'I discriminativi imparano un confine; i generativi imparano la distribuzione.'],
+ ['Che cosa invia un assistente al modello a ogni turno?',['Istruzioni di sistema e conversazione fin qui, entro la finestra di contesto','Solo il tuo ultimo messaggio','Niente: il modello ricorda tutto da solo'],'Il modello non ha memoria tra una chiamata e l’altra: l’app reinvia il testo.'],
+ ['Un LLM multimodale…',['accetta più di un tipo di dati, per esempio testo e immagini','deve saper produrre video','è formato da più LLM che votano'],'Ingresso e uscita possono differire: GPT-4 leggeva immagini ma scriveva solo testo.'],
+ ['Quando si ferma il ciclo di un agente LLM?',['Quando il modello scrive una risposta finale invece di chiamare uno strumento, o si raggiunge un limite di passi','Dopo esattamente tre passi','Quando una persona ha verificato l’obiettivo'],'È il modello a decidere di aver finito, e può sbagliarsi.'],
+ ['Che cos’è un’allucinazione?',['Un contenuto plausibile ma falso o non sostenuto, detto con sicurezza','Un errore che capita solo con le immagini','Un messaggio a cui il modello si rifiuta di rispondere'],'Quindi: controlla fatti, numeri, nomi e riferimenti su fonti primarie.']]}};
+function applyData(){const d=I18N[LANG];COVW=d.COVW;MAPN=d.MAPN;MAPL=d.MAPL;NT1=d.NT1;NT2=d.NT2;BPEC=d.BPEC;TRS=d.TRS;TRW=d.TRW;TMP=d.TMP;SCL=d.SCL;STG=d.STG;OUTB=d.OUTB;OUTC=d.OUTC;CTXM=d.CTXM;PRP=d.PRP;PRA=d.PRA;PRL=d.PRL;AGS=d.AGS;HAL=d.HAL;QZ=d.QZ;PFX=d.PFX;NEWW=d.NEWW;SCLN=d.SCLN;PRN=d.PRN;}
+applyData();
+/* --- copertina: un labirinto di idee --- */
+
+SC.cover={ox:140,oy:40,cs:72,init(st){st.open=makeMaze(7);st.h=-1},
+ move(st,x,y){const c=Math.floor((x-this.ox)/this.cs),r=Math.floor((y-this.oy)/this.cs);st.h=(c>=0&&c<5&&r>=0&&r<5)?r*5+c:-1},
+ down(st,x,y){this.move(st,x,y)},
+ draw(st){const{ox,oy,cs}=this;box(ox,oy,cs*5,cs*5,{fill:C.green,fa:.12,nostroke:true});
+  if(st.h>=0){const x=ox+(st.h%5)*cs,y=oy+Math.floor(st.h/5)*cs;box(x+3,y+3,cs-6,cs-6,{fill:C.yellow,fa:.7,nostroke:true})}
+  mazeWalls(st.open,ox,oy,cs);
+  for(const k in COVW){const c=+k;const x=ox+(c%5+0.5)*cs,y=oy+(Math.floor(c/5)+0.5)*cs;if(c===st.h)ell(x,y,7,7,{fill:C.red,fa:.8,w:1.2});else star(x,y,6,{col:C.blue})}
+  mouse(ox+cs*0.5,oy+cs*0.5,0,1.1);cheese(ox+cs*4.5,oy+cs*4.5+8);
+  txt(LX('a maze of ideas','un labirinto di idee'),ox+cs*5,oy+cs*5+26,{size:22,col:C.blue,align:'right'});
+  const w=COVW[st.h];if(w)txt(w,320,462,{size:40,align:'center',wt:600,col:C.red});else txt(LX('each star hides a word of the map','ogni stella nasconde una parola della mappa'),320,458,{size:25,align:'center',col:C.muted});
+  txt(LX('Theseus, 1950','Teseo, 1950'),ox-8,oy+cs*5+26,{size:20,col:C.muted})}};
+
+/* --- mappa --- */
+
+const MAPE={ml:[200,210,190,185],dl:[215,240,150,145],gen:[175,270,130,112],llm:[205,302,86,64],mm:[205,338,56,20]};
+const MAPB={token:[445,14],prompt:[445,92],assistant:[445,172],agent:[445,252],hall:[445,332]};const MBW=182,MBH=44;
+
+SC.map={H:400,init(st){st.sel='llm';this.ui(st)},
+ ui(st){if(!st.el)return;const n=MAPN[st.sel];const b=st.el.querySelector('.defbox');b.querySelector('.dt').innerHTML=`<b>${n.t}.</b> ${n.d}`;b.querySelector('.ds').textContent=LX('source: ','fonte: ')+n.s;
+  const g=st.el.querySelector('[data-act=go]');g.textContent=LX(`go to stop ${n.go} →`,`vai alla tappa ${n.go} →`)},
+ down(st,x,y){let hit=null;for(const k in MAPB){const[bx,by]=MAPB[k];if(x>=bx&&x<=bx+MBW&&y>=by&&y<=by+MBH)hit=k}
+  if(!hit)for(const k of['mm','llm','gen','dl','ml']){const[cx,cy,rx,ry]=MAPE[k];if(((x-cx)/rx)**2+((y-cy)/ry)**2<=1){hit=k;break}}
+  if(hit){st.sel=hit;this.ui(st)}},
+ act(st,a){if(a==='go')go(MAPN[st.sel].go)},
+ draw(st){const E=MAPE,s=st.sel;
+  const fills={ml:C.green,dl:C.blue,gen:C.yellow,llm:C.red,mm:C.blue};
+  for(const k of['ml','dl','gen','llm','mm']){const[cx,cy,rx,ry]=E[k];ell(cx,cy,rx,ry,{fill:k===s?C.yellow:fills[k],fa:k===s?.55:.14,w:k===s?2:1.4,dash:k==='gen'?[7,5]:null})}
+  txt('machine learning',200,50,{size:24,align:'center',wt:k0(s,'ml')});txt('deep learning',230,122,{size:23,align:'center',wt:k0(s,'dl')});
+  txt(LX('generative AI','IA generativa'),175,190,{size:23,align:'center',wt:k0(s,'gen')});txt('LLM',205,286,{size:30,align:'center',wt:600});txt(LX('multimodal','multimodale'),205,345,{size:19,align:'center',wt:k0(s,'mm')});
+  
+  // frecce
+  const lab=(t,x,y,o={})=>txt(t,x,y,{size:17,col:C.muted,...o});
+  curve(bez([445,36],[380,40],[300,120],[240,242],20),{w:1.3,col:C.blue});arrow(252,226,240,243,{w:1.3,col:C.blue,head:8});lab(LX('text → tokens','testo → token'),395,28,{align:'right'});
+  arrow(536,136,536,170,{w:1.3,col:C.blue,head:8});lab(LX('you write','scrivi tu'),546,160);
+  curve(bez([290,286],[340,260],[390,200],[445,196],20),{w:1.3,col:C.blue});arrow(430,197,445,196,{w:1.3,col:C.blue,head:8});lab(LX('powers','alimenta'),366,192);
+  curve(bez([290,306],[350,300],[400,280],[445,276],20),{w:1.3,col:C.blue});arrow(430,277,445,276,{w:1.3,col:C.blue,head:8});lab(LX('drives','guida'),372,300);
+  curve(bez([278,340],[340,370],[400,360],[445,356],20),{w:1.3,col:C.red});arrow(430,357,445,356,{w:1.3,col:C.red,head:8});lab(LX('can produce','può produrre'),352,390,{col:C.red});
+  txt(LX('tap a node: its definition appears in the panel','tocca un nodo: la definizione compare nel pannello'),20,470,{size:24,col:C.blue});
+  seg(600,216,600,252,{w:1.2,dash:[4,5]});lab(LX('can act as','può fare da'),594,240,{size:16,align:'right'});
+  for(const k in MAPB){const[bx,by]=MAPB[k];box(bx,by,MBW,MBH,{w:k===s?2:1.4,fill:k===s?C.yellow:(k==='hall'?C.red:C.paper),fa:k===s?.6:.12});txt(MAPL[k],bx+MBW/2,by+30,{size:25,align:'center',wt:k===s?600:400})}}};
+function k0(s,k){return s===k?600:400}
+
+/* --- generativo / discriminativo --- */
+function gauss(r){let u=0,v=0;while(u===0)u=r();v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function stats(pts){const n=pts.length;const m=[0,0];pts.forEach(p=>{m[0]+=p[0]/n;m[1]+=p[1]/n});let a=0,b=0,c=0;pts.forEach(p=>{const dx=p[0]-m[0],dy=p[1]-m[1];a+=dx*dx/n;b+=dx*dy/n;c+=dy*dy/n});return{m,S:[[a,b],[b,c]]}}
+function chol(S){const l11=Math.sqrt(S[0][0]),l21=S[1][0]/l11,l22=Math.sqrt(S[1][1]-l21*l21);return[[l11,0],[l21,l22]]}
+const GR={x0:60,x1:610,y0:30,y1:440};
+SC.gen={init(st){const r=mulberry(5);st.cls=[[],[]];const M=[[205,320],[465,150]];const L=[[[62,0],[26,34]],[[58,0],[-22,38]]];
+  for(let k=0;k<2;k++){let n=0;while(n<30){const z1=gauss(r),z2=gauss(r);const p=[M[k][0]+L[k][0][0]*z1,M[k][1]+L[k][1][0]*z1+L[k][1][1]*z2];if(p[0]<GR.x0+10||p[0]>GR.x1-10||p[1]<GR.y0+10||p[1]>GR.y1-10)continue;st.cls[k].push(p);n++}}
+  st.st=st.cls.map(stats);const Sp=[[0,0],[0,0]];for(let i=0;i<2;i++)for(let j=0;j<2;j++)Sp[i][j]=(st.st[0].S[i][j]+st.st[1].S[i][j])/2;
+  const det=Sp[0][0]*Sp[1][1]-Sp[0][1]*Sp[1][0];const inv=[[Sp[1][1]/det,-Sp[0][1]/det],[-Sp[1][0]/det,Sp[0][0]/det]];const dm=[st.st[1].m[0]-st.st[0].m[0],st.st[1].m[1]-st.st[0].m[1]];
+  st.w=[inv[0][0]*dm[0]+inv[0][1]*dm[1],inv[1][0]*dm[0]+inv[1][1]*dm[1]];const mid=[(st.st[0].m[0]+st.st[1].m[0])/2,(st.st[0].m[1]+st.st[1].m[1])/2];st.c=st.w[0]*mid[0]+st.w[1]*mid[1];
+  st.mode='disc';st.q=[];st.news=[[],[]];st.rng=mulberry(99)},
+ f(st,p){return st.w[0]*p[0]+st.w[1]*p[1]-st.c},
+ act(st,a,v){if(a==='mode'){st.mode=v;st.el.querySelectorAll('[data-act=mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v))}
+  if(a==='sample'){st.mode='gen';st.el.querySelectorAll('[data-act=mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v==='gen'));
+   for(let k=0;k<2;k++){const L=chol(st.st[k].S);let n=0;while(n<4){const z1=gauss(st.rng),z2=gauss(st.rng);const p=[st.st[k].m[0]+L[0][0]*z1,st.st[k].m[1]+L[1][0]*z1+L[1][1]*z2];if(p[0]<GR.x0+8||p[0]>GR.x1-8||p[1]<GR.y0+8||p[1]>GR.y1-8)continue;st.news[k].push(p);n++}if(st.news[k].length>16)st.news[k].splice(0,4)}}
+  if(a==='clear'){st.q=[];st.news=[[],[]]}},
+ down(st,x,y){if(st.mode!=='disc')return;if(x<GR.x0||x>GR.x1||y<GR.y0||y>GR.y1)return;st.q.push([x,y]);if(st.q.length>6)st.q.shift()},
+ draw(st){const{x0,x1,y0,y1}=GR;const rect=[[x0,y0],[x1,y0],[x1,y1],[x0,y1]];const col=[C.blue,C.red];
+  if(st.mode==='disc'){const A=clipHalf(rect,p=>-this.f(st,p)),B=clipHalf(rect,p=>this.f(st,p));if(A.length>2)wash(A,C.blue,.13);if(B.length>2)wash(B,C.red,.13);
+   // retta di confine: intersezioni con il rettangolo
+   const pts=[];for(let i=0;i<4;i++){const a=rect[i],b=rect[(i+1)%4];const fa=this.f(st,a),fb=this.f(st,b);if((fa>=0)!==(fb>=0)){const t=fa/(fa-fb);pts.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t])}}
+   if(pts.length===2)seg(pts[0][0],pts[0][1],pts[1][0],pts[1][1],{w:2.4,col:C.ink,dash:[10,6]});
+   if(pts.length===2){const lx=pts[0][0]+(pts[1][0]-pts[0][0])*0.3,ly=pts[0][1]+(pts[1][1]-pts[0][1])*0.3;txt(LX('learned boundary','confine appreso'),lx+10,ly-8,{size:22,col:C.ink,rot:Math.atan2(pts[1][1]-pts[0][1],pts[1][0]-pts[0][0])})}}
+  else{for(let k=0;k<2;k++){const S=st.st[k].S,m=st.st[k].m;const tr=S[0][0]+S[1][1],det=S[0][0]*S[1][1]-S[0][1]*S[0][1];const l1=tr/2+Math.sqrt(tr*tr/4-det),l2=tr/2-Math.sqrt(tr*tr/4-det);const ang=Math.atan2(l1-S[0][0],S[0][1]);
+    for(const s of[1,2]){const e=rotPts(ellPoly(0,0,s*Math.sqrt(l1),s*Math.sqrt(l2),30),m[0],m[1],ang);wash(e,col[k],s===1?.16:.08);path(e,{w:1.2,col:col[k],dash:s===2?[5,5]:null},true)}}
+   txt(LX('learned distributions','distribuzioni apprese'),x0+14,y0+26,{size:22,col:C.ink})}
+  arrow(x0,y1,x1+14,y1,{w:1.4});arrow(x0,y1,x0,y0-10,{w:1.4});txt(LX('feature 1','caratteristica 1'),x1+10,y1+28,{size:21,col:C.muted,align:'right'});txt(LX('feature 2','caratteristica 2'),x0-46,y0-14,{size:21,col:C.muted});
+  st.cls.forEach((ps,k)=>ps.forEach(p=>dot(p[0],p[1],4.2,col[k])));
+  st.news.forEach((ps,k)=>ps.forEach(p=>{ell(p[0],p[1],7,7,{w:1.6,col:col[k],fill:C.yellow,fa:.7})}));
+  st.q.forEach(p=>{const k=this.f(st,p)>0?1:0;ell(p[0],p[1],11,11,{w:2,col:col[k],solid:C.paper});txt(k?'B':'A',p[0],p[1]+7,{size:20,align:'center',wt:600,col:col[k]})});
+  dot(x0+14,y1+48,5,C.blue);txt(LX('class A','classe A'),x0+26,y1+55,{size:21});dot(x0+120,y1+48,5,C.red);txt(LX('class B','classe B'),x0+132,y1+55,{size:21});ell(x0+240,y1+48,7,7,{w:1.4,fill:C.yellow,fa:.7});txt(LX('new, generated','nuovi, generati'),x0+254,y1+55,{size:21});
+  txt(LX('toy data in two dimensions','dati giocattolo in due dimensioni'),x1,y0+22,{size:19,col:C.muted,align:'right'})}};
+/* --- prossimo token --- */
+
+
+const NTK=0.9;// il 10% va a tutti gli altri token del vocabolario
+SC.llm={init(st){st.gen=[];st.last=null},
+ dist(st){if(st.gen.length===0)return NT1;if(st.gen.length===1)return NT2[st.gen[0]];return null},
+ pick(st,k){const d=this.dist(st);if(!d)return;st.gen.push(d[k][0]);st.last=k},
+ act(st,a){if(a==='restart'){st.gen=[];st.last=null}
+  if(a==='sample'){const d=this.dist(st);if(!d)return;let r=Math.random()*1;let k=0;for(;k<d.length;k++){r-=d[k][1];if(r<=0)break}if(k>=d.length)k=0;this.pick(st,k)}},
+ down(st,x,y){const d=this.dist(st);if(!d)return;const k=Math.floor((y-150)/50);if(k>=0&&k<6&&x>60)this.pick(st,k)},
+ draw(st){txt(LX('the text so far','il testo finora'),24,34,{size:21,col:C.muted});
+  txt(PFX,24,82,{size:34,wt:600});
+  let x=24;
+  const ctx=P.ctx;ctx.save();ctx.font=`600 ${34*HS}px ${HAND}`;x=24+ctx.measureText(PFX).width;ctx.restore();
+  st.gen.forEach((t,i)=>{txt(t,x,82,{size:34,wt:600,col:C.red});ctx.save();ctx.font=`600 ${34*HS}px ${HAND}`;x+=ctx.measureText(t).width;ctx.restore()});
+  if(!st.gen.length||this.dist(st))seg(x+6,90,x+30,90,{w:2,col:C.red});
+  const d=this.dist(st);
+  if(!d){para(LX('…and so on: one token at a time, each chosen from a fresh set of probabilities, until the model produces a stop token or reaches a length limit.','…e così via: un token alla volta, ciascuno scelto da una nuova distribuzione di probabilità, finché il modello produce un token di fine o raggiunge un limite di lunghezza.'),24,190,580,{size:27,col:C.blue});
+   txt(LX('two steps are enough to see the idea','bastano due passi per capire l’idea'),24,470,{size:22,col:C.muted});return}
+  txt(LX('probability of the next token','probabilità del token successivo'),24,134,{size:21,col:C.muted});
+  bars(d.map(([w,p],k)=>[w==='.'?'« . »':'«'+w.trim()+'»',p*NTK,false]),180,150,50,330);
+  const yy=150+6*50;txt(LX('all other tokens','tutti gli altri token'),168,yy+30,{size:22,align:'right',col:C.muted});const q=[[180,yy+3],[180+0.1*330,yy+3],[180+0.1*330,yy+41],[180,yy+41]];hatch(q,{gap:4,a:.35});path(q,{w:1,dash:[3,4]},true);txt('10%',180+33+8,yy+30,{size:21,col:C.muted});
+  txt(LX('(Llama 3 has about 128,000 tokens)','(Llama 3 ne ha circa 128.000)'),260,yy+30,{size:19,col:C.muted});
+  txt(LX('the space before a word is part of the token','lo spazio prima della parola fa parte del token'),24,508,{size:19,col:C.muted})}};
+
+/* --- BPE --- */
+
+function bpeApply(word,merges){let s=word.split('');for(const[a,b]of merges){const o=[];for(let i=0;i<s.length;i++){if(i<s.length-1&&s[i]===a&&s[i+1]===b){o.push(a+b);i++}else o.push(s[i])}s=o}return s}
+SC.bpe={init(st){st.merges=[]},
+ pairs(st){const cnt=new Map();BPEC.forEach(([w,n])=>{const s=bpeApply(w,st.merges);for(let i=0;i<s.length-1;i++){const k=s[i]+'\u0001'+s[i+1];cnt.set(k,(cnt.get(k)||0)+n)}});
+  return[...cnt.entries()].sort((a,b)=>b[1]-a[1]||(a[0]<b[0]?-1:1))},
+ act(st,a){if(a==='reset')st.merges=[];if(a==='merge'){const p=this.pairs(st);if(p.length)st.merges.push(p[0][0].split('\u0001'))}},
+ draw(st){txt('corpus',20,26,{size:21,col:C.muted});txt(LX('how often','quante volte'),330,26,{size:21,col:C.muted,align:'right'});
+  const ctx=P.ctx;const last=st.merges.length?st.merges[st.merges.length-1].join(''):null;
+  BPEC.forEach(([w,n],i)=>{const y=40+i*42;const s=bpeApply(w,st.merges);let x=20;
+   s.forEach(t=>{ctx.save();ctx.font=`600 ${24*HS}px ${HAND}`;const tw=Math.max(18,ctx.measureText(t).width+12);ctx.restore();
+    box(x,y,tw,32,{w:1.2,fill:t===last?C.yellow:(t.length>1?C.green:null),fa:t===last?.8:.3});txt(t,x+tw/2,y+24,{size:24,align:'center',wt:600});x+=tw+5});
+   txt('×'+n,330,y+24,{size:22,align:'right',col:C.muted})});
+  const p=this.pairs(st);txt(LX('most frequent pairs','coppie più frequenti'),380,26,{size:21,col:C.muted});
+  p.slice(0,5).forEach(([k,n],i)=>{const[a,b]=k.split('\u0001');const y=58+i*30;txt(`${a} + ${b}`,380,y,{size:23,col:i?C.ink:C.red,wt:i?400:600});txt(n,610,y,{size:23,align:'right',col:i?C.ink:C.red})});
+  if(!p.length)txt(LX('nothing left to merge','niente più da unire'),380,58,{size:23,col:C.red});
+  seg(372,212,628,212,{w:1,passes:1});txt(LX('merges so far: ','unioni finora: ')+st.merges.length,380,240,{size:22,wt:600});
+  st.merges.slice(-6).forEach(([a,b],i)=>txt(`${st.merges.length-Math.min(6,st.merges.length)+i+1}. ${a} + ${b} → ${a+b}`,380,270+i*27,{size:21,col:C.blue}));
+  const chars=new Set();BPEC.forEach(([w])=>w.split('').forEach(c=>chars.add(c)));
+  txt(LX(`vocabulary: ${chars.size} letters + ${st.merges.length} merged = ${chars.size+st.merges.length} tokens`,`vocabolario: ${chars.size} lettere + ${st.merges.length} unite = ${chars.size+st.merges.length} token`),20,440,{size:22});
+  const t=bpeApply(NEWW,st.merges);txt(LX('a new word:','parola nuova:'),20,490,{size:22,col:C.muted});let x=130;
+  t.forEach(s=>{ctx.save();ctx.font=`600 ${24*HS}px ${HAND}`;const tw=Math.max(18,ctx.measureText(s).width+12);ctx.restore();box(x,466,tw,32,{w:1.2,fill:s.length>1?C.green:null,fa:.3});txt(s,x+tw/2,490,{size:24,align:'center',wt:600});x+=tw+5});
+  txt(t.length+' token'+LX('s',''),x+10,490,{size:22,col:C.red})}};
+
+/* --- addestramento: modello a coppie di parole --- */
+
+
+SC.train={init(st){st.k=2;st.w=TRW[0];st.gen=null;st.rng=mulberry(4)},
+ counts(st){const c={};for(let i=0;i<st.k;i++){const w=['<s>',...TRS[i].split(' ')];for(let j=0;j<w.length-1;j++){c[w[j]]=c[w[j]]||{};c[w[j]][w[j+1]]=(c[w[j]][w[j+1]]||0)+1}}return c},
+ act(st,a){if(a==='read')st.k=Math.min(TRS.length,st.k+1);if(a==='all')st.k=TRS.length;if(a==='reset'){st.k=0;st.gen=null}
+  if(a==='gen'){if(!st.k){st.gen=[LX('(read at least one sentence first)','(prima leggi almeno una frase)')];return}const c=this.counts(st);let w='<s>';const out=[];
+   for(let g=0;g<16;g++){const d=c[w];if(!d)break;const tot=Object.values(d).reduce((a,b)=>a+b,0);let r=Math.random()*tot,nx=null;for(const k in d){r-=d[k];if(r<=0){nx=k;break}}if(!nx)nx=Object.keys(d)[0];out.push(nx);if(nx==='.')break;w=nx}st.gen=out}},
+ down(st,x,y){if(y>268&&y<312){const i=Math.floor((x-20)/102);if(i>=0&&i<TRW.length)st.w=TRW[i]}},
+ draw(st){txt(LX(`training text: ${st.k} of ${TRS.length} sentences read`,`testo di addestramento: ${st.k} frasi lette su ${TRS.length}`),20,24,{size:21,col:C.muted});
+  TRS.forEach((s,i)=>{const read=i<st.k;txt(s,20,50+i*21,{size:18,col:read?(i===st.k-1?C.red:C.ink):C.muted,a:read?1:.7})});
+  // barre per la parola scelta
+  const c=this.counts(st);const d=c[st.w]||{};const tot=Object.values(d).reduce((a,b)=>a+b,0);
+  txt(LX(`after «${st.w}» comes…`,`dopo «${st.w}» viene…`),400,24,{size:22,wt:600});
+  const L=Object.entries(d).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  if(!L.length)txt(LX('no example yet','ancora nessun esempio'),400,60,{size:22,col:C.muted});
+  L.forEach(([w,n],k)=>{const y=38+k*36;txt(w==='.'?'« . »':w,500,y+23,{size:22,align:'right'});const bw=Math.max(2,n/tot*90);const q=[[508,y+6],[508+bw,y+6],[508+bw,y+30],[508,y+30]];wash(q,C.blue,.45);path(q,{w:1.1},true);txt(`${n}/${tot}`,514+bw,y+25,{size:19})});
+  seg(20,258,620,258,{w:1,passes:1,a:.5});
+  TRW.forEach((w,i)=>{const x=20+i*102;box(x,270,94,38,{w:1.3,fill:w===st.w?C.yellow:null,fa:.6});txt(w,x+47,296,{size:w.length>7?19:23,align:'center'})});
+  txt(LX('what the model writes, one word at a time:','che cosa scrive il modello, una parola alla volta:'),20,350,{size:21,col:C.muted});
+  if(st.gen){para(st.gen.join(' '),20,390,600,{size:28,col:C.red,wt:600})}else txt(LX('press «write a sentence»','premi «scrivi una frase»'),20,390,{size:26,col:C.muted});
+  para(LX('this toy only counts pairs of words; an LLM is a neural network that looks back at thousands of tokens','questo giocattolo conta solo coppie di parole; un LLM è una rete neurale che guarda indietro migliaia di token'),20,480,600,{size:19,col:C.muted})}};
+
+/* --- temperatura --- */
+
+SC.temp={init(st){st.T=1;st.tally=TMP.map(()=>0);st.greedy=false},
+ probs(st){const e=TMP.map(([,z])=>Math.exp(z/st.T));const Z=e.reduce((a,b)=>a+b,0);return e.map(v=>v/Z)},
+ act(st,a,v){if(a==='T'){st.T=v/10;st.tally=TMP.map(()=>0);st.greedy=false}if(a==='clear'){st.tally=TMP.map(()=>0);st.greedy=false}
+  if(a==='greedy'){st.greedy=true}
+  if(a==='draw'){st.greedy=false;const p=this.probs(st);for(let n=0;n<20;n++){let r=Math.random(),k=0;for(;k<p.length-1;k++){r-=p[k];if(r<=0)break}st.tally[k]++}}},
+ draw(st){txt(PFX+' ___',24,40,{size:30,wt:600});txt(LX('temperature','temperatura')+` T = ${fmt(st.T,1)}`,400,40,{size:26,col:C.red,wt:600});
+  txt('pᵢ = e^(zᵢ/T) / Σⱼ e^(zⱼ/T)',24,80,{size:24,col:C.blue});txt(LX('z = score from the network','z = punteggio della rete'),330,80,{size:20,col:C.muted});
+  const p=this.probs(st);const mx=Math.max(...p);
+  TMP.forEach(([w,z],k)=>{const y=104+k*44;const hi=st.greedy&&p[k]===mx;txt(w,110,y+28,{size:24,align:'right',col:hi?C.red:C.ink,wt:hi?600:400});txt(`z=${fmt(z,1)}`,168,y+28,{size:18,align:'right',col:C.muted});
+   const bw=Math.max(2,p[k]*330);const q=[[180,y+6],[180+bw,y+6],[180+bw,y+36],[180,y+36]];wash(q,hi?C.red:C.blue,.45);hatch(q,{gap:6,a:.18});path(q,{w:1.2},true);
+   txt(p[k]<0.01?'<1%':Math.round(p[k]*100)+'%',188+bw,y+28,{size:21});
+   for(let n=0;n<st.tally[k];n++)dot(560+(n%10)*7,y+14+Math.floor(n/10)*10,2.8,C.red)});
+  txt(LX('20 draws','20 estrazioni'),560,100,{size:19,col:C.muted});
+  if(st.greedy)txt(LX('greedy: always «cheese», whatever T is','greedy: sempre «formaggio», qualunque sia T'),24,478,{size:23,col:C.red});
+  else txt(st.T<0.6?LX('low T: almost always the favourite','T bassa: quasi sempre il favorito'):st.T>1.4?LX('high T: surprises, even «moon» and «piano»','T alta: sorprese, perfino «luna» e «pianoforte»'):LX('T = 1: the probabilities as the model gives them','T = 1: le probabilità così come le dà il modello'),24,478,{size:23,col:C.blue});
+  txt(LX('illustrative scores','punteggi illustrativi'),24,508,{size:19,col:C.muted})}};
+
+/* --- scala --- */
+
+SC.scale={init(st){st.k='p';st.sel=4},
+ act(st,a,v){if(a==='k'){st.k=v;st.el.querySelectorAll('[data-act=k]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v))}},
+ Y(v){return 420-(Math.log10(v)-8)/6*360},
+ down(st,x,y){const i=Math.floor((x-120)/100);if(i>=0&&i<SCL.length)st.sel=i},
+ draw(st){arrow(96,430,626,430,{w:1.3});arrow(96,430,96,40,{w:1.3});
+  const names=SCLN;
+  for(let e=8;e<=14;e++){const y=this.Y(10**e);seg(90,y,100,y,{w:1,passes:1});seg(100,y,620,y,{w:.6,passes:1,a:.25,dash:[3,6]});txt('10'+sup(e),84,y+7,{size:20,align:'right'});txt(names[e],104,y-4,{size:15,col:C.muted})}
+  txt(st.k==='p'?LX('parameters','parametri'):LX('training tokens','token di addestramento'),110,30,{size:24,wt:600,col:C.red});
+  SCL.forEach(([n,yr,pa,tk],i)=>{const v=st.k==='p'?pa:tk;const x=140+i*100,w=60;const on=i===st.sel;
+   if(v){const y=this.Y(v);const q=[[x,y],[x+w,y],[x+w,430],[x,430]];wash(q,on?C.red:C.blue,.42);hatch(q,{gap:7,a:.2});path(q,{w:on?2:1.3},true)}
+   else{txt(LX('not','non'),x+w/2,360,{size:19,align:'center',col:C.muted});txt(LX('stated','dichiarati'),x+w/2,380,{size:19,align:'center',col:C.muted})}
+   txt(n.replace(' 405B',''),x+w/2,456,{size:21,align:'center',wt:on?600:400});txt(yr,x+w/2,478,{size:19,align:'center',col:C.muted})});
+  const s=SCL[st.sel];txt(`${s[0]} (${s[1]}): ${s[4]}`,20,510,{size:21,col:C.blue})}};
+/* --- da modello ad assistente --- */
+
+
+
+SC.assist={init(st){st.k='base';st.stg=0},
+ act(st,a,v){if(a==='k'){st.k=v;st.el.querySelectorAll('[data-act=k]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v));st.stg=v==='base'?0:2}},
+ down(st,x,y){if(y<130){const i=Math.floor((x-14)/210);if(i>=0&&i<3)st.stg=i}},
+ draw(st){STG.forEach(([t,a,b],i)=>{const x=14+i*210;const on=st.k==='base'?i===0:true;const sel=i===st.stg;
+   box(x,20,180,100,{w:sel?2.2:1.3,fill:on?(sel?C.yellow:C.green):null,fa:sel?.6:.22,dash:on?null:[5,5]});
+   txt(t,x+90,50,{size:22,align:'center',wt:600});txt(a,x+90,78,{size:19,align:'center'});txt(b,x+90,100,{size:19,align:'center'});
+   if(i<2)arrow(x+184,70,x+206,70,{w:1.4})});
+  txt(st.k==='base'?LX('base model: pre-training only','modello base: solo pre-addestramento'):LX('assistant: all three stages','assistente: tutte e tre le fasi'),14,152,{size:22,col:C.red,wt:600});
+  box(14,168,612,52,{w:1.3,fill:C.blue,fa:.12});txt('prompt:',26,201,{size:21,col:C.muted});txt(LX('Write a short poem about a mouse in a maze.','Scrivi una breve poesia su un topo in un labirinto.'),96,201,{size:24});
+  const out=st.k==='base'?OUTB:OUTC;box(14,236,612,236,{w:1.3,hatch:{gap:9,a:.06}});txt(LX('output:','risposta:'),26,264,{size:21,col:C.muted});
+  let y=298;out.split('\n').forEach(l=>{if(!l){y+=14;return}y+=para(l,30,y,580,{size:st.k==='base'?22:27,col:st.k==='base'?C.ink:C.blue,lh:st.k==='base'?28:36})});
+  txt(st.k==='base'?LX('it continues the text as if it were a list of exercises','continua il testo come se fosse un elenco di esercizi'):LX('it answers the request','risponde alla richiesta'),14,504,{size:22,col:C.muted})}};
+
+/* --- finestra di contesto --- */
+
+const CTXW=60;
+SC.ctx={init(st){st.n=3;st.sum=false},
+ act(st,a){if(a==='next')st.n=Math.min(CTXM.length,st.n+2);if(a==='reset'){st.n=3};if(a==='sum'){st.sum=!st.sum;st.el.querySelector('[data-act=sum]').setAttribute('aria-pressed',st.sum)}},
+ window(st){// restituisce indici inclusi e indici esclusi
+  const msgs=CTXM.slice(0,st.n);let tot=msgs.reduce((a,m)=>a+m[2],0);const out=new Set();let i=1;const S=st.sum?6:0;
+  while(tot+(out.size&&st.sum?S:0)>CTXW&&i<msgs.length-1){out.add(i);tot-=msgs[i][2];i++}return{out,tot:tot+(out.size&&st.sum?S:0)}},
+ draw(st){const{out,tot}=this.window(st);const msgs=CTXM.slice(0,st.n);
+  txt(LX(`what the model reads: ${tot} of ${CTXW} tokens`,`che cosa legge il modello: ${tot} token su ${CTXW}`),20,28,{size:22,wt:600});
+  box(20,40,600,56,{w:2,col:C.ink});let x=20;const colr={sys:C.green,u:C.blue,a:C.yellow};
+  const segs=[];msgs.forEach((m,i)=>{if(i===0||!out.has(i))segs.push([m[0],m[2],i])});if(out.size&&st.sum)segs.splice(1,0,['sum',6,-1]);
+  segs.forEach(([k,n])=>{const w=n*10;box(x+2,44,w-4,48,{w:1,passes:1,fill:k==='sum'?C.red:colr[k],fa:.4});txt(k==='sum'?LX('summary','riassunto'):k==='sys'?LX('system','sistema'):k==='u'?LX('you','tu'):LX('model','modello'),x+w/2,74,{size:k==='sum'?17:18,align:'center'});x+=w});
+  for(let t=0;t<=CTXW;t+=10)seg(20+t*10,96,20+t*10,104,{w:1,passes:1});txt(LX('each tick = 10 tokens','ogni tacca = 10 token'),470,124,{size:17,col:C.muted});
+  txt(LX('what you see in the chat:','che cosa vedi nella chat:'),20,150,{size:21,col:C.muted});
+  let y=174;msgs.forEach((m,i)=>{if(i===0)return;const dropped=out.has(i);const isU=m[0]==='u';const xx=isU?300:30;
+   const lines=wrapLines(m[1],282,18);const h=lines.length*21+10;box(xx,y-18,300,h,{w:1.2,fill:isU?C.blue:C.yellow,fa:dropped?.06:.25,dash:dropped?[4,4]:null});
+   lines.forEach((l,k)=>txt(l,xx+10,y+2+k*21,{size:18,a:dropped?.4:1}));if(dropped){seg(xx+8,y-8+h/2,xx+292,y-8+h/2,{w:1.4,col:C.red,passes:1});txt(LX('no longer sent','non più inviato'),isU?xx-8:xx+308,y+4,{size:17,col:C.red,align:isU?'right':'left'})}
+   y+=h+6});
+  if(st.n===CTXM.length){const first=out.has(1);const ans=!first?LX('Your first question was “What is a token?”.','La tua prima domanda era «Che cos’è un token?».'):st.sum?LX('According to the summary, you first asked what a token is.','Secondo il riassunto, all’inizio hai chiesto che cos’è un token.'):LX('The earliest message I can see is “How many tokens per word?”.','Il messaggio più vecchio che vedo è «Quanti token per parola?».');
+   const lines=wrapLines(ans,282,18);box(30,y-18,300,lines.length*21+10,{w:1.6,fill:C.yellow,fa:.4});lines.forEach((l,k)=>txt(l,40,y+2+k*21,{size:18,col:C.red,wt:600}))}}};
+
+/* --- prompt --- */
+
+
+
+SC.prompt={init(st){st.lv=0},
+ act(st,a){if(a==='add')st.lv=Math.min(4,st.lv+1);if(a==='reset')st.lv=0},
+ draw(st){txt(LX('the prompt','il prompt'),20,26,{size:21,col:C.muted});txt(PRL[st.lv],620,26,{size:22,col:C.red,align:'right',wt:600});
+  const pr=st.lv===0?[[PRP[0][0],false]]:[[PRP[1][0],st.lv===1],[PRP[1][1],st.lv===1],...PRP.slice(2,st.lv+1).map((p,i)=>[p[0],i+2===st.lv])];
+  box(14,38,612,150,{w:1.4,fill:C.blue,fa:.1});
+  // testo del prompt con i pezzi nuovi in blu
+  const ctx=P.ctx;let x=28,y=68;const S=21;ctx.save();ctx.font=`400 ${S*HS}px ${HAND}`;
+  const words=[];pr.forEach(([t,nw])=>t.split(/(\s+)/).forEach(w=>{if(w)words.push([w,nw])}));ctx.restore();
+  words.forEach(([w,nw])=>{ctx.save();ctx.font=`400 ${S*HS}px ${HAND}`;const ww=ctx.measureText(w).width;ctx.restore();if(/^\s+$/.test(w)){x+=ww;return}if(x+ww>612){x=28;y+=25}txt(w,x,y,{size:S,col:nw?C.blue:C.ink,wt:nw?600:400});x+=ww});
+  txt(LX('the answer (illustrative)','la risposta (illustrativa)'),20,218,{size:21,col:C.muted});box(14,228,612,260,{w:1.3,hatch:{gap:9,a:.06}});
+  let yy=258;PRA[st.lv].split('\n').forEach(l=>{yy+=para(l,28,yy,584,{size:21,lh:25})+4});
+  const note=PRN[st.lv];
+  txt(note,20,510,{size:22,col:C.red})}};
+
+/* --- multimodale: patch --- */
+const MMP=[16,28,32,56];
+SC.mm={init(st){st.p=1;st.h=-1},
+ act(st,a,v){if(a==='p'){st.p=+v;st.h=-1}},
+ move(st,x,y){const ps=MMP[st.p]*1.6;const c=Math.floor((x-30)/ps),r=Math.floor((y-40)/ps);const n=224/MMP[st.p];st.h=(x>=30&&y>=40&&c>=0&&r>=0&&c<n&&r<n)?r*n+c:-1},
+ down(st,x,y){this.move(st,x,y)},
+ draw(st){const K=1.6,ox=30,oy=40,W=224*K;const ps=MMP[st.p]*K,n=224/MMP[st.p];
+  box(ox,oy,W,W,{w:1.6,fill:C.green,fa:.15});
+  // disegno: un pezzo di labirinto, il topo e il formaggio
+  const w=(a,b,c,d)=>seg(ox+a*K,oy+b*K,ox+c*K,oy+d*K,{w:3});w(20,60,150,60);w(150,60,150,150);w(60,110,60,200);w(100,150,204,150);w(20,200,120,200);
+  mouse(ox+90*K,oy+100*K,0.3,1.4);cheese(ox+180*K,oy+185*K);ell(ox+190*K,oy+30*K,14*K,14*K,{fill:C.yellow,fa:.6,w:1.2});
+  for(let i=1;i<n;i++){seg(ox+i*ps,oy,ox+i*ps,oy+W,{w:1,passes:1,col:C.red,a:.7});seg(ox,oy+i*ps,ox+W,oy+i*ps,{w:1,passes:1,col:C.red,a:.7})}
+  if(st.h>=0){const c=st.h%n,r=Math.floor(st.h/n);box(ox+c*ps,oy+r*ps,ps,ps,{w:2.6,col:C.red,fill:C.yellow,fa:.35});
+   const cx=ox+(c+.5)*ps,cy=oy+(r+.5)*ps;curve(bez([cx,cy],[cx+120,cy],[440,120],[470,110],20),{w:1.4,col:C.red});
+   const rr=mulberry(st.h*31+st.p*7);txt(`patch ${st.h+1} → `+LX('vector','vettore'),440,70,{size:22,wt:600,col:C.red});
+   for(let k=0;k<12;k++){const v=rr()*2-1;const y=100+k*26;box(480,y,80,20,{w:1,passes:1});const bw=Math.abs(v)*38;const q=v>0?[[520,y+3],[520+bw,y+3],[520+bw,y+17],[520,y+17]]:[[520-bw,y+3],[520,y+3],[520,y+17],[520-bw,y+17]];wash(q,C.blue,.6)}
+   txt('⋮',520,432,{size:26,align:'center'})}
+  else{para(LX('point at a patch: it becomes a list of numbers, a vector, which the model handles like a token','punta una patch: diventa una lista di numeri, un vettore, che il modello tratta come un token'),430,100,190,{size:22,col:C.blue})}
+  txt(LX('224 × 224 pixels','224 × 224 pixel'),ox,oy+W+30,{size:22,col:C.muted});
+  txt(LX('patches of ','patch di ')+`${MMP[st.p]} × ${MMP[st.p]} → ${n} × ${n} = ${n*n} token`+LX('s',''),ox,oy+W+62,{size:26,wt:600,col:C.red});
+  txt(LX('16 × 16 is the patch size of the 2020 paper','16 × 16 è la dimensione delle patch nell’articolo del 2020'),ox,oy+W+92,{size:19,col:C.muted})}};
+/* --- Teseo: l'agente classico --- */
+const MSEEDS=[15,8,19,11,28];
+SC.maze={N:5,cs:74,ox:40,oy:30,init(st){st.mi=0;st.open=makeMaze(MSEEDS[0]);st.goal=24;st.mem={};st.pos=0;st.ang=0;st.ev=[];st.k=0;st.t=0;st.mode='idle';st.trail=[];st.bumps=[];st.msg=LX('Theseus does not know this maze yet.','Teseo non conosce ancora questo labirinto.');st.speed=5},
+ cc(c){return[this.ox+(c%5+0.5)*this.cs,this.oy+(Math.floor(c/5)+0.5)*this.cs]},
+ explore(st){// regola a rotore: prova la direzione successiva, in senso orario, a quella memorizzata
+  const ev=[];let c=0,h=0;const mem={};let g=0;while(c!==st.goal&&g<600){const d0=mem[c]!==undefined?(mem[c]+1)%4:h;let d=d0;for(let k=0;k<4;k++){d=(d0+k)%4;if(st.open[c][d])break;ev.push(['bump',c,d])}
+   mem[c]=d;h=d;const n=c+DIRS[d][0]+DIRS[d][1]*5;ev.push(['move',c,n,d]);c=n;g++}return ev},
+ act(st,a,v){if(a==='speed'){st.speed=+v;return}if(st.mode!=='idle')return;
+  if(a==='explore'){st.mem={};st.ev=this.explore(st);st.k=0;st.pos=0;st.ang=0;st.mode='explore';st.trail=[0];st.bumps=[];st.anim=true;st.msg=LX('exploring: whiskers on, relays recording…','esploro: baffi all’erta, relè che registrano…')}
+  if(a==='recall'){if(!Object.keys(st.mem).length){st.msg=LX('first Theseus has to explore!','prima Teseo deve esplorare!');return}const ev=[];let c=0,g=0;
+   while(c!==st.goal&&g<40){const d=st.mem[c];if(d===undefined||!st.open[c][d]){ev.push(['bump',c,d===undefined?0:d]);break}const n=c+DIRS[d][0]+DIRS[d][1]*5;ev.push(['move',c,n,d]);c=n;g++}
+   st.ev=ev;st.k=0;st.pos=0;st.ang=0;st.mode='recall';st.trail=[0];st.bumps=[];st.anim=true;st.msg=LX('following the relays…','seguo i relè…')}
+  if(a==='walls'){st.mi=(st.mi+1)%MSEEDS.length;st.open=makeMaze(MSEEDS[st.mi]);st.pos=0;st.trail=[];st.bumps=[];st.msg=Object.keys(st.mem).length?LX('walls moved: the memory may now be wrong.','muri spostati: ora la memoria può essere sbagliata.'):LX('a new maze.','un labirinto nuovo.')}},
+ tick(st,dt){st.t+=dt;const T=(st.mode==='explore'?0.32:0.4)/st.speed*2;if(st.t<T)return;st.t=0;
+  if(st.k<st.ev.length){const e=st.ev[st.k];if(e[0]==='bump'){st.bumps.push([e[1],e[2]]);st.ang=[0,Math.PI/2,Math.PI,-Math.PI/2][e[2]]}
+   else{if(st.mode==='explore')st.mem[e[1]]=e[3];st.ang=[0,Math.PI/2,Math.PI,-Math.PI/2][e[3]];st.pos=e[2];st.trail.push(e[2])}st.k++}
+  else{st.anim=false;const moves=st.ev.filter(e=>e[0]==='move').length,b=st.ev.filter(e=>e[0]==='bump').length;
+   if(st.mode==='explore')st.msg=LX(`first run: ${moves} moves and ${b} bumps, dead ends included.`,`prima corsa: ${moves} mosse e ${b} urti, vicoli ciechi compresi.`);
+   else st.msg=st.pos===st.goal?LX(`second run: ${moves} moves, ${b} bumps. Straight to the goal.`,`seconda corsa: ${moves} mosse, ${b} urti. Dritto alla meta.`):LX('the memory leads into a wall: time to explore again.','la memoria porta contro un muro: bisogna esplorare di nuovo.');st.mode='idle';st.k=0}},
+ draw(st){const{ox,oy,cs}=this;box(ox,oy,cs*5,cs*5,{fill:C.green,fa:.12,nostroke:true});
+  for(const c of new Set(st.trail)){const x=ox+(c%5)*cs,y=oy+Math.floor(c/5)*cs;hatch([[x,y],[x+cs,y],[x+cs,y+cs],[x,y+cs]],{gap:8,a:.18,ang:40})}
+  mazeWalls(st.open,ox,oy,cs);
+  for(const k in st.mem){const[cx,cy]=this.cc(+k);const d=DIRS[st.mem[k]];arrow(cx-d[0]*12,cy-d[1]*12,cx+d[0]*20,cy+d[1]*20,{col:C.blue,w:1.5,head:7})}
+  for(const[c,d]of st.bumps){const[cx,cy]=this.cc(c);const px=cx+DIRS[d][0]*cs/2,py=cy+DIRS[d][1]*cs/2;const nx=-DIRS[d][1],ny=DIRS[d][0];seg(px-nx*9-DIRS[d][0]*3,py-ny*9-DIRS[d][1]*3,px+nx*9-DIRS[d][0]*3,py+ny*9-DIRS[d][1]*3,{w:3,col:C.red,passes:1})}
+  const[gx,gy]=this.cc(st.goal);cheese(gx,gy+10);const[mx,my]=this.cc(st.pos);mouse(mx,my-2,st.ang,1.2);
+  txt(LX('start','partenza'),ox,oy+cs*5+24,{size:20,col:C.muted});txt(LX('goal','meta'),ox+cs*5,oy+cs*5+24,{size:20,col:C.muted,align:'right'});
+  const rx=470,ry=74,rc=28;txt(LX('relays','relè'),rx,ry-40,{size:24,wt:600});txt(LX('one direction per square','una direzione per casella'),rx-6,ry-16,{size:17,col:C.muted});
+  for(let c=0;c<25;c++){const x=rx+(c%5)*rc,y=ry+Math.floor(c/5)*rc;const on=st.mem[c]!==undefined;box(x+2,y+2,rc-4,rc-4,{w:1,passes:1,fill:on?C.yellow:null,fa:.6});
+   if(on){const d=DIRS[st.mem[c]];seg(x+rc/2-d[0]*6,y+rc/2-d[1]*6,x+rc/2+d[0]*7,y+rc/2+d[1]*7,{w:1.3,col:C.blue,passes:1})}}
+  txt(LX('sensors: whiskers','sensori: baffi'),rx-10,262,{size:20});txt(LX('actuators: magnet','attuatori: magnete'),rx-10,288,{size:20});txt(LX('and motors','e motori'),rx+LX(68,78),310,{size:20});txt(LX('memory: relays','memoria: relè'),rx-10,336,{size:20});
+  para(st.msg,40,450,580,{size:24,col:C.blue})}};
+
+/* --- agente LLM --- */
+
+SC.agent={init(st){st.k=0;st.lim=4},
+ act(st,a,v){if(a==='step'){if(!this.done(st))st.k++}if(a==='reset')st.k=0;if(a==='lim'){st.lim=+v;st.k=0}},
+ calls(st){return AGS.slice(0,st.k).filter(s=>s[0]==='llm').length},
+ done(st){if(st.k>=AGS.length)return'final';const c=this.calls(st);const nx=AGS[st.k];if(nx[0]==='llm'&&c>=st.lim)return'limit';return null},
+ draw(st){const nodes={llm:[320,46,'LLM',LX('reads the context, writes text','legge il contesto, scrive testo')],prog:[500,156,LX('program','programma'),LX('tool call? run it','chiamata? la esegue')],ctx:[140,156,LX('context','contesto'),LX('task + history + results','compito + storia + risultati')]};
+  const cur=st.k>0?AGS[st.k-1][0]:null;
+  for(const k in nodes){const[x,y,t,s]=nodes[k];const on=k===cur||(k==='ctx'&&cur==='prog');ell(x,y,112,36,{w:on?2.2:1.4,fill:on?C.yellow:C.green,fa:on?.6:.18});txt(t,x,y-2,{size:24,align:'center',wt:600});txt(s,x,y+20,{size:16,align:'center',col:C.muted})}
+  curve(bez([420,60],[480,74],[515,96],[510,116],16),{w:1.4});arrow(512,106,510,118,{w:1.4,head:8});
+  curve(bez([392,176],[330,198],[300,198],[250,178],16),{w:1.4});arrow(260,183,250,178,{w:1.4,head:8});
+  curve(bez([112,120],[120,84],[160,58],[206,52],16),{w:1.4});arrow(196,53,207,52,{w:1.4,head:8});
+  txt(LX('act','agisce'),530,92,{size:20,col:C.red});txt(LX('observe','osserva'),320,214,{size:20,col:C.red,align:'center'});txt(LX('choose','sceglie'),104,92,{size:20,col:C.red,align:'right'});
+  txt(LX('task: How many squares did Shannon’s maze have? Save the answer in notes.txt.','compito: quante caselle aveva il labirinto di Shannon? Salvalo in note.txt.'),20,240,{size:LX(19,18),col:C.ink,wt:600});
+  let y=268;AGS.slice(0,st.k).forEach(([k,who,text,note],i)=>{txt(`${i+1}. ${who}:`,20,y,{size:19,col:k==='llm'?C.blue:C.green,wt:600});txt(note,20,y+19,{size:15,col:C.muted});
+   const code=k==='llm'&&i<4;const lines=code?[text]:wrapLines(text,480,18);lines.forEach((l,j)=>txt(l,118,y+j*19,code?{size:14.5,font:'"Courier New",monospace'}:{size:18}));
+   y+=Math.max(2,lines.length)*19+7});
+  const d=this.done(st);
+  if(d==='final')txt(LX('loop ended: the model gave a final answer','ciclo finito: il modello ha dato una risposta finale'),20,508,{size:22,col:C.green,wt:600});
+  else if(d==='limit')txt(LX(`stopped: step limit reached (${st.lim} model calls), task unfinished`,`fermato al limite di ${st.lim} chiamate: compito incompiuto`),20,508,{size:22,col:C.red,wt:600});
+  else txt(LX(`model calls so far: ${this.calls(st)} · limit: ${st.lim}`,`chiamate al modello finora: ${this.calls(st)} · limite: ${st.lim}`),20,508,{size:21,col:C.muted})}};
+
+/* --- allucinazioni --- */
+
+SC.hall={init(st){st.f=HAL.map(()=>false);st.rev=false},
+ act(st,a){if(a==='reveal')st.rev=true;if(a==='reset'){st.f=HAL.map(()=>false);st.rev=false}},
+ down(st,x,y){if(st.rev)return;const i=Math.floor((y-78)/68);if(i>=0&&i<HAL.length)st.f[i]=!st.f[i]},
+ draw(st){txt(LX('Q: Tell me about Claude Shannon.','D: Parlami di Claude Shannon.'),20,30,{size:23,wt:600});txt(LX('A (generated):','R (generata):'),20,60,{size:21,col:C.muted});
+  HAL.forEach(([t,ok,why],i)=>{const y=78+i*68;const fl=st.f[i];box(20,y,600,60,{w:fl?2:1.2,fill:st.rev?(ok?C.green:C.red):(fl?C.yellow:null),fa:st.rev?.22:.5});
+   txt(t,34,y+26,{size:LX(20,19)});if(fl)ell(590,y+30,14,14,{w:2,col:C.red});if(fl)txt('?',590,y+37,{size:22,align:'center',col:C.red,wt:600});
+   if(st.rev){txt(why,34,y+50,{size:17,col:ok?C.ink:C.red,wt:ok?400:600});if(!ok&&!fl)txt(LX('missed','sfuggita'),560,y+22,{size:17,col:C.red})}});
+  if(st.rev){const caught=HAL.filter((h,i)=>!h[1]&&st.f[i]).length;const extra=HAL.filter((h,i)=>h[1]&&st.f[i]).length;
+   txt(LX(`false claims caught: ${caught} of 2 · true claims checked: ${extra} (checking is never wasted)`,`false scoperte: ${caught} su 2 · vere controllate: ${extra} (controllare non è mai inutile)`),20,500,{size:LX(20,19),col:C.blue})}
+  else txt(LX('all six sentences sound equally confident','tutte e sei le frasi suonano ugualmente sicure'),20,500,{size:21,col:C.muted})}};
+
+/* --- quiz --- */
+
+SC.quiz={init(st){const r=mulberry(21);st.order=QZ.map(q=>{const o=[0,1,2];for(let i=2;i>0;i--){const j=Math.floor(r()*(i+1));[o[i],o[j]]=[o[j],o[i]]}return o});st.i=0;st.res=Array(QZ.length).fill(null);this.ui(st)},
+ ui(st){if(!st.el)return;const root=st.el.querySelector('.quiz');if(!root)return;const q=QZ[st.i];root.querySelector('.q').textContent=`${st.i+1}. ${q[0]}`;const box=root.querySelector('.opts');box.innerHTML='';
+  st.order[st.i].forEach(k=>{const b=document.createElement('button');b.className='h';b.textContent=q[1][k];b.onclick=()=>{if(st.res[st.i]!==null)return;st.res[st.i]=k===0;
+   box.querySelectorAll('button').forEach((bb,m)=>{const kk=st.order[st.i][m];if(kk===0)bb.classList.add('ok');else if(bb===b)bb.classList.add('no')});root.querySelector('.why').textContent=(k===0?LX('Right. ','Esatto. '):LX('Not quite. ','Non proprio. '))+q[2];sceneChanged()};box.appendChild(b)});
+  root.querySelector('.why').textContent=''},
+ act(st,a){if(a==='next'){st.i=(st.i+1)%QZ.length;this.ui(st)}if(a==='restart'){st.i=0;st.res.fill(null);this.ui(st)}},
+ draw(st){txt(LX('score sheet','il foglio dei punti'),36,52,{size:32,wt:600});
+  st.res.forEach((r,i)=>{const x=40+(i%4)*146,y=80+Math.floor(i/4)*140;box(x,y,120,120,{w:1.5,fill:i===st.i?C.yellow:null,fa:.4});txt(i+1,x+10,y+28,{size:24,col:C.muted});
+   if(r===true)path([[x+26,y+64],[x+52,y+94],[x+100,y+28]],{w:3.6,col:C.green});if(r===false){seg(x+28,y+28,x+92,y+92,{w:3.2,col:C.red});seg(x+92,y+28,x+28,y+92,{w:3.2,col:C.red})}});
+  para(`${st.i+1}. ${QZ[st.i][0]}`,40,388,560,{size:25,lh:28});
+  const k=st.res.filter(r=>r===true).length;txt(LX(`points: ${k} of ${QZ.length}`,`punti: ${k} su ${QZ.length}`),40,496,{size:34,col:C.blue,wt:600});
+  txt(LX('answer in the panel →','rispondi nel pannello →'),600,496,{size:22,col:C.muted,align:'right'})}};
+
+
+/* ================= testi ================= */
+const CONTENT={"en": {"1": {"year": "the big picture", "h2": "A map of the territory", "ps": ["Nested shapes mean “is a kind of”: every LLM is a generative model, and almost every generative model in use today is a deep neural network, which is one way of doing machine learning.", "Arrows mean other relations: an assistant is built around an LLM, an agent puts an LLM in a loop with tools, you talk to both through prompts, and all of them can hallucinate.", "Tap a node to read a short definition and the source it is based on. The button takes you to the stop that explains it."], "ctrl": "<div class=\"defbox\" aria-live=\"polite\"><div class=\"dt\"></div><div class=\"ds\"></div></div><button class=\"h\" data-act=\"go\">go</button>", "line": "Every maze is easier with a map. I learned mine square by square; you can learn this one node by node."}, "2": {"year": "definition", "h2": "Telling apart or making new", "ps": ["Most machine learning models are discriminative: given an input, they assign a label or a value — spam or not spam, cat or dog, the price of a house. What they learn is where the boundary between the classes lies.", "Generative models learn how the data themselves are distributed, so they can draw new examples that resemble the training data. Generative AI uses such models, today almost always deep neural networks, to produce text, images, audio, video and code.", "Generating does not exclude predicting: an LLM writes precisely by predicting the next token and drawing from those predictions."], "ctrl": "<button class=\"h\" data-act=\"mode\" data-v=\"disc\" aria-pressed=\"true\">discriminative</button><button class=\"h\" data-act=\"mode\" data-v=\"gen\" aria-pressed=\"false\">generative</button><button class=\"h\" data-act=\"sample\">draw new examples</button><button class=\"h\" data-act=\"clear\">clear</button>", "line": "Fun fact: back in 1948 my inventor was already generating fake English, using the statistics of letters and words. Generative models are older than they look.", "hint": "discriminative: tap the plane to classify a point · generative: draw new ones"}, "3": {"year": "definition", "h2": "Predicting the next token", "ps": ["A large language model is an artificial neural network with a very large number of parameters, trained on huge amounts of text to estimate the probability of the next token given the tokens that precede it.", "It does not output one word: it outputs a probability for every token in its vocabulary, which in Llama 3 contains about 128,000 tokens. A program picks one, appends it to the text and asks again. Generation is prediction, repeated.", "“Large” has no sharp threshold: it refers to the number of parameters, today usually billions, and to the amount of training text."], "ctrl": "<button class=\"h\" data-act=\"sample\">let chance pick</button><button class=\"h\" data-act=\"restart\">start again</button>", "line": "Next token, next token, next token… A bit like me in the maze: one square at a time, never seeing the whole path at once.", "hint": "tap a bar to append that token · probabilities are illustrative"}, "4": {"year": "under the hood", "h2": "Text becomes tokens", "ps": ["A model reads neither letters nor whole words. A tokenizer first cuts the text into tokens: frequent words become one token, rarer ones are split into pieces. In English a token is about ¾ of a word on average; other languages often need more tokens for the same text.", "Many tokenizers are built with byte-pair encoding (BPE): start from single characters and repeatedly merge the pair of symbols that occurs most often in a training corpus. Each merge adds a token to the vocabulary.", "On the sheet BPE runs on a corpus of nine words. Real tokenizers often work on bytes, learn from billions of words and stop after tens of thousands of merges or more."], "ctrl": "<button class=\"h\" data-act=\"merge\">merge the most frequent pair</button><button class=\"h\" data-act=\"reset\">reset</button>", "line": "My maze had 25 squares. Llama 3’s vocabulary has about 128,000 tokens. My relays get dizzy just thinking about it.", "hint": "watch how “reopened”, a word not in the corpus, gets split"}, "5": {"year": "under the hood", "h2": "Learning to predict from text", "ps": ["Pre-training needs no labels written by people: the text provides its own answers. The model reads a passage, predicts the next token, compares the prediction with the token that actually follows and adjusts its parameters, by gradient descent, to make that token more probable. This is repeated over trillions of tokens.", "The toy on the sheet is far simpler: it only counts which word follows which. For such a model, counting gives exactly the probabilities that best predict the training text.", "Shannon generated text this way in 1948, word pair by word pair. An LLM looks back at thousands of tokens, not at one word."], "ctrl": "<button class=\"h\" data-act=\"read\">read one sentence</button><button class=\"h\" data-act=\"all\">read all</button><button class=\"h\" data-act=\"gen\">write a sentence</button><button class=\"h\" data-act=\"reset\">start over</button>", "line": "In 1948 Shannon did this by hand: he opened a book at random, read on until he met the last word written, and copied the word after it. His idea, animated.", "hint": "tap a word in the middle row to see what tends to follow it"}, "6": {"year": "under the hood", "h2": "Picking a token: temperature", "ps": ["The network outputs a score for every token, and the softmax function turns the scores into probabilities. Then the program must choose. Always taking the most probable token is called greedy decoding; drawing at random according to the probabilities is called sampling.", "The temperature T divides the scores before the softmax. Below 1 the favourite becomes even more likely and answers are more predictable; above 1 the distribution flattens and unlikely tokens are chosen more often, for better or worse.", "This is one reason why the same prompt can give different answers. The scores here are illustrative."], "ctrl": "<label class=\"rng\">T <input type=\"range\" min=\"1\" max=\"20\" value=\"10\" data-act=\"T\"></label><button class=\"h\" data-act=\"greedy\">greedy</button><button class=\"h\" data-act=\"draw\">sample 20 times</button><button class=\"h\" data-act=\"clear\">clear</button>", "line": "At low temperature you get the favourite every time; at high temperature, surprises, some good, some nonsense. Personally, I like my cheese predictable.", "hint": "move the temperature and watch the bars"}, "7": {"year": "numbers", "h2": "How large is large?", "ps": ["Parameters are the numbers adjusted during training. GPT-1 (2018) had about 117 million, GPT-2 (2019) 1.5 billion, GPT-3 (2020) 175 billion, trained on 300 billion tokens.", "In 2022 DeepMind’s Chinchilla, with 70 billion parameters but 1.4 trillion training tokens, outperformed larger models: data count as much as size. Llama 3.1 405B (2024) was trained on about 15.6 trillion tokens. Many companies no longer disclose these figures.", "Reading 15.6 trillion tokens at 250 words a minute, eight hours a day, would take a person roughly 270,000 years (taking ¾ of a word per token)."], "ctrl": "<button class=\"h\" data-act=\"k\" data-v=\"p\" aria-pressed=\"true\">parameters</button><button class=\"h\" data-act=\"k\" data-v=\"t\" aria-pressed=\"false\">training tokens</button>", "line": "My whole memory: one stored direction for each of my 25 squares. Llama 3.1: 405 billion parameters. I’m not jealous. Much.", "hint": "logarithmic scale: each step up is ten times more · tap a bar"}, "8": {"year": "definition", "h2": "From language model to assistant", "ps": ["A model after pre-training only continues text: given a request, it may well continue with more requests. To become an assistant it is trained further on example dialogues, then on human preferences between answers (RLHF, reinforcement learning from human feedback, or similar methods).", "In 2022 OpenAI showed that people preferred the answers of a 1.3-billion-parameter model trained this way to those of the 175-billion GPT-3. ChatGPT, released that November, used the same approach.", "An AI assistant is the whole application built around the model, on a website or in an app: it adds instructions, the conversation history, safety filters and often tools, and converses in natural language to answer, write, revise, analyse data and code."], "ctrl": "<button class=\"h\" data-act=\"k\" data-v=\"base\" aria-pressed=\"true\">base model</button><button class=\"h\" data-act=\"k\" data-v=\"chat\" aria-pressed=\"false\">assistant</button>", "line": "ChatGPT came out in November 2022, seventy-two years after me. It talks much more than I do.", "hint": "tap a stage · outputs written by us to show typical behaviour"}, "9": {"year": "in practice", "h2": "What the model actually reads", "ps": ["The model itself remembers nothing from one message to the next. Each time you write, the application sends it one long text: its system instructions, the whole conversation so far, any attached files and tool results.", "The maximum number of tokens the model can read at once is its context window: 128,000 for Llama 3.1, for example. When a conversation grows beyond it, older parts must be dropped or summarised. “Memory” features usually work the same way: the app inserts saved notes into the text.", "Here the window holds only 60 tokens, and the token counts are illustrative."], "ctrl": "<button class=\"h\" data-act=\"next\">send the next message</button><button class=\"h\" data-act=\"sum\" aria-pressed=\"false\">summarise what falls out</button><button class=\"h\" data-act=\"reset\">reset</button>", "line": "Between one run and the next, my memory stayed in the relays under the floor. An LLM keeps nothing: the app must hand it the conversation every time.", "hint": "you still see the whole chat; the model does not"}, "10": {"year": "in practice", "h2": "Writing a good prompt", "ps": ["A prompt is the input you give the model: a question, an instruction, a text to work on, possibly with images or files. The quality of the answer depends to a large extent on it, though also on the model and, because of sampling, on chance.", "The guides published by model developers agree on a few habits: give context (who it is for, and why), be specific about the task, state the format you want, show an example, and allow the model to say it does not know.", "Add the pieces one at a time with the buttons below. The answers were written by us to show the typical effect; real answers vary."], "ctrl": "<button class=\"h\" data-act=\"add\">add the next piece</button><button class=\"h\" data-act=\"reset\">back to the vague prompt</button>", "line": "Shannon never told me where the goal was: I had to find it. With a model it pays to say exactly what you want.", "hint": "new text in the prompt is written in blue"}, "11": {"year": "definition", "h2": "Beyond text: multimodal models", "ps": ["A multimodal LLM accepts other kinds of data besides text, such as images, audio and video, and in some cases produces them too. Input and output can differ: GPT-4 (2023) accepted images and text but produced only text.", "To be processed like words, an image is cut into square patches and each patch becomes a vector, much like a token. The 2020 paper that made this approach popular was titled “An image is worth 16x16 words”. Audio is similarly cut into short frames.", "Change the patch size: smaller patches keep more detail but produce many more tokens to process."], "ctrl": "<label class=\"rng\">patch size <input type=\"range\" min=\"0\" max=\"3\" value=\"1\" data-act=\"p\"></label>", "line": "My whiskers could feel only one thing: is there a wall or not? Multimodal models read words, pictures and sounds.", "hint": "point at a patch · the numbers in the vector are illustrative"}, "12": {"year": "a long-standing idea", "h2": "What is an agent?", "ps": ["In AI the word agent has been in use for decades. In their textbook, Russell and Norvig define it as anything that perceives its environment through sensors and acts on it through actuators. A rational agent chooses the actions expected to do best at its task.", "Theseus fits: copper whiskers feel the walls, an electromagnet moved by motors under the floor drags him, and telephone relays store, for each square, the direction in which he last left it. On the first run he explores; on the second he follows his memory.", "Our rule is a simplified version of Shannon’s: in each square, try the next direction clockwise from the stored one."], "ctrl": "<button class=\"h\" data-act=\"explore\">first run: explore</button><button class=\"h\" data-act=\"recall\">second run: remember</button><button class=\"h\" data-act=\"walls\">move the walls</button><label class=\"rng\">speed <input type=\"range\" min=\"1\" max=\"10\" value=\"5\" data-act=\"speed\"></label>", "line": "That’s me! Whiskers for sensors, a magnet and motors for actuators, relays for memory. In 1952 a Bell Labs film showed me learning a maze.", "hint": "red ticks: the whiskers touching a wall", "people": [["Claude Shannon", "shannon"], ["Stuart Russell", "russell"], ["Peter Norvig", "norvig"]]}, "13": {"year": "definition", "h2": "LLM agents: a loop with tools", "ps": ["Today an agent usually means an LLM inside a program that works in a digital environment. The model reads the task and everything that has happened so far, and writes text. If the text is a call to an available tool (search the web, read a file, run code, send a message) the program really performs it and adds the result.", "The loop of observing, choosing and acting repeats a number of times not fixed in advance: until the model writes a final answer instead of a tool call, or a step limit is reached. The model decides it has finished, and it can be wrong.", "Uses range from programming and customer service to office workflows and security monitoring."], "ctrl": "<button class=\"h\" data-act=\"step\">next step</button><button class=\"h\" data-act=\"reset\">reset</button><label class=\"rng\">max model calls <input type=\"range\" min=\"1\" max=\"4\" value=\"4\" data-act=\"lim\"></label>", "line": "My loop was: touch, turn, move, remember. Theirs is: read, call a tool, read the result. Same idea, a much bigger maze.", "hint": "a scripted run, not a live model · the search result quotes a real article"}, "14": {"year": "handle with care", "h2": "Plausible is not true", "ps": ["An LLM hallucinates when it produces content that sounds plausible but is false, or not supported by the sources it was given, stated with the same confidence as correct content. The model generates probable text, not verified facts.", "A 2025 study argues that training and common benchmarks reward guessing over admitting uncertainty, like a test with no penalty for wrong answers. NIST calls the phenomenon confabulation.", "So never trust facts, dates, names, numbers, quotations or references blindly: check them against primary sources and open the links you are given. The answer on the sheet was written by us to imitate a hallucination."], "ctrl": "<button class=\"h\" data-act=\"reveal\">check against sources</button><button class=\"h\" data-act=\"reset\">reset</button>", "line": "I am real, promise: you can watch me in Shannon’s 1952 film. See? A claim you can check. Do the same with every answer you get.", "hint": "tap the claims you would not trust without checking"}, "15": {"year": "review", "h2": "Find your way out", "ps": ["Eight questions to review the walk. Tap an option: the score sheet on the map keeps count.", "For the class: play in teams, one question per team, and always explain your answer before tapping it."], "ctrl": "<div class=\"quiz\"><div class=\"q\"></div><div class=\"opts\"></div><div class=\"why\" aria-live=\"polite\"></div><div class=\"ctrl\"><button class=\"h\" data-act=\"next\">next question</button><button class=\"h\" data-act=\"restart\">start again</button></div></div>", "line": "Last maze! If you are unsure of an answer, say so: it is exactly what we would like LLMs to do."}, "intro": {"year": "a map for the fifth year", "h1": "Large language models", "sub": "The main ideas, drawn in pencil.", "ps": ["This map is a walk through the main ideas behind large language models: what they are, how they are trained, how they become assistants and agents, and why they can be confidently wrong. Each stop has a small experiment to play with.", "Walk the trail with the mouse wheel, the arrow keys, a swipe or the buttons below. “Whole map” shows everything at once. The shape of the land is decorative: hills and valleys do not measure anything.", "Your guide is Theseus, the mechanical mouse Claude Shannon built in 1950 to learn mazes. The few people drawn are stylised sketches, not portraits. Numbers marked as illustrative were chosen by hand to explain an idea."], "ctrl": "<button class=\"h\" data-nav=\"next\">start the walk</button>", "line": "Hi! I’m Theseus, the mechanical mouse Claude Shannon built in 1950. I learned mazes with telephone relays. Today the maze is made of ideas: follow me!"}}, "it": {"1": {"year": "il quadro d’insieme", "h2": "Una mappa del territorio", "ps": ["Le forme una dentro l’altra significano «è un tipo di»: ogni LLM è un modello generativo, e quasi ogni modello generativo usato oggi è una rete neurale profonda, cioè un modo di fare machine learning.", "Le frecce indicano altre relazioni: un assistente è costruito attorno a un LLM, un agente mette un LLM in un ciclo con degli strumenti, con entrambi si comunica attraverso i prompt, e tutti possono allucinare.", "Tocca un nodo per leggerne una breve definizione e la fonte su cui si basa. Il bottone porta alla tappa che lo spiega."], "ctrl": "<div class=\"defbox\" aria-live=\"polite\"><div class=\"dt\"></div><div class=\"ds\"></div></div><button class=\"h\" data-act=\"go\">go</button>", "line": "Ogni labirinto è più facile con una mappa. Io ho imparato il mio casella per casella; voi potete imparare questo nodo per nodo."}, "2": {"year": "definizione", "h2": "Distinguere o creare", "ps": ["La maggior parte dei modelli di machine learning è discriminativa: dato un input, assegna un’etichetta o un valore, come spam o non spam, gatto o cane, il prezzo di una casa. Ciò che impara è dove passa il confine tra le classi.", "I modelli generativi imparano come sono distribuiti i dati stessi, e quindi possono estrarre esempi nuovi simili a quelli di addestramento. L’IA generativa usa modelli di questo tipo, oggi quasi sempre reti neurali profonde, per produrre testo, immagini, audio, video e codice.", "Generare non esclude prevedere: un LLM scrive proprio prevedendo il token successivo ed estraendo da quelle previsioni."], "ctrl": "<button class=\"h\" data-act=\"mode\" data-v=\"disc\" aria-pressed=\"true\">discriminativo</button><button class=\"h\" data-act=\"mode\" data-v=\"gen\" aria-pressed=\"false\">generativo</button><button class=\"h\" data-act=\"sample\">genera nuovi esempi</button><button class=\"h\" data-act=\"clear\">cancella</button>", "line": "Curiosità: già nel 1948 il mio inventore generava finto inglese usando le statistiche di lettere e parole. I modelli generativi sono più vecchi di quanto sembri.", "hint": "discriminativo: tocca il piano per classificare un punto · generativo: generane di nuovi"}, "3": {"year": "definizione", "h2": "Prevedere il token successivo", "ps": ["Un large language model è una rete neurale artificiale con un numero molto grande di parametri, addestrata su enormi quantità di testo a stimare la probabilità del token successivo a partire dai token che lo precedono.", "Non restituisce una parola: restituisce una probabilità per ogni token del suo vocabolario, che in Llama 3 ne contiene circa 128.000. Un programma ne sceglie uno, lo aggiunge al testo e chiede di nuovo. Generare è prevedere, più volte.", "«Large» non ha una soglia netta: si riferisce al numero di parametri, oggi di solito miliardi, e alla quantità di testo di addestramento."], "ctrl": "<button class=\"h\" data-act=\"sample\">lascia scegliere al caso</button><button class=\"h\" data-act=\"restart\">ricomincia</button>", "line": "Token dopo token dopo token… Un po’ come me nel labirinto: una casella alla volta, senza mai vedere tutto il percorso.", "hint": "tocca una barra per aggiungere quel token · probabilità illustrative"}, "4": {"year": "dietro le quinte", "h2": "Il testo diventa token", "ps": ["Un modello non legge né lettere né parole intere. Prima un tokenizer taglia il testo in token: le parole frequenti diventano un solo token, quelle più rare vengono spezzate. In inglese un token vale in media circa ¾ di parola; altre lingue, come l’italiano, spesso richiedono più token per lo stesso testo.", "Molti tokenizer si costruiscono con il byte-pair encoding (BPE): si parte dai singoli caratteri e si unisce ripetutamente la coppia di simboli più frequente in un corpus di addestramento. Ogni unione aggiunge un token al vocabolario.", "Sul foglio il BPE lavora su un corpus di nove parole. I tokenizer veri spesso lavorano sui byte, imparano da miliardi di parole e si fermano dopo decine di migliaia di unioni o più."], "ctrl": "<button class=\"h\" data-act=\"merge\">unisci la coppia più frequente</button><button class=\"h\" data-act=\"reset\">ricomincia</button>", "line": "Il mio labirinto aveva 25 caselle. Il vocabolario di Llama 3 ha circa 128.000 token. Ai miei relè gira la testa solo a pensarci.", "hint": "guarda come viene divisa «gattini», parola che non è nel corpus"}, "5": {"year": "dietro le quinte", "h2": "Imparare a prevedere dal testo", "ps": ["Il pre-addestramento non richiede etichette scritte da persone: è il testo stesso a fornire le risposte. Il modello legge un brano, prevede il token successivo, lo confronta con quello che segue davvero e, con la discesa del gradiente, corregge i parametri per rendere quel token più probabile. Si ripete su migliaia di miliardi di token.", "Il giocattolo sul foglio è molto più semplice: conta soltanto quale parola segue quale. Per un modello del genere, contare dà esattamente le probabilità che prevedono meglio il testo di addestramento.", "Shannon generò testo così nel 1948, una coppia di parole alla volta. Un LLM guarda indietro migliaia di token, non una sola parola."], "ctrl": "<button class=\"h\" data-act=\"read\">leggi una frase</button><button class=\"h\" data-act=\"all\">leggi tutto</button><button class=\"h\" data-act=\"gen\">scrivi una frase</button><button class=\"h\" data-act=\"reset\">ricomincia</button>", "line": "Nel 1948 Shannon lo faceva a mano: apriva un libro a caso, leggeva finché incontrava l’ultima parola scritta e copiava quella dopo. La sua idea, animata.", "hint": "tocca una parola nella fila centrale per vedere che cosa tende a seguirla"}, "6": {"year": "dietro le quinte", "h2": "Scegliere un token: la temperatura", "ps": ["La rete restituisce un punteggio per ogni token, e la funzione softmax trasforma i punteggi in probabilità. Poi il programma deve scegliere. Prendere sempre il token più probabile si chiama decodifica greedy («avida»); estrarre a caso secondo le probabilità si chiama campionamento.", "La temperatura T divide i punteggi prima della softmax. Sotto 1 il favorito diventa ancora più probabile e le risposte sono più prevedibili; sopra 1 la distribuzione si appiattisce e i token improbabili vengono scelti più spesso, nel bene e nel male.", "È uno dei motivi per cui lo stesso prompt può dare risposte diverse. I punteggi qui sono illustrativi."], "ctrl": "<label class=\"rng\">T <input type=\"range\" min=\"1\" max=\"20\" value=\"10\" data-act=\"T\"></label><button class=\"h\" data-act=\"greedy\">greedy</button><button class=\"h\" data-act=\"draw\">estrai 20 volte</button><button class=\"h\" data-act=\"clear\">cancella</button>", "line": "A temperatura bassa esce sempre il favorito; a temperatura alta, sorprese, alcune buone, altre senza senso. Io, personalmente, il formaggio lo preferisco prevedibile.", "hint": "sposta la temperatura e guarda le barre"}, "7": {"year": "numeri", "h2": "Quanto è grande «large»?", "ps": ["I parametri sono i numeri regolati durante l’addestramento. GPT-1 (2018) ne aveva circa 117 milioni, GPT-2 (2019) 1,5 miliardi, GPT-3 (2020) 175 miliardi, addestrato su 300 miliardi di token.", "Nel 2022 Chinchilla di DeepMind, con 70 miliardi di parametri ma 1.400 miliardi di token di addestramento, superò modelli più grandi: i dati contano quanto la dimensione. Llama 3.1 405B (2024) è stato addestrato su circa 15.600 miliardi di token. Molte aziende non dichiarano più questi numeri.", "Leggere 15.600 miliardi di token a 250 parole al minuto, otto ore al giorno, richiederebbe a una persona circa 270.000 anni (contando ¾ di parola per token)."], "ctrl": "<button class=\"h\" data-act=\"k\" data-v=\"p\" aria-pressed=\"true\">parametri</button><button class=\"h\" data-act=\"k\" data-v=\"t\" aria-pressed=\"false\">token di addestramento</button>", "line": "Tutta la mia memoria: una direzione per ciascuna delle mie 25 caselle. Llama 3.1: 405 miliardi di parametri. Non sono geloso. Non troppo.", "hint": "scala logaritmica: ogni gradino vale dieci volte il precedente · tocca una barra"}, "8": {"year": "definizione", "h2": "Dal modello linguistico all’assistente", "ps": ["Dopo il pre-addestramento un modello sa solo continuare il testo: davanti a una richiesta può benissimo proseguire con altre richieste. Per diventare un assistente viene addestrato ancora su dialoghi di esempio, poi sulle preferenze umane tra risposte (RLHF, apprendimento per rinforzo dal feedback umano, o metodi simili).", "Nel 2022 OpenAI mostrò che le persone preferivano le risposte di un modello da 1,3 miliardi di parametri addestrato così a quelle di GPT-3, da 175 miliardi. ChatGPT, uscito a novembre di quell’anno, usava lo stesso approccio.", "Un assistente IA è l’intera applicazione costruita attorno al modello, su un sito o in un’app: aggiunge istruzioni, cronologia, filtri di sicurezza e spesso strumenti, e dialoga in linguaggio naturale per rispondere, scrivere, revisionare, analizzare dati e programmare."], "ctrl": "<button class=\"h\" data-act=\"k\" data-v=\"base\" aria-pressed=\"true\">modello base</button><button class=\"h\" data-act=\"k\" data-v=\"chat\" aria-pressed=\"false\">assistente</button>", "line": "ChatGPT è uscito nel novembre 2022, settantadue anni dopo di me. Parla molto più di me.", "hint": "tocca una fase · output scritti da noi per mostrare il comportamento tipico"}, "9": {"year": "in pratica", "h2": "Che cosa legge davvero il modello", "ps": ["Il modello in sé non ricorda nulla da un messaggio all’altro. Ogni volta che scrivi, l’applicazione gli invia un unico lungo testo: le sue istruzioni di sistema, tutta la conversazione fin qui, eventuali file allegati e risultati degli strumenti.", "Il numero massimo di token che il modello può leggere in una volta è la sua finestra di contesto: 128.000 per Llama 3.1, per esempio. Quando la conversazione la supera, le parti più vecchie vanno tolte o riassunte. Anche le funzioni di «memoria» di solito funzionano così: l’app inserisce nel testo appunti salvati.", "Qui la finestra contiene solo 60 token, e i conteggi sono illustrativi."], "ctrl": "<button class=\"h\" data-act=\"next\">invia il messaggio successivo</button><button class=\"h\" data-act=\"sum\" aria-pressed=\"false\">riassumi ciò che esce</button><button class=\"h\" data-act=\"reset\">ricomincia</button>", "line": "Tra una corsa e l’altra la mia memoria restava nei relè sotto il pavimento. Un LLM non conserva nulla: l’app deve ridargli la conversazione ogni volta.", "hint": "tu vedi ancora tutta la chat; il modello no"}, "10": {"year": "in pratica", "h2": "Scrivere un buon prompt", "ps": ["Un prompt è l’input che si dà al modello: una domanda, un’istruzione, un testo da elaborare, eventualmente con immagini o file. La qualità della risposta dipende in larga misura dal prompt, ma anche dal modello e, a causa del campionamento, dal caso.", "Le guide pubblicate da chi sviluppa i modelli concordano su alcune abitudini: dare contesto (a chi serve e perché), essere precisi sul compito, indicare il formato, mostrare un esempio, permettere al modello di dire che non sa.", "Aggiungi i pezzi uno alla volta con i bottoni qui sotto. Le risposte sono state scritte da noi per mostrare l’effetto tipico; quelle reali variano."], "ctrl": "<button class=\"h\" data-act=\"add\">aggiungi il pezzo successivo</button><button class=\"h\" data-act=\"reset\">torna al prompt vago</button>", "line": "Shannon non mi diceva dove fosse la meta: dovevo trovarla io. Con un modello conviene dire esattamente che cosa si vuole.", "hint": "il testo nuovo nel prompt è scritto in blu"}, "11": {"year": "definizione", "h2": "Oltre il testo: i modelli multimodali", "ps": ["Un LLM multimodale accetta, oltre al testo, altri tipi di dati come immagini, audio e video, e in alcuni casi li produce anche. Ingresso e uscita possono differire: GPT-4 (2023) accettava immagini e testo ma produceva solo testo.", "Per essere elaborata come le parole, un’immagine viene tagliata in quadratini (patch) e ogni patch diventa un vettore, un po’ come un token. L’articolo del 2020 che ha reso popolare questo approccio si intitolava «An image is worth 16x16 words». Anche l’audio viene tagliato in brevi frammenti.", "Cambia la dimensione delle patch: patch più piccole conservano più dettagli ma producono molti più token da elaborare."], "ctrl": "<label class=\"rng\">dimensione patch <input type=\"range\" min=\"0\" max=\"3\" value=\"1\" data-act=\"p\"></label>", "line": "I miei baffi sentivano una cosa sola: c’è un muro o no? I modelli multimodali leggono parole, immagini e suoni.", "hint": "punta una patch · i numeri del vettore sono illustrativi"}, "12": {"year": "un’idea di lunga data", "h2": "Che cos’è un agente?", "ps": ["Nell’IA la parola agente è in uso da decenni. Nel loro manuale Russell e Norvig lo definiscono come qualunque cosa percepisca il proprio ambiente tramite sensori e agisca su di esso tramite attuatori. Un agente razionale sceglie le azioni che si aspetta funzionino meglio per il suo compito.", "Teseo rientra nella definizione: i baffi di rame sentono i muri, un elettromagnete mosso da motori sotto il pavimento lo trascina, e dei relè telefonici memorizzano, per ogni casella, la direzione in cui l’ha lasciata l’ultima volta. Alla prima corsa esplora; alla seconda segue la memoria.", "La nostra regola semplifica quella di Shannon: in ogni casella prova la direzione successiva, in senso orario, a quella memorizzata."], "ctrl": "<button class=\"h\" data-act=\"explore\">prima corsa: esplora</button><button class=\"h\" data-act=\"recall\">seconda corsa: ricorda</button><button class=\"h\" data-act=\"walls\">sposta i muri</button><label class=\"rng\">velocità <input type=\"range\" min=\"1\" max=\"10\" value=\"5\" data-act=\"speed\"></label>", "line": "Eccomi! Baffi per sensori, magnete e motori per attuatori, relè per memoria. Nel 1952 un filmato dei Bell Labs mi mostrò mentre imparavo un labirinto.", "hint": "tacche rosse: i baffi che toccano un muro", "people": [["Claude Shannon", "shannon"], ["Stuart Russell", "russell"], ["Peter Norvig", "norvig"]]}, "13": {"year": "definizione", "h2": "Agenti LLM: un ciclo con strumenti", "ps": ["Oggi per agente si intende di norma un LLM inserito in un programma che opera in un ambiente digitale. Il modello legge il compito e tutto ciò che è successo finora, e scrive un testo. Se il testo è la chiamata a uno strumento disponibile (cercare in rete, leggere un file, eseguire codice, inviare un messaggio), il programma la esegue davvero e aggiunge il risultato.", "Il ciclo di osservazione, scelta e azione si ripete un numero di volte non fissato in anticipo: finché il modello scrive una risposta finale invece di chiamare uno strumento, oppure si raggiunge un limite di passi. È il modello a decidere di aver finito, e può sbagliarsi.", "Le applicazioni vanno dalla programmazione all’assistenza clienti, dai flussi amministrativi alla sicurezza informatica."], "ctrl": "<button class=\"h\" data-act=\"step\">passo successivo</button><button class=\"h\" data-act=\"reset\">ricomincia</button><label class=\"rng\">massimo chiamate <input type=\"range\" min=\"1\" max=\"4\" value=\"4\" data-act=\"lim\"></label>", "line": "Il mio ciclo era: tocca, gira, muoviti, ricorda. Il loro è: leggi, chiama uno strumento, leggi il risultato. Stessa idea, labirinto molto più grande.", "hint": "esecuzione preparata, non un modello dal vivo · il risultato della ricerca cita un articolo reale"}, "14": {"year": "maneggiare con cura", "h2": "Plausibile non vuol dire vero", "ps": ["Un LLM allucina quando produce contenuti che sembrano plausibili ma sono falsi, o non sostenuti dalle fonti che ha ricevuto, presentandoli con la stessa sicurezza dei contenuti corretti. Il modello genera testo probabile, non fatti verificati.", "Uno studio del 2025 sostiene che l’addestramento e i benchmark più diffusi premiano il tirare a indovinare rispetto all’ammettere l’incertezza, come un compito in cui gli errori non tolgono punti. Il NIST chiama il fenomeno confabulazione.", "Quindi non fidarti mai ciecamente di fatti, date, nomi, numeri, citazioni o riferimenti: controllali su fonti primarie e apri i link che ti vengono dati. La risposta sul foglio è stata scritta da noi per imitare un’allucinazione."], "ctrl": "<button class=\"h\" data-act=\"reveal\">controlla sulle fonti</button><button class=\"h\" data-act=\"reset\">ricomincia</button>", "line": "Esisto davvero, giuro: mi potete vedere nel filmato di Shannon del 1952. Visto? Un’affermazione che si può controllare. Fate lo stesso con ogni risposta.", "hint": "tocca le affermazioni di cui non ti fideresti senza controllare"}, "15": {"year": "ripasso", "h2": "Trova l’uscita", "ps": ["Otto domande per ripassare la passeggiata. Si risponde toccando un’opzione: il foglio dei punti sulla mappa tiene il conto.", "Per la classe: giocate a squadre, una domanda per squadra a turno, e chiedete sempre di motivare la risposta prima di toccarla."], "ctrl": "<div class=\"quiz\"><div class=\"q\"></div><div class=\"opts\"></div><div class=\"why\" aria-live=\"polite\"></div><div class=\"ctrl\"><button class=\"h\" data-act=\"next\">domanda successiva</button><button class=\"h\" data-act=\"restart\">ricomincia</button></div></div>", "line": "Ultimo labirinto! Se non siete sicuri di una risposta, ditelo: è proprio quello che vorremmo facessero gli LLM."}, "intro": {"year": "una mappa per la quinta", "h1": "I grandi modelli linguistici", "sub": "Le idee principali, disegnate a matita.", "ps": ["Questa mappa è una passeggiata tra le idee principali dei grandi modelli linguistici: che cosa sono, come vengono addestrati, come diventano assistenti e agenti, e perché possono sbagliare con sicurezza. Ogni tappa ha un piccolo esperimento da provare.", "Percorri il sentiero con la rotellina del mouse, le frecce, uno scorrimento del dito o i bottoni in basso. «Mappa intera» mostra tutto insieme. La forma del terreno è decorativa: colline e valli non misurano nulla.", "La guida è Teseo, il topo meccanico che Claude Shannon costruì nel 1950 per imparare i labirinti. Le poche persone disegnate sono schizzi stilizzati, non ritratti. I numeri indicati come illustrativi sono stati scelti a mano per spiegare un’idea."], "ctrl": "<button class=\"h\" data-nav=\"next\">inizia la passeggiata</button>", "line": "Ciao! Sono Teseo, il topo meccanico che Claude Shannon costruì nel 1950. Imparavo i labirinti con i relè telefonici. Oggi il labirinto è fatto di idee: seguitemi!"}}};
+/* ================= stato generale ================= */
+const FILM=null;let VCLOCK=null;const NOW=()=>VCLOCK===null?performance.now():VCLOCK;
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $=id=>document.getElementById(id);
+const cv=$('map'),ctx=cv.getContext('2d'),panel=$('panel'),bar=$('bar'),bub=$('bub'),marks=$('marks');
+let W=innerWidth,H=innerHeight,dpr=Math.min(2.5,window.devicePixelRatio||1);
+let cur=0,ov=false,tr=null,cam={x:0,y:0,z:.1},needs=true,time=0,ready=false;
+const TS={s:0,dir:1,ph:0,walk:false,hide:false};
+function readAll(){readColors();const cs=getComputedStyle(document.documentElement);C.sheet=cs.getPropertyValue('--sheet').trim();C.snow=cs.getPropertyValue('--snow').trim()}
+let grainPat=null;
+function makeGrain(){const c=document.createElement('canvas');c.width=c.height=160;const g=c.getContext('2d');const r=mulberry(3);const d=C.dark;
+ for(let i=0;i<4200;i++){g.fillStyle=d?`rgba(255,255,255,${r()*0.05})`:`rgba(40,40,30,${r()*0.06})`;g.fillRect(r()*160,r()*160,1+r()*1.4,1+r()*1.4)}
+ grainPat=ctx.createPattern(c,'repeat');document.body.style.setProperty('--grain',`url(${c.toDataURL()})`)}
+
+/* ================= tasselli ================= */
+const TPX=512,LV=[0.5,1,2],BASE=0.125,MAXT=/Mobi|Android/i.test(navigator.userAgent)?48:84;
+let baseCv=null;const tiles=new Map();let frameNo=0;
+function drawItems(c,scale,x0,y0,x1,y1){P.ctx=c;P.budget=Infinity;P.used=0;P.dry=false;P.minw=0.8/scale;P.scale=scale;
+ for(const it of ITEMS){if(it.x1<x0||it.x0>x1||it.y1<y0||it.y0>y1)continue;it.fn()}P.minw=0;P.scale=0}
+function paper(c,w,h){c.fillStyle=C.paper;c.fillRect(0,0,w,h);c.fillStyle=grainPat;c.fillRect(0,0,w,h)}
+function makeBase(){baseCv=document.createElement('canvas');baseCv.width=Math.ceil(WW*BASE);baseCv.height=Math.ceil(WH*BASE);const c=baseCv.getContext('2d');paper(c,baseCv.width,baseCv.height);c.setTransform(BASE,0,0,BASE,0,0);drawItems(c,BASE,-1e9,-1e9,1e9,1e9)}
+function renderTile(L,ix,iy){const s=LV[L],ws=TPX/s;const t=document.createElement('canvas');t.width=t.height=TPX;const c=t.getContext('2d');paper(c,TPX,TPX);
+ c.setTransform(s,0,0,s,-ix*TPX,-iy*TPX);c.beginPath();c.rect(ix*ws,iy*ws,ws,ws);c.clip();drawItems(c,s,ix*ws-80,iy*ws-80,(ix+1)*ws+80,(iy+1)*ws+80);return t}
+let wantQ=[];
+function genTiles(budget){const t0=performance.now();while(wantQ.length&&performance.now()-t0<budget){const[k,L,ix,iy]=wantQ.shift();if(tiles.has(k))continue;tiles.set(k,{cv:renderTile(L,ix,iy),last:frameNo});needs=true}
+ if(tiles.size>MAXT){const arr=[...tiles.entries()].sort((a,b)=>a[1].last-b[1].last);for(let i=0;i<tiles.size-MAXT&&i<arr.length;i++)if(arr[i][1].last<frameNo)tiles.delete(arr[i][0])}}
+
+/* ================= telecamera ================= */
+function area(){if(FILM)return filmArea();const mob=innerWidth<=760;const bh=bar.offsetHeight;if(mob){const ph=panel.offsetHeight;return{x:0,y:0,w:W,h:Math.max(120,H-bh-ph-10)}}
+ return{x:0,y:0,w:Math.max(200,W-panel.offsetWidth-24),h:H-bh}}
+function fitRect(x,y,w,h){const a=area();return{x:x+w/2,y:y+h/2,z:Math.min(a.w/w,a.h/h)*0.97}}
+function viewOf(i){const st=STOPS[i];if(FILM&&st.n)return FILM==='p'?fitRect(st.dir>0?st.px-420:st.px-340,st.py-700,760,780):fitRect(st.dir>0?st.px-470:st.px-740,st.py-700,1210,760);if(st.k==='intro')return fitRect(180,60,3300,1700); if(innerWidth<=760)return fitRect(st.dir>0?st.px-450:st.px-350,st.py-700,800,790);return fitRect(st.dir>0?st.px-470:st.px-740,st.py-720,1210,920)}
+const overview=()=>fitRect(-100,-60,WW+200,WH+120);
+function toScreen(wx,wy){const a=area();return[a.x+a.w/2+(wx-cam.x)*cam.z,a.y+a.h/2+(wy-cam.y)*cam.z]}
+function toWorld(sx,sy){const a=area();return[cam.x+(sx-a.x-a.w/2)/cam.z,cam.y+(sy-a.y-a.h/2)/cam.z]}
+const ease=u=>u<.5?4*u*u*u:1-Math.pow(-2*u+2,3)/2;
+
+/* ================= disegno del fotogramma ================= */
+const live={};
+function ensureLive(S){if(!live[S.n]){const st={el:document.querySelector(`.stop[data-i="${STOPS.indexOf(S)}"]`),anim:false};SC[S.scene].init(st);live[S.n]={st,cv:document.createElement('canvas'),k:0,dirty:true}}return live[S.n]}
+function renderLive(S,L){const kk=Math.min(3,Math.max(.5,dpr*cam.z));const bw=Math.round(640*kk),bh=Math.round(520*kk);if(L.cv.width!==bw||L.cv.height!==bh){L.cv.width=bw;L.cv.height=bh}
+ const c=L.cv.getContext('2d');c.setTransform(kk,0,0,kk,0,0);c.fillStyle=C.sheet;c.fillRect(0,0,640,520);P.ctx=c;P.budget=Infinity;P.used=0;P.dry=false;P.minw=0;P.scale=0;SC[S.scene].draw(L.st);L.k=kk;L.dirty=false}
+let FOG=[];
+function FOGR(){const S=STOPS[14];return[S.px-1150,S.py-760,S.px+950,S.py+260]}
+function makeFog(){FOG=[];const r=mulberry(77);const R=FOGR();for(let i=0;i<30;i++)FOG.push({x:R[0]+r()*(R[2]-R[0]),y:R[1]+r()*(R[3]-R[1]),rx:120+r()*170,ry:26+r()*30,sp:12+r()*20,ph:r()*6})}
+let curT=1830;
+function draw(){if(FILM&&typeof FILMSKIP!=='undefined'&&FILMSKIP)return false;frameNo++;const a=area(),k=dpr*cam.z;const ox=dpr*(a.x+a.w/2)-k*cam.x,oy=dpr*(a.y+a.h/2)-k*cam.y;
+ ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=C.paper;ctx.fillRect(0,0,cv.width,cv.height);
+ const wx0=-ox/k,wy0=-oy/k,wx1=(cv.width-ox)/k,wy1=(cv.height-oy)/k;
+ // livello base, sempre pronto
+ if(baseCv){const sx=Math.max(0,wx0*BASE),sy=Math.max(0,wy0*BASE),ex=Math.min(baseCv.width,wx1*BASE),ey=Math.min(baseCv.height,wy1*BASE);
+  if(ex>sx&&ey>sy)ctx.drawImage(baseCv,sx,sy,ex-sx,ey-sy,ox+k*sx/BASE,oy+k*sy/BASE,k*(ex-sx)/BASE,k*(ey-sy)/BASE)}
+ // tasselli
+ let L=-1;if(k>BASE*1.3){L=LV.findIndex(s=>s>=k/1.3);if(L<0)L=LV.length-1}
+ wantQ=[];const cxw=(wx0+wx1)/2,cyw=(wy0+wy1)/2;
+ for(let l=0;l<=L;l++){const s=LV[l],ws=TPX/s;const i0=Math.max(0,Math.floor(wx0/ws)),i1=Math.min(Math.floor(WW/ws),Math.floor(wx1/ws)),j0=Math.max(0,Math.floor(wy0/ws)),j1=Math.min(Math.floor(WH/ws),Math.floor(wy1/ws));
+  for(let i=i0;i<=i1;i++)for(let j=j0;j<=j1;j++){const key=l+':'+i+':'+j;const t=tiles.get(key);
+   if(t){t.last=frameNo;const dx=Math.floor(ox+k*i*ws),dy=Math.floor(oy+k*j*ws),dx2=Math.ceil(ox+k*(i+1)*ws),dy2=Math.ceil(oy+k*(j+1)*ws);ctx.drawImage(t.cv,dx,dy,dx2-dx,dy2-dy)}
+   else if(l===L)wantQ.push([key,l,i,j,Math.hypot((i+.5)*ws-cxw,(j+.5)*ws-cyw)])}}
+ wantQ.sort((p,q)=>p[4]-q[4]);
+ // fogli vivi
+ for(const S of STOPS){const Lv=S.n&&live[S.n];if(!Lv)continue;if(S.ox+640<wx0||S.ox>wx1||S.oy+520<wy0||S.oy>wy1)continue;
+  const still=!tr;if(Lv.dirty||(still&&STOPS[cur]===S&&Math.abs(Lv.k-Math.min(3,Math.max(.5,k)))/Lv.k>.15))renderLive(S,Lv);
+  const dx=Math.round(ox+k*S.ox),dy=Math.round(oy+k*S.oy);ctx.drawImage(Lv.cv,dx,dy,Math.round(ox+k*(S.ox+640))-dx,Math.round(oy+k*(S.oy+520))-dy)}
+ // animazioni ambientali, in coordinate di mondo
+ ctx.setTransform(k,0,0,k,ox,oy);const T=reduce?0:time;let amb=false;ctx.save();ctx.beginPath();ctx.rect(wx0,wy0,wx1-wx0,wy1-wy0);for(const S of STOPS)if(S.n)ctx.rect(S.sx,S.sy,680,560);ctx.clip('evenodd');
+ const vis=(x,y,m)=>x>wx0-m&&x<wx1+m&&y>wy0-m&&y<wy1+m;
+ if(cam.z>.1){ctx.lineCap='round';
+  for(const[cx,cy]of CHIM)if(vis(cx,cy-200,300)){amb=true;ctx.strokeStyle=C.muted;for(let p=0;p<5;p++){const u=((T*.2+p/5+cx*.001)%1);ctx.globalAlpha=.28*(1-u)*Math.min(1,u*6);ctx.lineWidth=1.5;ctx.beginPath();
+   const q=hsh(p,cx)%100/100;ctx.ellipse(cx+u*(60+q*40)+Math.sin(T*1.1+p*2)*10,cy-u*240,10+u*(30+q*20),8+u*22,q*.8,0,Math.PI*2);ctx.stroke()}}
+  ctx.globalAlpha=1;let nf=0;
+  if(FOG.length){const R=FOGR(),Wd=R[2]-R[0];ctx.fillStyle=C.dark?'#AEB8C4':'#FFFFFF';ctx.strokeStyle=C.muted;ctx.lineWidth=1.6;for(const f of FOG){const x=R[0]+((f.x-R[0]+T*f.sp)%Wd),y=f.y+Math.sin(T*.4+f.ph)*12;if(!vis(x,y,f.rx))continue;nf++;
+   ctx.beginPath();ctx.ellipse(x,y,f.rx,f.ry,0,0,Math.PI*2);ctx.globalAlpha=C.dark?.07:.2;ctx.fill();ctx.globalAlpha=.18;ctx.stroke()}}
+  ctx.globalAlpha=1;if(nf)amb=true;
+  if(WINS.some(w=>vis(w[0],w[1],30))){amb=true;ctx.fillStyle=RC('gold');WINS.forEach((w,i)=>{const per=3+(i*7%5);const on=hsh(i,Math.floor(T/per+i*.37))%100<42;if(on){ctx.globalAlpha=.8;ctx.fillRect(w[0]+1,w[1]+1,w[2]-2,w[3]-2)}});ctx.globalAlpha=1}}
+ ctx.restore();
+ // Teseo
+ if(!TS.hide&&!ov){const p=pathAt(TS.s);if(vis(p.x,p.y,200)){ctx.save();ctx.translate(p.x,p.y+6);ctx.scale(2.2,2.2);P.ctx=ctx;P.budget=Infinity;P.used=0;P.dry=false;P.minw=0;P.scale=0;teseoSide(0,0,TS.dir,TS.ph,TS.walk);ctx.restore()}}
+ // luce di stagione
+ ctx.setTransform(1,0,0,1,0,0);const w=winterness(curT),warm=lev(curT)*(1-w);
+ if(w>0.01||warm>0.01){ctx.globalCompositeOperation=C.dark?'source-over':'multiply';if(w>.01){ctx.fillStyle=`rgba(140,172,215,${(C.dark?.07:.13)*w})`;ctx.fillRect(0,0,cv.width,cv.height)}
+  if(warm>.01){ctx.fillStyle=`rgba(255,214,150,${(C.dark?.03:.07)*warm})`;ctx.fillRect(0,0,cv.width,cv.height)}ctx.globalCompositeOperation='source-over'}
+ return amb}
+
+/* ================= Teseo ================= */
+function teseoSide(x,base,dir,ph,walk){const s=1.25;const X=u=>x+dir*u*s,Y=v=>base-v*s;
+ const tail=[];for(let k=0;k<=8;k++){const u=-14-k*2.6;tail.push([X(u),Y(8+Math.sin(k*0.7+ph*0.8)*2.4+k*0.35)])}curve(tail,{w:1.2,passes:1});
+ const lg=walk?Math.sin(ph*1.6)*2.5:0;seg(X(-7)+lg,Y(3),X(-8)-lg,Y(0),{w:1.3,passes:1});seg(X(7)-lg,Y(3),X(8)+lg,Y(0),{w:1.3,passes:1});
+ const body=ellPoly(X(0),Y(9),15*s,8.5*s,24);solid(body,C.sheet);wash(body,C.muted,.45);hatch(body,{gap:3.5,a:.3,ang:-30});path(body,{w:1.4},true);
+ const head=[[X(9),Y(15)],[X(18),Y(14)],[X(26),Y(8)],[X(17),Y(4)],[X(10),Y(5)]];solid(head,C.sheet);wash(head,C.muted,.45);path(head,{w:1.4},true);
+ ell(X(12),Y(19),4.2*s,4.6*s,{solid:C.sheet,w:1.2,fill:C.red,fa:.3});dot(X(18),Y(11),1.8);dot(X(26),Y(8),1.9);
+ for(const d of[-2,0,2])seg(X(25),Y(8),X(34),Y(8+d*1.6),{w:1,passes:1,col:C.red})}
+let bubOn=false,bubUntil=0;
+function lineOf(i){const S=STOPS[i];const c=CT()[S.k||S.n];return c&&c.line}
+function bubble(on){if(FILM)on=false;const l=lineOf(cur);bubOn=on&&!!l&&!ov&&innerWidth>760;if(bubOn){$('bubt').textContent=l;bubUntil=performance.now()+14000}bub.classList.toggle('on',bubOn);placeBubble()}
+function placeBubble(){if(!bubOn)return;const p=pathAt(TS.s);const[sx,sy]=toScreen(p.x,p.y);const a=area();const bw=bub.offsetWidth,bh=bub.offsetHeight;
+ let x=sx-34,y=sy+22,up=false;const S=STOPS[cur];if(y+bh>a.y+a.h-6){y=a.y+a.h-bh-6;if(S.n)y=Math.max(y,toScreen(0,S.py-72)[1]);if(y<sy-10){y=Math.max(8,sy-40*cam.z-bh-10);up=true}}x=Math.max(8,Math.min(a.x+a.w-bw-8,x));y=Math.max(8,y);
+ bub.style.left=x+'px';bub.style.top=y+'px';bub.classList.toggle('up',up);bub.style.setProperty('--tx',Math.max(14,Math.min(bw-30,sx-x-8))+'px')}
+
+/* ================= pannello e contenuti ================= */
+function stopHTML(i){const S=STOPS[i];const c=CT()[S.k||S.n];
+ if(!c)return`<div class="year">${S.y}</div><h2>${S.title}</h2><p class="soon">This place is already on the map. Its text and its experiment arrive in the next phase of the project.</p>`;
+ let h=`<div class="year">${c.year}</div>`+(c.h1?`<h1>${c.h1}</h1>`:`<h2>${c.h2||S.title}</h2>`)+(c.sub?`<p class="sub">${c.sub}</p>`:'')+(c.line?`<p class="tline"><b>${LX('Theseus','Teseo')}</b> ${c.line}</p>`:'')+c.ps.map(p=>`<p>${p}</p>`).join('');
+ if(c.people)h+=`<canvas class="people" data-people='${JSON.stringify(c.people).replace(/'/g,'&#39;')}' aria-hidden="true"></canvas>`;
+ if(c.ctrl)h+=`<div class="ctrl">${c.ctrl}</div>`;if(c.hint)h+=`<div class="hint">${c.hint}</div>`;if(c.note)h+=`<p class="note">${c.note}</p>`;return h}
+function buildPanel(){const box=$('stops');box.innerHTML='';STOPS.forEach((S,i)=>{const s=document.createElement('section');s.className='stop';s.dataset.i=i;s.setAttribute('aria-label',S.n?`${LX('Stop','Tappa')} ${S.n}: ${S.title}`:LX('Introduction','Introduzione'));s.innerHTML=stopHTML(i);box.appendChild(s);
+  s.querySelectorAll('[data-act]').forEach(b=>{const ev=b.tagName==='INPUT'?'input':'click';b.addEventListener(ev,()=>{if(!S.done)return;const L=ensureLive(S);bubble(false);const sc=SC[S.scene];sc.act&&sc.act(L.st,b.dataset.act,b.tagName==='INPUT'?b.value:b.dataset.v,b);L.dirty=true;needs=true})});
+  const fm=s.querySelector('form.chat');if(fm)fm.addEventListener('submit',e=>{e.preventDefault();const inp=fm.querySelector('input');const v=inp.value.trim();if(!v)return;inp.value='';const L=ensureLive(S);bubble(false);SC[S.scene].say(L.st,v);L.dirty=true;needs=true});
+  s.querySelectorAll('[data-nav]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.nav==='next')go(cur+1);else setOverview(true)}))});
+ const ol=$('ovlist');ol.innerHTML='';STOPS.forEach((S,i)=>{const li=document.createElement('li');const b=document.createElement('button');b.className='ovb';
+  b.innerHTML=S.n?`<span class="n">${S.n}</span>${S.title}`:'<span class="n">·</span> '+LX('Start of the trail','Inizio del sentiero');b.onclick=()=>{setOverview(false,i)};li.appendChild(b);ol.appendChild(li)});
+ marks.innerHTML='';STOPS.forEach((S,i)=>{const b=document.createElement('button');b.className='mk';b.textContent=S.n||LX('start','inizio');b.setAttribute('aria-label',S.n?`${LX('Go to stop','Vai alla tappa')} ${S.n}: ${S.title}`:LX('Go to the start','Vai all’inizio'));b.onclick=()=>setOverview(false,i);marks.appendChild(b)})}
+const LOOKS2=LOOKS;
+function drawPeople(cvp){const list=JSON.parse(cvp.dataset.people);const W0=500,H0=104;const k=Math.min(3,(cvp.clientWidth||352)/W0*dpr);cvp.width=Math.round(W0*k);cvp.height=Math.round(H0*k);
+ const c=cvp.getContext('2d');c.setTransform(k,0,0,k,0,0);P.ctx=c;P.budget=Infinity;P.used=0;P.dry=false;P.minw=0;P.scale=0;const n=list.length;const w=W0/Math.max(n,3);
+ list.forEach(([name,key],i)=>{const cx=i*w+34;person(cx,30,0.6,{...LOOKS2[key],bottom:104});const lines=wrapLines(name,w-80,22);lines.forEach((l,q)=>txt(l,cx+44,54+q*21-(lines.length-1)*10,{size:22,col:C.ink}))})}
+function showPanel(i){if(FILM)filmCaption(i);document.querySelectorAll('.stop').forEach(s=>s.classList.toggle('active',+s.dataset.i===i&&!ov));$('ovsec').classList.toggle('active',ov);
+ const s=document.querySelector(`.stop[data-i="${i}"]`);if(s&&!ov){s.querySelectorAll('canvas.people').forEach(drawPeople);panel.scrollTop=0}
+ const S=STOPS[i];$('sr').textContent=ov?LX('Whole map','Mappa intera'):(S.n?`${LX('Stop','Tappa')} ${S.n} ${LX('of','di')} 15: ${S.title}`:LX('Start of the trail','Inizio del sentiero'));
+ $('prev').disabled=i===0&&!ov;$('next').disabled=i===STOPS.length-1&&!ov;setLbl($('ovbtn'),ov?LX('back to the trail','torna al sentiero'):LX('whole map','mappa intera'),ov?LX('trail','sentiero'):LX('map','mappa'));$('ovbtn').setAttribute('aria-pressed',ov);
+ history.replaceState(null,'','#'+(ov?'map':S.n?'stop-'+S.n:S.k))}
+
+/* ================= navigazione ================= */
+function go(i){i=Math.max(0,Math.min(STOPS.length-1,i));if(ov){setOverview(false,i);return}if(i===cur&&!tr)return;
+ const from={...cam},to=viewOf(i),adj=Math.abs(i-cur)===1;const sA=TS.s,sB=STOPS[i].ts;const prevCur=cur;cur=i;bubble(false);showPanel(i);mmDraw();
+ if(reduce){cam=to;TS.s=sB;TS.walk=false;TS.dir=STOPS[i].dir;tr=null;arrive();return}
+ const a=area();const chord=Math.hypot(to.x-from.x,to.y-from.y);const dist=adj?Math.abs(sB-sA):chord;
+ const dur=adj?Math.min(2.8,1.05+dist/5200):Math.min(2.1,1.1+chord/9000);
+ let zm=Math.min(from.z,to.z)*Math.min(1,a.w*.9/(Math.abs(to.x-from.x)+900),a.h*.9/(Math.abs(to.y-from.y)+900));if(adj)zm=Math.max(zm,Math.min(from.z,to.z)*.32);
+ const pA=pathAt(sA),pB=pathAt(sB);
+ tr={t0:NOW(),dur:dur*1000,from,to,adj,sA,sB,offA:[from.x-pA.x,from.y-pA.y],offB:[to.x-pB.x,to.y-pB.y],zm};TS.hide=!adj;needs=true}
+function setOverview(on,target){if(on===ov&&target===undefined)return;
+ if(on){ov=true;bubble(false);showPanel(cur);const from={...cam},to=overview();if(reduce){cam=to;tr=null}else tr={t0:NOW(),dur:1300,from,to,adj:false,zm:to.z,ovt:true};needs=true;mmDraw();return}
+ ov=false;const i=target===undefined?cur:target;const from={...cam},to=viewOf(i);cur=i;showPanel(i);mmDraw();TS.s=STOPS[i].ts;TS.dir=STOPS[i].dir;TS.walk=false;
+ if(reduce){cam=to;tr=null;arrive();return}tr={t0:NOW(),dur:1400,from,to,adj:false,zm:to.z};TS.hide=true;needs=true}
+function arrive(){TS.hide=false;TS.walk=false;TS.dir=STOPS[cur].dir;const S=STOPS[cur];if(S.done){const L=ensureLive(S);L.dirty=true}needs=true;setTimeout(()=>{if(!tr&&!ov)bubble(true)},reduce?0:350)}
+function stepTr(now){const u=Math.min(1,(now-tr.t0)/tr.dur),e=ease(u);const{from,to}=tr;
+ const lzA=Math.log(from.z),lzB=Math.log(to.z),lm=Math.log(tr.zm),mid=(lzA+lzB)/2;let lz=lzA+(lzB-lzA)*e;if(lm<mid)lz+=(lm-mid)*Math.sin(Math.PI*e);cam.z=Math.exp(lz);
+ if(tr.adj){const s=tr.sA+(tr.sB-tr.sA)*e;const p=pathAt(s);cam.x=p.x+tr.offA[0]+(tr.offB[0]-tr.offA[0])*e;cam.y=p.y+tr.offA[1]+(tr.offB[1]-tr.offA[1])*e;
+  const ps=TS.s;TS.s=s;TS.walk=true;TS.ph+=0.35;const q=pathAt(s+1);if(Math.abs(q.dx)>0.01)TS.dir=Math.sign(q.dx)*Math.sign(tr.sB-tr.sA);curT=p.t}
+ else{cam.x=from.x+(to.x-from.x)*e;cam.y=from.y+(to.y-from.y)*e;if(!ov)curT=STOPS[cur].t}
+ if(u>=1){tr=null;cam={...to};if(!ov){TS.s=STOPS[cur].ts;curT=STOPS[cur].t;arrive()}else curT=STOPS[cur].t}}
+
+/* ================= minimappa ================= */
+const mmc=$('mmc'),mmU=t=>(t+0.6)/16.2;
+function mmDraw(){const r=mmc.getBoundingClientRect();if(!r.width)return;const k=dpr;mmc.width=Math.round(r.width*k);mmc.height=Math.round(r.height*k);const c=mmc.getContext('2d');c.setTransform(k,0,0,k,0,0);c.clearRect(0,0,r.width,r.height);
+ P.ctx=c;P.budget=Infinity;P.used=0;P.dry=false;P.minw=0;P.scale=0;const w=r.width-16,h=r.height,X=t=>8+mmU(t)*w,Y=l=>h-9-l*(h-20);
+ for(const[a,b,rg]of REGIONS){const q=[[X(a),4],[X(b),4],[X(b),h-4],[X(a),h-4]];wash(q,RC(rg),.22)}
+ const pts=[];for(let t=-0.6;t<=15.6;t+=0.1)pts.push([X(t),Y(lev(t))]);stroke(pts,{w:1.5,passes:1});
+ const p=X(curT);ell(p,Y(lev(curT)),5,5,{solid:C.red,w:1.2,passes:1});
+ const bs=$('mmdots').children;STOPS.forEach((S,i)=>{const b=bs[i];if(!b)return;b.style.left=(X(S.t)-7)+'px';b.style.top=(Y(lev(S.t))-7)+'px';b.classList.toggle('cur',i===cur&&!ov)})}
+function mmBuild(){const d=$('mmdots');d.innerHTML='';STOPS.forEach((S,i)=>{const b=document.createElement('button');b.className='md';b.setAttribute('aria-label',S.n?`${LX('Stop','Tappa')} ${S.n}: ${S.title}`:LX('Start of the trail','Inizio del sentiero'));b.title=S.n?`${S.n} · ${S.title}`:LX('Start','Inizio');
+ b.onclick=()=>{if(ov)setOverview(false,i);else go(i)};d.appendChild(b)})}
+
+/* ================= segnalini della vista d'insieme ================= */
+function placeMarks(){marks.classList.toggle('on',ov&&!tr);if(!ov)return;const bs=marks.children;STOPS.forEach((S,i)=>{const[x,y]=S.n?toScreen(S.px,S.py-360):toScreen(S.px,S.py-200);const b=bs[i];b.style.left=x+'px';b.style.top=y+'px';b.classList.toggle('cur',i===cur)})}
+
+/* ================= ingressi ================= */
+let wacc=0,wlast=0,quiet=false;
+addEventListener('wheel',e=>{if(e.target.closest('#panel,#bar'))return;e.preventDefault();const now=performance.now();
+ if(tr||ov){wlast=now;quiet=true;return}if(quiet){if(now-wlast>180)quiet=false;else{wlast=now;return}}
+ if(now-wlast>260)wacc=0;wlast=now;const d=Math.abs(e.deltaY)>=Math.abs(e.deltaX)?e.deltaY:e.deltaX;wacc+=d*(e.deltaMode===1?32:1);
+ if(Math.abs(wacc)>60){go(cur+Math.sign(wacc));wacc=0;quiet=true}},{passive:false});
+addEventListener('keydown',e=>{const t=e.target;if(t.tagName==='INPUT'||t.tagName==='TEXTAREA')return;
+ if(['ArrowRight','ArrowDown','PageDown'].includes(e.key)||(e.key===' '&&t===document.body)){e.preventDefault();go(cur+1)}
+ else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(cur-1)}
+ else if(e.key==='Home'){e.preventDefault();go(0)}else if(e.key==='End'){e.preventDefault();go(STOPS.length-1)}
+ else if(e.key==='o'||e.key==='O')setOverview(!ov);else if(e.key==='Escape'&&ov)setOverview(false)});
+let pmode=null,px0=0,py0=0,pressed=false;
+function sheetHit(sx,sy){const S=STOPS[cur];if(ov||tr||!S.done)return null;const[wx,wy]=toWorld(sx,sy);const lx=wx-S.ox,ly=wy-S.oy;return lx>=0&&lx<=640&&ly>=0&&ly<=520?[lx,ly]:null}
+cv.addEventListener('pointerdown',e=>{px0=e.clientX;py0=e.clientY;pressed=true;
+ if(!ov&&!tr){const p=pathAt(TS.s);const[tx,ty]=toScreen(p.x,p.y-30);if(Math.hypot(e.clientX-tx,e.clientY-ty)<46*Math.max(.6,cam.z)+10&&lineOf(cur)){bubble(!bubOn);pmode=null;return}}
+ const h=sheetHit(e.clientX,e.clientY);if(h){const S=STOPS[cur],L=ensureLive(S);pmode='scene';bubble(false);try{cv.setPointerCapture(e.pointerId)}catch(_){}const sc=SC[S.scene];if(sc.down){sc.down(L.st,h[0],h[1]);L.dirty=true;needs=true}return}
+ pmode='swipe'});
+cv.addEventListener('pointermove',e=>{const h=sheetHit(e.clientX,e.clientY);cv.style.cursor=h?'crosshair':'default';
+ if(pmode==='scene'){const S=STOPS[cur],L=ensureLive(S);const[wx,wy]=toWorld(e.clientX,e.clientY);const sc=SC[S.scene];if(sc.move){sc.move(L.st,wx-S.ox,wy-S.oy,pressed);L.dirty=true;needs=true}}});
+function pup(e){if(pmode==='scene'){const S=STOPS[cur],L=live[S.n];const sc=SC[S.scene];if(L&&sc.up){sc.up(L.st);L.dirty=true;needs=true}}
+ else if(pmode==='swipe'){const dx=e.clientX-px0,dy=e.clientY-py0;if(Math.max(Math.abs(dx),Math.abs(dy))>50){const d=Math.abs(dx)>Math.abs(dy)?dx:dy;if(ov)return;go(cur+(d<0?1:-1))}}pmode=null;pressed=false}
+cv.addEventListener('pointerup',pup);cv.addEventListener('pointercancel',()=>{pmode=null;pressed=false});
+$('prev').onclick=()=>go(cur-1);$('next').onclick=()=>go(cur+1);$('ovbtn').onclick=()=>setOverview(!ov);
+bub.addEventListener('click',()=>bubble(false));
+$('fold').onclick=()=>{const c=panel.classList.toggle('folded');$('fold').setAttribute('aria-expanded',!c);setLbl($('fold'),c?LX('show text','mostra testo'):LX('hide text','nascondi testo'),LX('text','testo'));onResize()};
+$('theme').onclick=()=>{document.documentElement.dataset.theme=isDark()?'light':'dark';retheme()};
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(!document.documentElement.dataset.theme)retheme()});
+
+
+/* ================= lingua ================= */
+function sceneChanged(){const S=STOPS[cur];if(S&&S.n&&live[S.n])live[S.n].dirty=true;needs=true}
+function uiText(){document.documentElement.lang=LANG;document.title=LX('Large language models — a map with Theseus','I grandi modelli linguistici — una mappa con Teseo');
+ cv.setAttribute('aria-label',LX('A hand-drawn landscape: the main ideas about large language models as a trail with fifteen stops. The text for each stop is in the side panel.','Un paesaggio disegnato a mano: le idee principali sui grandi modelli linguistici come un sentiero con quindici tappe. Il testo di ogni tappa è nel pannello laterale.'));
+ marks.setAttribute('aria-label',LX('Stops on the map','Tappe sulla mappa'));panel.setAttribute('aria-label',LX('Stop details','Dettagli della tappa'));
+ const ovs=$('ovsec');ovs.setAttribute('aria-label',LX('Whole map','Mappa intera'));ovs.querySelector('.year').textContent=LX('fifteen stops','quindici tappe');ovs.querySelector('h2').textContent=LX('The whole map','La mappa intera');ovs.querySelector('p').textContent=LX('Pick a stop on the map or in this list.','Scegli una tappa sulla mappa o in questo elenco.');
+ bub.querySelector('b').textContent=LX('Theseus','Teseo');$('loading').textContent=LX('sketching the map…','disegno la mappa…');$('mmnote').textContent=LX('the shape of the land is decorative','la forma del terreno è decorativa');
+ bar.setAttribute('aria-label',LX('Trail navigation','Navigazione del sentiero'));$('prev').setAttribute('aria-label',LX('Previous stop','Tappa precedente'));$('next').setAttribute('aria-label',LX('Next stop','Tappa successiva'));
+ const f=$('fold');setLbl(f,panel.classList.contains('folded')?LX('show text','mostra testo'):LX('hide text','nascondi testo'),LX('text','testo'));
+ const th=$('theme');setLbl(th,LX('theme','tema'),'◐');th.setAttribute('aria-label',LX('Switch between light and dark theme','Passa dal tema chiaro a quello scuro e viceversa'));
+ const lb=$('lang');setLbl(lb,LX('italiano','English'),LX('IT','EN'));lb.setAttribute('aria-label',LX('Passa all’italiano','Switch to English'));
+ setLbl($('ovbtn'),ov?LX('back to the trail','torna al sentiero'):LX('whole map','mappa intera'),ov?LX('trail','sentiero'):LX('map','mappa'))}
+function setLbl(el,lg,sh){el.innerHTML=`<span class="lg">${lg}</span><span class="sh">${sh}</span>`}
+function setLang(l){if(l===LANG)return;LANG=l;try{localStorage.setItem('llm-map-lang',l)}catch(e){}applyData();for(const k in live)delete live[k];bubble(false);uiText();buildPanel();mmBuild();
+ $('loading').classList.add('on');setTimeout(()=>{rebuild();$('loading').classList.remove('on');showPanel(cur);mmDraw();if(!ov)arrive();else placeMarks()},30)}
+$('lang').onclick=()=>setLang(LANG==='it'?'en':'it');
+/* ================= avvio, tema, ridimensionamento ================= */
+function sizeCanvas(){W=innerWidth;H=innerHeight;dpr=Math.min(2.5,window.devicePixelRatio||1);cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cv.style.width=W+'px';cv.style.height=H+'px'}
+function onResize(){sizeCanvas();if(!tr)cam=ov?overview():viewOf(cur);mmDraw();document.querySelectorAll('.stop.active canvas.people').forEach(drawPeople);needs=true}
+addEventListener('resize',onResize);
+function snapshots(){for(const S of STOPS)if(S.done){const st={el:null};SC[S.scene].init(st);SNAP[S.n]=st}}
+function rebuild(){tiles.clear();snapshots();buildWorld();makeBase();makeFog();for(const k in live)live[k].dirty=true;needs=true}
+function retheme(){readAll();makeGrain();$('loading').classList.add('on');setTimeout(()=>{rebuild();$('loading').classList.remove('on');mmDraw();document.querySelectorAll('.stop.active canvas.people').forEach(drawPeople)},30)}
+let lastT=0;
+function tickAll(now,dt){time+=dt;
+ if(tr){stepTr(now);needs=true;mmDraw()}
+ const S=STOPS[cur];const L=S.done&&live[S.n];if(L&&L.st.anim&&SC[S.scene].tick){SC[S.scene].tick(L.st,dt);L.dirty=true;needs=true}
+ if(bubOn&&now>bubUntil)bubble(false);
+ if(needs||(!reduce&&ambOn)){needs=false;ambOn=draw();placeBubble();placeMarks()}}
+function loop(now){const dt=Math.min(.05,(now-lastT)/1000||0);lastT=now;tickAll(now,dt);genTiles(tr?4:10);requestAnimationFrame(loop)}
+let ambOn=false;
+async function start(){if(FILM)filmSetup();readAll();makeGrain();sizeCanvas();uiText();buildPanel();mmBuild();
+ const h=location.hash.slice(1);if(h.startsWith('stop-')){const n=+h.slice(5);const i=STOPS.findIndex(S=>S.n===n);if(i>=0)cur=i}else if(h==='end')cur=STOPS.length-1;
+ try{await Promise.race([Promise.all(['400 30px Caveat','600 30px Caveat','400 18px Newsreader','500 30px Newsreader'].map(f=>document.fonts.load(f))),new Promise(r=>setTimeout(r,3000))])}catch(_){}
+ rebuild();$('loading').classList.remove('on');
+ showPanel(cur);cam=viewOf(cur);TS.s=STOPS[cur].ts;TS.dir=STOPS[cur].dir;curT=STOPS[cur].t;mmDraw();
+ if(h==='map')setOverview(true);else arrive();
+ ready=true;if(FILM){VCLOCK=0;filmReady()}else requestAnimationFrame(loop)}
+start();
+
+
+</script>
+</body>
+</html>

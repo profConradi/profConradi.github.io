@@ -1,6 +1,21 @@
 {
   "items": [
     {
+      "title": "Large Language Models: A Map with Theseus",
+      "slug": "map-of-llms",
+      "url": "map-of-llms.html",
+      "date": "2026-09-24",
+      "summary": "Bilingual, in English and Italian: an interactive hand-drawn map of the ideas behind large language models, in fifteen stops — what a generative model is, how text becomes tokens, what temperature does, how a language model turns into an assistant and then into an agent, and why a fluent answer can still be wrong. Each stop carries a small experiment to play with.",
+      "tags": [
+        "AI",
+        "LLM",
+        "bilingual",
+        "interactive",
+        "teaching"
+      ],
+      "readTime": "interactive"
+    },
+    {
       "title": "A Map of Artificial Intelligence",
       "slug": "map-of-ai",
       "url": "map-of-ai.html",

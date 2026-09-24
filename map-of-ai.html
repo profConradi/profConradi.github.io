@@ -101,6 +101,8 @@ form.chat{display:flex;gap:8px;width:100%}
 form.chat input{flex:1;min-width:0;font-family:"Courier New",Courier,monospace;font-size:16px;padding:6px 10px;border:1.6px solid var(--ink);border-radius:6px 3px 7px 4px;background:var(--sheet);color:var(--ink)}
 #panel p.tline{display:none;font-family:var(--hand);font-size:20px;line-height:1.15;color:var(--ink);border-left:3px solid var(--red);padding-left:10px}
 #panel p.tline b{color:var(--red);font-weight:600;margin-right:4px}
+#lang .lg-s{display:none}
+@media (max-width:760px){#lang .lg-l{display:none}#lang .lg-s{display:inline}}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media (max-width:760px){
   :root{--barh:96px}
@@ -116,6 +118,14 @@ form.chat input{flex:1;min-width:0;font-family:"Courier New",Courier,monospace;f
   #bar{gap:6px;padding:0 8px env(safe-area-inset-bottom,0px)}#bar button{font-size:18px;padding:2px 9px}#bar .nav{padding:0 10px}
   #mmnote{display:none}
 }
+#top{position:fixed;left:12px;top:calc(12px + env(safe-area-inset-top,0px));z-index:6;display:flex;gap:8px;align-items:center}
+#home,#lang{font-family:var(--hand);font-size:21px;line-height:1.15;cursor:pointer;
+  text-decoration:none;color:var(--ink);background-color:var(--paper);background-image:var(--grain,none);border:1.6px solid var(--ink);
+  border-radius:255px 14px 225px 14px/14px 225px 14px 255px;padding:3px 14px 4px}
+#home:hover,#lang:hover{background-color:color-mix(in srgb,var(--yellow) 28%,transparent)}
+#home:focus-visible,#lang:focus-visible{outline:2px dashed var(--blue);outline-offset:3px}
+body.film #top{display:none!important}
+@media (max-width:760px){#top{left:8px;gap:6px}#home,#lang{font-size:18px;padding:2px 10px}}
 #home{position:fixed;left:12px;top:calc(12px + env(safe-area-inset-top,0px));z-index:6;font-family:var(--hand);font-size:21px;line-height:1.15;
   text-decoration:none;color:var(--ink);background-color:var(--paper);background-image:var(--grain,none);border:1.6px solid var(--ink);
   border-radius:255px 14px 225px 14px/14px 225px 14px 255px;padding:3px 14px 4px}
@@ -127,7 +137,7 @@ body.film #home{display:none!important}
 </style>
 </head>
 <body>
-<a id="home" href="articles.html">← articles</a>
+<div id="top"><a id="home" href="articles.html">← articles</a><button id="lang" aria-label="Leggi in italiano" lang="it"><span class="lg-l">italiano</span><span class="lg-s">IT</span></button></div>
 <canvas id="map" role="img" aria-label="A hand-drawn landscape: the history of artificial intelligence as a trail from 1843 to today. Hills are periods of enthusiasm, snowy valleys are the two AI winters. The text for each stop is in the side panel."></canvas>
 <div id="marks" aria-label="Stops on the map"></div>
 <aside id="panel" aria-label="Stop details">
@@ -151,6 +161,12 @@ const HAND='"Caveat","Segoe Print","Bradley Hand","Comic Sans MS",cursive';
 const HS=1.06;
 const SERIF='"Newsreader",Georgia,serif';
 const C={};
+/* lingua: ?lang=it|en, poi la scelta salvata, poi la lingua del browser */
+let LANG=(()=>{let l=null;try{l=new URLSearchParams(location.search).get('lang')}catch(_){}
+ if(l!=='it'&&l!=='en'){try{l=localStorage.getItem('mapai-lang')}catch(_){l=null}}
+ if(l!=='it'&&l!=='en')l=/^it\b/i.test(navigator.language||'')?'it':'en';return l})();
+const isIT=()=>LANG==='it';
+const LX=(en,it)=>LANG==='it'?it:en;
 function isDark(){const t=document.documentElement.dataset.theme;if(t==='dark')return true;if(t==='light')return false;return matchMedia('(prefers-color-scheme: dark)').matches}
 function readColors(){const cs=getComputedStyle(document.documentElement);for(const k of['paper','ink','muted','blue','red','yellow','green','line'])C[k]=cs.getPropertyValue('--'+k).trim();C.dark=isDark()}
 function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
@@ -189,8 +205,9 @@ function hatch(poly,o={}){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const[x,y]of pol
   for(let i=0;i<m;i++){const d=-R+i*gap+(r()-.5)*gap*0.5;const px=cx+nx*d,py=cy+ny*d;const e=R*(0.92+r()*0.08);ctx.moveTo(px-dx*e+(r()-.5)*2,py-dy*e+(r()-.5)*2);ctx.lineTo(px+dx*e+(r()-.5)*2,py+dy*e+(r()-.5)*2)}
   ctx.stroke();ctx.restore()}
 function txt(s,x,y,o={}){s=String(s);const f=P.take(Math.max(8,s.length*3.5));if(f<=0)return;const ctx=P.ctx;ctx.save();
-  ctx.font=`${o.wt||400} ${(o.size||22)*(o.font?1:HS)}px ${o.font||HAND}`;ctx.fillStyle=o.col||C.ink;ctx.textAlign=o.align||'left';ctx.textBaseline=o.base||'alphabetic';ctx.globalAlpha=o.a??1;
+  let sz=(o.size||22)*(o.font?1:HS);ctx.font=`${o.wt||400} ${sz}px ${o.font||HAND}`;if(o.maxw){const w=ctx.measureText(s).width;if(w>o.maxw){sz*=o.maxw/w;ctx.font=`${o.wt||400} ${sz}px ${o.font||HAND}`}}ctx.fillStyle=o.col||C.ink;ctx.textAlign=o.align||'left';ctx.textBaseline=o.base||'alphabetic';ctx.globalAlpha=o.a??1;
   if(o.rot){ctx.translate(x,y);ctx.rotate(o.rot);x=0;y=0}ctx.fillText(f<1?s.slice(0,Math.ceil(s.length*f)):s,x,y);ctx.restore()}
+function tw(s,size,wt=400,font=HAND){const c=P.ctx;c.save();c.font=`${wt} ${size*(font===HAND?HS:1)}px ${font}`;const w=c.measureText(String(s)).width;c.restore();return w}
 function wrapLines(s,maxW,size,font=HAND,wt=400){const ctx=P.ctx;ctx.save();ctx.font=`${wt} ${size*(font===HAND?HS:1)}px ${font}`;const words=String(s).split(' ');const lines=[];let cur='';
   for(const w of words){const t=cur?cur+' '+w:w;if(ctx.measureText(t).width>maxW&&cur){lines.push(cur);cur=w}else cur=t}if(cur)lines.push(cur);ctx.restore();return lines}
 function para(s,x,y,maxW,o={}){const size=o.size||22;const lines=wrapLines(s,maxW,size,o.font||HAND,o.wt||400);lines.forEach((l,i)=>txt(l,x,y+i*(o.lh||size*1.12),o));return lines.length*(o.lh||size*1.12)}
@@ -272,7 +289,7 @@ function fit(cv,W,H){const dpr=window.devicePixelRatio||1;const k=Math.min(3,Mat
   if(cv.width!==bw||cv.height!==bh){cv.width=bw;cv.height=bh}cv.getContext('2d').setTransform(k,0,0,k,0,0)}
 /* ================= scene ================= */
 const SC={};
-const fmt=(v,d=2)=>v.toFixed(d).replace('-','−');
+const fmt=(v,d=2)=>{const s=v.toFixed(d).replace('-','−');return LANG==='it'?s.replace('.',','):s};
 const SUP={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
 const sup=n=>String(n).split('').map(c=>SUP[c]||c).join('');
 function rotPts(pts,x,y,a){const c=Math.cos(a),s=Math.sin(a);return pts.map(([u,v])=>[x+u*c-v*s,y+u*s+v*c])}
@@ -348,6 +365,13 @@ const STOPS=[
  {n:18,b:2,x:10000,y:'2020',t:2020,title:'AlphaFold',done:1,scene:'fold'},
  {n:19,b:2,x:11600,y:'2022',t:2022,title:'From GPT to ChatGPT',done:1,scene:'gpt'},
  {k:'end',b:2,x:12780,t:2026}];
+const TITLE_IT={1:`La nota G di Ada Lovelace`,2:`La macchina di Turing`,3:`Un neurone fatto di interruttori`,4:`Il gioco dell'imitazione`,5:`Il topo di Shannon`,
+ 6:`Dartmouth: nasce un nome`,7:`Il percettrone di Rosenblatt`,8:`ELIZA e l'effetto ELIZA`,9:`Il problema dello XOR`,10:`MYCIN: la conoscenza come regole`,
+ 11:`La memoria di Hopfield`,12:`La retropropagazione dell'errore`,13:`Deep Blue contro Kasparov`,14:`ImageNet e AlexNet`,15:`Le parole come vettori`,
+ 16:`AlphaGo contro Lee Sedol`,17:`Il transformer e l'attenzione`,18:`AlphaFold`,19:`Da GPT a ChatGPT`};
+const YEAR_IT={10:`anni ’70`};
+const ttl=S=>(LANG==='it'&&TITLE_IT[S.n])||S.title;
+const yr=S=>(LANG==='it'&&YEAR_IT[S.n])||S.y;
 for(const st of STOPS){st.px=st.x;st.py=prof(st.b,st.x);st.s=sOnLeg(st.b,st.x);st.dir=st.b===1?-1:1;
  if(st.n){st.sx=st.px-340;st.sy=st.py-640;st.ox=st.sx+20;st.oy=st.sy+20}
  st.ts=Math.max(0,st.s-360)}
@@ -398,7 +422,7 @@ const DENS={engine:.5,logic:.35,summer1:.8,winter:.55,winter2:.55,summer2:.7,cas
 
 /* ---- cartelli e scritte ---- */
 function signpost(x,y,l1,l2,col){seg(x,y,x,y-250,{w:3});const bd=[[x-150,y-250],[x+150,y-244],[x+146,y-150],[x-148,y-156]];solid(bd,C.sheet);wash(bd,col,.35);path(bd,{w:2},true);
- txt(l1,x,y-203,{size:48,align:'center',wt:600});txt(l2,x,y-164,{size:32,align:'center',col:C.muted})}
+ txt(l1,x,y-203,{size:48,align:'center',wt:600,maxw:280});txt(l2,x,y-164,{size:32,align:'center',col:C.muted,maxw:280})}
 function regionLabel(x,y,name,years){add(x-800,y-160,x+800,y+80,()=>{txt(name,x,y,{size:140,align:'center',wt:600,a:.72});txt(years,x,y+70,{size:62,align:'center',col:C.muted})});excl(x-700,y-150,x+700,y+90)}
 
 /* ---- luoghi delle tappe (X = bordo sinistro dell'area di 340, g = suolo) ---- */
@@ -427,7 +451,7 @@ PLACES[5]=(X,g)=>{const O=[X+10,g-8],a=[60,0],bb=[18,-22];const P=(i,j)=>[O[0]+i
  const fl=[P(0,0),P(5,0),P(5,5),P(0,5)];wash(fl,RC('summer1'),.25);hatch(fl,{gap:9,a:.12,ang:10});
  const W=[[0,0,5,0],[0,1,0,5],[0,5,5,5],[5,0,5,4],[1,1,3,1],[2,2,2,4],[3,3,5,3],[1,2,1,4],[4,4,4,5],[3,1,3,2],[4,1,4,2]];
  for(const[i0,j0,i1,j1]of W){const p=P(i0,j0),q=P(i1,j1);const h=[[p[0],p[1]],[q[0],q[1]],[q[0],q[1]-12],[p[0],p[1]-12]];wash(h,RC('woods'),.55);path(h,{w:1.1,passes:1},true)}
- const m=P(4.5,4.5);ell(m[0],m[1]-4,8,5,{fill:C.muted,fa:.8,w:1.1});const s=P(.5,.5);txt('start',s[0]-20,s[1]+34,{size:22,col:C.muted})};
+ const m=P(4.5,4.5);ell(m[0],m[1]-4,8,5,{fill:C.muted,fa:.8,w:1.1});const s=P(.5,.5);txt(LX('start','partenza'),s[0]-20,s[1]+34,{size:22,col:C.muted})};
 PLACES[6]=(X,g)=>{const lawn=ellPoly(X+170,g+30,190,40);wash(lawn,RC('summer1'),.4);const b=[[X+30,g],[X+30,g-150],[X+310,g-150],[X+310,g]];solid(b,C.sheet);path(b,{w:2},true);
  path([[X+20,g-150],[X+60,g-190],[X+280,g-190],[X+320,g-150]],{w:2});for(let r=0;r<2;r++)for(let c=0;c<8;c++)box(X+48+c*32,g-130+r*60,16,28,{w:1.2,fill:C.blue,fa:.25});
  box(X+150,g-250,40,60,{w:1.6,solid:C.sheet});path([[X+146,g-250],[X+170,g-290],[X+194,g-250]],{w:1.6});seg(X+170,g-290,X+170,g-330,{w:1.4})};
@@ -440,15 +464,15 @@ PLACES[7]=(X,g)=>{const O=[X,g-6],a=[12,0],bb=[5,-5];const P=(i,j)=>[O[0]+i*a[0]
 PLACES[8]=(X,g)=>{const b=[[X+20,g],[X+20,g-140],[X+220,g-140],[X+220,g]];wash(b,RC('gold'),.35);path(b,{w:2},true);const rf=[[X,g-140],[X+120,g-220],[X+240,g-140]];wash(rf,RC('brick'),.4);hatch(rf,{gap:7,a:.3,ang:30});path(rf,{w:2},true);
  box(X+60,g-80,40,80,{w:1.6});box(X+140,g-110,50,40,{w:1.4,fill:C.blue,fa:.25});
  seg(X+300,g,X+300,g-120,{w:2.4});box(X+250,g-170,110,50,{w:1.8,solid:C.sheet});txt('DOCTOR',X+305,g-134,{size:32,align:'center',wt:600});
- ell(X+120,g-290,120,44,{w:1.6,solid:C.sheet});path([[X+90,g-250],[X+80,g-226],[X+110,g-248]],{w:1.4});txt('TELL ME MORE...',X+120,g-280,{size:28,align:'center',col:C.blue})};
+ ell(X+120,g-290,120,44,{w:1.6,solid:C.sheet});path([[X+90,g-250],[X+80,g-226],[X+110,g-248]],{w:1.4});txt(LX('TELL ME MORE...','DIMMI DI PIÙ...'),X+120,g-280,{size:28,align:'center',col:C.blue})};
 PLACES[9]=(X,g)=>{for(const[dx,w,h]of[[0,120,170],[150,90,120]]){const r=[[X+dx,g],[X+dx+w*.2,g-h],[X+dx+w*.6,g-h-20],[X+dx+w,g-h*.4],[X+dx+w,g]];wash(r,RC('castle'),.35);hatch(r,{gap:8,a:.3,ang:50});path(r,{w:1.8},true);
   solid([[X+dx+w*.2,g-h],[X+dx+w*.6,g-h-20],[X+dx+w*.72,g-h*.8],[X+dx+w*.35,g-h*.82]],C.snow)}
- seg(X+110,g+10,X+110,g-200,{w:2.4});const bd=[[X+40,g-230],[X+190,g-224],[X+186,g-178],[X+44,g-184]];solid(bd,C.sheet);path(bd,{w:1.8},true);txt('XOR pass',X+115,g-193,{size:34,align:'center',wt:600});
+ seg(X+110,g+10,X+110,g-200,{w:2.4});const bd=[[X+40,g-230],[X+190,g-224],[X+186,g-178],[X+44,g-184]];solid(bd,C.sheet);path(bd,{w:1.8},true);txt(LX('XOR pass','passo XOR'),X+115,g-193,{size:34,align:'center',wt:600,maxw:136});
  for(const[i,j,v]of[[0,0,0],[1,0,1],[0,1,1],[1,1,0]])ell(X+60+i*60+j*18,g-6-j*22,13,9,{w:1.5,solid:v?RC('brick'):C.sheet})};
 PLACES[10]=(X,g)=>{const house=(x,w,h,chim)=>{const b=[[x,g],[x,g-h],[x+w,g-h],[x+w,g]];wash(b,RC('brick'),.3);path(b,{w:1.8},true);const rf=[[x-12,g-h],[x+w/2,g-h-60],[x+w+12,g-h]];solid(rf,C.snow);path(rf,{w:1.8},true);
   box(x+w/2-14,g-h+22,28,26,{w:1.2,fill:RC('gold'),fa:.6});if(chim){box(x+w-34,g-h-66,18,40,{w:1.4,solid:C.sheet});CHIM.push([x+w-25,g-h-70])}};
  house(X,110,90,true);house(X+130,90,74,false);house(X+236,96,100,true);
- seg(X+180,g+20,X+180,g-50,{w:2});box(X+120,g-100,130,48,{w:1.6,solid:C.sheet});txt('IF ... THEN ...',X+185,g-67,{size:26,align:'center',col:C.red})};
+ seg(X+180,g+20,X+180,g-50,{w:2});box(X+120,g-100,130,48,{w:1.6,solid:C.sheet});txt(LX('IF ... THEN ...','SE ... ALLORA ...'),X+185,g-67,{size:26,align:'center',col:C.red,maxw:122})};
 PLACES[11]=(X,g)=>{const lake=ellPoly(X+170,g+10,180,58,32);wash(lake,RC('water'),.45);hatch(lake,{gap:7,a:.25,ang:0,col:C.blue});path(lake,{w:1.8},true);
  const pat=['01110','10001','11111','10001','10001'];for(let r=0;r<5;r++)for(let c=0;c<5;c++){const x=X+120+c*20+r*4,y=g-18+r*10;const q=[[x,y],[x+16,y],[x+18,y+8],[x+2,y+8]];if(pat[r][c]==='1')wash(q,RC('gold'),.8);path(q,{w:.9,passes:1},true)}
  for(let k=0;k<6;k++){const x=X+10+k*14;seg(x,g-10,x+(k%2?4:-4),g-70-k%3*12,{w:1.2,passes:1,col:RC('woods')})}};
@@ -467,7 +491,7 @@ PLACES[14]=(X,g)=>{const b=[[X,g],[X,g-190],[X+330,g-190],[X+330,g]];solid(b,C.s
   if(k===0)ell(x+17,y+17,9,9,{w:1,passes:1,fill:RC('gold'),fa:.6});else if(k===1)path([[x+6,y+28],[x+17,y+8],[x+28,y+28]],{w:1,passes:1},true);else seg(x+5,y+26,x+29,y+10,{w:1,passes:1,col:C.blue})}};
 PLACES[15]=(X,g)=>{const pts={king:[X+40,g-180],queen:[X+250,g-210],man:[X+60,g-40],woman:[X+270,g-70]};
  const wl=ellPoly(X+170,g-10,200,40);wash(wl,RC('summer1'),.3);
- for(const[w,[x,y]]of Object.entries(pts)){seg(x,y+26,x,g+10,{w:2});const bd=[[x-54,y-22],[x+54,y-18],[x+52,y+24],[x-52,y+20]];solid(bd,C.sheet);path(bd,{w:1.6},true);txt(w,x,y+10,{size:32,align:'center'})}
+ for(const[w,[x,y]]of Object.entries(pts)){seg(x,y+26,x,g+10,{w:2});const bd=[[x-54,y-22],[x+54,y-18],[x+52,y+24],[x-52,y+20]];solid(bd,C.sheet);path(bd,{w:1.6},true);txt(WNm(w),x,y+10,{size:32,align:'center',maxw:100})}
  arrow(X+60,g-66,X+44,g-150,{w:1.5,col:C.red,dash:[6,6]});arrow(X+270,g-96,X+254,g-180,{w:1.5,col:C.red,dash:[6,6]})};
 PLACES[16]=(X,g)=>{const O=[X,g+10],a=[36,0],bb=[10,-14];const P=(i,j)=>[O[0]+i*a[0]+j*bb[0],O[1]+i*a[1]+j*bb[1]];
  const fl=[P(-.4,-.4),P(8.4,-.4),P(8.4,8.4),P(-.4,8.4)];wash(fl,RC('go'),.5);path(fl,{w:1.8},true);
@@ -497,11 +521,11 @@ function sheet(st){const x0=st.sx,y0=st.sy,px=st.px,py=st.py;
  add(x0-60,y0-120,x0+740,py+40,()=>{seg(px-300,py-80,px-300,py+8,{w:3.2});seg(px+300,py-80,px+300,py+8,{w:3.2});
   const R=[[x0,y0],[x0+680,y0],[x0+680,y0+560],[x0,y0+560]];wash(R.map(([x,y])=>[x+10,y+12]),C.ink,.1);solid(R,C.sheet);path(R,{w:2.2},true);
   for(const[tx,rot]of[[x0+40,-.3],[x0+640,.28]]){const q=rotPts([[-34,-12],[34,-12],[34,12],[-34,12]],tx,y0+2,rot);wash(q,RC('gold'),.55)}
-  txt(st.y,x0+4,y0-24,{size:52,col:C.red,wt:600});txt(st.title,x0+(st.y.length>4?150:110),y0-24,{size:46,wt:600});
+  const yy=yr(st),tt=ttl(st);txt(yy,x0+4,y0-24,{size:52,col:C.red,wt:600});const tx0=x0+Math.max(yy.length>4?150:110,4+tw(yy,52,600)+26);txt(tt,tx0,y0-24,{size:46,wt:600,maxw:x0+700-tx0});
   const ctx=P.ctx;
   if(st.done&&SNAP[st.n]){ctx.save();ctx.translate(st.ox,st.oy);SC[st.scene].draw(SNAP[st.n]);ctx.restore()}
-  else{txt(st.y,x0+340,y0+260,{size:150,align:'center',col:C.red,a:.35,wt:600});para(st.title,x0+340,y0+340,520,{size:46,align:'center'});
-   box(x0+40,y0+40,600,480,{w:1.2,passes:1,dash:[8,10],a:.5});txt('experiment coming soon',x0+340,y0+480,{size:30,align:'center',col:C.muted})}});
+  else{txt(yr(st),x0+340,y0+260,{size:150,align:'center',col:C.red,a:.35,wt:600});para(ttl(st),x0+340,y0+340,520,{size:46,align:'center'});
+   box(x0+40,y0+40,600,480,{w:1.2,passes:1,dash:[8,10],a:.5});txt(LX('experiment coming soon','esperimento in arrivo'),x0+340,y0+480,{size:30,align:'center',col:C.muted})}});
  excl(x0-40,y0-100,x0+720,py+30)}
 
 /* ================= costruzione del mondo ================= */
@@ -511,7 +535,7 @@ function buildWorld(){
  for(const st of STOPS){if(st.n){excl(st.sx-40,st.sy-100,st.sx+720,st.py+30);const X=st.dir>0?st.px+380:st.px-720;excl(X-40,st.py-480,X+380,st.py+70);const tx=st.px-st.dir*360;excl(tx-90,st.py-140,tx+90,st.py+30)}}
  excl(11100,4000,12720,5000);excl(12600,4300,13100,5000);excl(200,100,3400,560);
  // titolo nel cielo
- add(200,80,3600,560,()=>{txt('A map of artificial intelligence',420,330,{size:180,wt:600});txt('from 1843 to today, drawn in pencil',430,450,{size:80,col:C.muted})});
+ add(200,80,3600,560,()=>{txt(LX('A map of artificial intelligence',`Una mappa dell'intelligenza artificiale`),420,330,{size:180,wt:600,maxw:3080});txt(LX('from 1843 to today, drawn in pencil','dal 1843 a oggi, disegnata a matita'),430,450,{size:80,col:C.muted})});
  // sole e nuvole sulla prima estate, nuvola di neve sul primo inverno
  add(8700,120,9150,540,()=>{ell(8925,330,80,80,{fill:RC('gold'),fa:.6,w:1.8});for(let k=0;k<12;k++){const a=k*Math.PI/6;seg(8925+Math.cos(a)*100,330+Math.sin(a)*100,8925+Math.cos(a)*140,330+Math.sin(a)*140,{w:1.6,passes:1})}});
  const cloud=(x,y,s,col)=>{for(let k=0;k<4;k++)ell(x-90*s+k*60*s,y-(k%2)*28*s,62*s,42*s,{fill:col,fa:.12,w:1.2,passes:1,a:.6})};
@@ -545,14 +569,14 @@ function buildWorld(){
    if(st.n===19){add(X-640,g-640,X+760,g+40,()=>PLACES.city(X-620,g-10,1340));}
    else if(f)add(X-60,g-480,X+400,g+80,()=>f(X,g));
    sheet(st)}
-  if(b===0){add(300,prof(0,480)-360,700,prof(0,480)+40,()=>{const g=prof(0,480)+8;seg(380,g,380,g-230,{w:3.2});seg(580,g,580,g-230,{w:3.2});curve(bez([360,g-200],[420,g-280],[540,g-280],[600,g-200]),{w:3});txt('Start',480,g-226,{size:54,align:'center',wt:600})})}
-  if(b===1){const x=4200,g=prof(1,x)+10;add(x-200,g-300,x+200,g+30,()=>signpost(x,g,'Second winter','about 1987–1993',RC('winter2')));excl(x-190,g-290,x+190,g+30)}
-  if(b===0){const x=12980,g=2250;add(x-200,g-300,x+200,g+30,()=>signpost(x,g,'First winter','about 1974–1980',RC('winter')));excl(x-190,g-290,x+190,g+30)}
+  if(b===0){add(300,prof(0,480)-360,700,prof(0,480)+40,()=>{const g=prof(0,480)+8;seg(380,g,380,g-230,{w:3.2});seg(580,g,580,g-230,{w:3.2});curve(bez([360,g-200],[420,g-280],[540,g-280],[600,g-200]),{w:3});txt(LX('Start','Partenza'),480,g-226,{size:54,align:'center',wt:600,maxw:210})})}
+  if(b===1){const x=4200,g=prof(1,x)+10;add(x-200,g-300,x+200,g+30,()=>signpost(x,g,LX('Second winter','Secondo inverno'),LX('about 1987–1993','circa 1987–1993'),RC('winter2')));excl(x-190,g-290,x+190,g+30)}
+  if(b===0){const x=12980,g=2250;add(x-200,g-300,x+200,g+30,()=>signpost(x,g,LX('First winter','Primo inverno'),LX('about 1974–1980','circa 1974–1980'),RC('winter')));excl(x-190,g-290,x+190,g+30)}
   if(b===2){const X=12860,g=prof(2,12940)+10;add(X-40,g-480,X+200,g+40,()=>PLACES.tower(X,g))}
   // nomi delle regioni
-  const RL=[[[1500,'The engine works','1843'],[4200,'Logic plateau','1936–1950'],[8250,'The first summer','1950s–1960s']],
-   [[9600,'The second summer','1980s']],
-   [[2000,'Search castle','1997'],[4400,'Deep woods','2012–2013'],[6800,'Go garden','2016'],[8400,'Attention bridge','2017'],[10000,'Protein gardens','2020'],[11800,'Language city','2022']]][b];
+  const RL=[[[1500,LX('The engine works','Le officine della macchina'),'1843'],[4200,LX('Logic plateau',`Altopiano della logica`),'1936–1950'],[8250,LX('The first summer','La prima estate'),LX('1950s–1960s','anni ’50–’60')]],
+   [[9600,LX('The second summer','La seconda estate'),LX('1980s','anni ’80')]],
+   [[2000,LX('Search castle','Castello della ricerca'),'1997'],[4400,LX('Deep woods','Bosco profondo'),'2012–2013'],[6800,LX('Go garden','Giardino del go'),'2016'],[8400,LX('Attention bridge',`Ponte dell'attenzione`),'2017'],[10000,LX('Protein gardens','Giardini delle proteine'),'2020'],[11800,LX('Language city','Città del linguaggio'),'2022']]][b];
   for(const[x,n,y]of RL)regionLabel(x,B+(b===2?560:b===1?330:420),n,y);
   // alberi
   const r=mulberry(101+b*7);const T=[];
@@ -570,15 +594,15 @@ SC.lovelace={init(st){st.n=0;st.ang=0;st.spin=0;const r=mulberry(5);st.holes=[];
  tick(st,dt){st.ang+=dt*3.2;st.spin-=dt;if(Math.random()<.3){st.dig[Math.floor(Math.random()*35)]=Math.floor(Math.random()*10)}if(st.spin<=0){st.n++;st.anim=false}},
  draw(st){
   for(let c=0;c<6;c++){const y=38+c*38,x=26+(c%2)*6;box(x,y,74,32,{fill:C.yellow,fa:.28,w:1.2});for(let k=0;k<8;k++)if(st.holes[c*8+k])dot(x+9+(k%4)*18,y+9+Math.floor(k/4)*14,2.6);if(c)seg(x+37,y-6,x+37,y,{w:1,passes:1})}
-  txt('punched cards',22,278,{size:21,col:C.muted});
+  txt(LX('punched cards','schede perforate'),22,278,{size:21,col:C.muted});
   seg(150,380,610,380,{w:2});seg(170,380,170,440,{w:1.6});seg(590,380,590,440,{w:1.6});seg(360,120,570,120,{w:1.8});
-  gear(210,300,58,14,st.ang,{fill:C.green});gear(300,236,38,9,-st.ang*58/38+0.18,{fill:C.green});txt('mill',205,410,{size:22,align:'center'});
+  gear(210,300,58,14,st.ang,{fill:C.green});gear(300,236,38,9,-st.ang*58/38+0.18,{fill:C.green});txt(LX('mill','mulino'),205,410,{size:22,align:'center'});
   for(let c=0;c<5;c++){const x=390+c*42;seg(x,120,x,370,{w:1.3});for(let k=0;k<7;k++){const y=150+k*32;ell(x,y,16,6.5,{solid:C.sheet,w:1.2});txt(st.dig[c*7+k],x,y+5,{size:15,align:'center'})}}
-  txt('store',474,410,{size:22,align:'center'});
+  txt(LX('store','magazzino'),474,410,{size:22,align:'center'});
   const hx=598+Math.cos(st.ang*1.4)*17,hy=250+Math.sin(st.ang*1.4)*17;seg(572,250,598,250,{w:1.6});ell(598,250,5,5,{w:1.3});seg(598,250,hx,hy,{w:2});ell(hx,hy,5,8,{fill:C.red,fa:.7,w:1.2});
   seg(20,432,620,432,{w:1,a:.4,passes:1});
   BERN.forEach((b,i)=>{const x=34+(i%4)*152,y=470+Math.floor(i/4)*40;if(i<st.n){if(i===st.n-1)box(x-6,y-24,140,32,{fill:C.yellow,fa:.5,nostroke:true});txt(b[0]+' = '+b[1],x,y,{size:26,col:i===3?C.red:C.ink})}else txt('·',x+50,y,{size:26,col:C.muted})});
-  if(st.n>=4)txt('Note G ↘',436,446,{size:19,col:C.red});
+  if(st.n>=4)txt(LX('Note G ↘','Nota G ↘'),436,446,{size:19,col:C.red});
  }};
 
 /* --- XOR --- */
@@ -598,32 +622,36 @@ SC.xor={init(st){st.fn='xor';st.h=[[60,190],[470,330]];st.drag=-1},
   const L=[];for(const[p,q]of[[rect[0],rect[1]],[rect[1],rect[2]],[rect[2],rect[3]],[rect[3],rect[0]]]){const fp=f(p),fq=f(q);if(fp===fq)continue;if((fp>=0)!==(fq>=0)){const t=fp/(fp-fq);L.push([p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t])}}
   if(L.length>=2)seg(L[0][0],L[0][1],L[1][0],L[1][1],{w:2.4});
   for(const p of st.h)ell(p[0],p[1],10,10,{solid:C.red,w:1.4});
-  txt(`${st.fn.toUpperCase()}: ${best} of 4 correctly separated`,70,500,{size:26,wt:600,col:best===4?C.green:C.red});
+  txt(`${st.fn.toUpperCase()}: ${best} `+LX('of 4 correctly separated','su 4 separati correttamente'),70,500,{size:26,wt:600,col:best===4?C.green:C.red});
   const bk=[[508,70],[618,62],[624,214],[512,222]];wash(bk,C.red,.35);hatch(bk,{gap:6,a:.2});path(bk,{w:1.6},true);seg(516,72,520,220,{w:1.1});
   txt('Perceptrons',566,120,{size:22,align:'center',rot:-0.07,wt:600});txt('Minsky, Papert',566,150,{size:18,align:'center',rot:-0.07});txt('1969',566,196,{size:22,align:'center',rot:-0.07});
   for(let k=0;k<5;k++)star(520+(k%3)*40,262+Math.floor(k/3)*44+(k%2)*10,7,{col:C.blue});
-  txt('1973:',510,368,{size:21,col:C.blue});txt('Lighthill',510,392,{size:21,col:C.blue});txt('report',510,416,{size:21,col:C.blue})}};
+  txt('1973:',510,368,{size:21,col:C.blue});txt('Lighthill',510,392,{size:21,col:C.blue});txt(LX('report','rapporto'),510,416,{size:21,col:C.blue})}};
 
 /* --- GPT --- */
 const GPTD={'^':{a:.45,full:.27,still:.23,banana:.05},a:{story:.4,journey:.2,long:.2,sequence:.1,puzzle:.1},long:{story:.55,journey:.45},story:{of:.6,with:.25,'.':.15},
  journey:{of:.7,'.':.3},sequence:{of:1},puzzle:{'.':.6,with:.4},full:{of:1},still:{unfinished:.6,young:.4},unfinished:{'.':1},young:{'.':1},
  of:{summers:.35,ideas:.3,winters:.2,people:.15},with:{surprises:.5,setbacks:.5},summers:{and:.6,'.':.4},ideas:{and:.55,'.':.45},winters:{and:.55,'.':.45},people:{and:.55,'.':.45},
  and:{surprises:.4,comebacks:.35,setbacks:.25},surprises:{'.':1},comebacks:{'.':1},setbacks:{'.':1},banana:{'.':1}};
+const GPTD_IT={'^':{una:.45,piena:.27,ancora:.23,banana:.05},una:{storia:.4,avventura:.2,lunga:.2,sequenza:.1,sfida:.1},lunga:{storia:.55,avventura:.45},storia:{di:.6,con:.25,'.':.15},
+ avventura:{di:.7,'.':.3},sequenza:{di:1},sfida:{'.':.6,con:.4},piena:{di:1},ancora:{incompiuta:.6,giovane:.4},incompiuta:{'.':1},giovane:{'.':1},
+ di:{estati:.35,idee:.3,inverni:.2,persone:.15},con:{sorprese:.5,ostacoli:.5},estati:{e:.6,'.':.4},idee:{e:.55,'.':.45},inverni:{e:.55,'.':.45},persone:{e:.55,'.':.45},
+ e:{sorprese:.4,rinascite:.35,ostacoli:.25},sorprese:{'.':1},rinascite:{'.':1},ostacoli:{'.':1},banana:{'.':1}};
 SC.gpt={init(st){st.gen=[];st.T=1;st.mode=0;st.pick=null},
- dist(st){const last=st.gen.length?st.gen[st.gen.length-1]:'^';const d=GPTD[last];if(!d||last==='.')return[];const e=Object.entries(d).map(([k,p])=>[k,Math.pow(p,1/st.T)]);const Z=e.reduce((a,b)=>a+b[1],0);return e.map(([k,p])=>[k,p/Z]).sort((a,b)=>b[1]-a[1])},
- act(st,a,v,el){if(a==='mode'){st.mode^=1;el.textContent=st.mode?'show generation':'show model sizes';el.setAttribute('aria-pressed',!!st.mode)}
+ dist(st){const last=st.gen.length?st.gen[st.gen.length-1]:'^';const d=(isIT()?GPTD_IT:GPTD)[last];if(!d||last==='.')return[];const e=Object.entries(d).map(([k,p])=>[k,Math.pow(p,1/st.T)]);const Z=e.reduce((a,b)=>a+b[1],0);return e.map(([k,p])=>[k,p/Z]).sort((a,b)=>b[1]-a[1])},
+ act(st,a,v,el){if(a==='mode'){st.mode^=1;el.textContent=st.mode?LX('show generation','mostra la generazione'):LX('show model sizes','mostra le dimensioni dei modelli');el.setAttribute('aria-pressed',!!st.mode)}
   if(a==='gen'){if(st.mode)return;const d=this.dist(st);if(!d.length)return;let r=Math.random(),k=d[d.length-1][0];for(const[w,p]of d){if((r-=p)<=0){k=w;break}}st.pick=k;st.gen.push(k)}
   if(a==='restart'){st.gen=[];st.pick=null}if(a==='temp')st.T=+v},
- draw(st){if(st.mode){const K=150/Math.sqrt(175e9);[['GPT-1','2018','117 million',117e6,[120,330]],['GPT-2','2019','1.5 billion',1.5e9,[120,210]],['GPT-3','2020','175 billion',175e9,[482,278]]].forEach(([n,y,l,p,[x,yy]])=>{const r=K*Math.sqrt(p);const big=n==='GPT-3';
-    ell(x,yy,Math.max(r,2.5),Math.max(r,2.5),{fill:big?C.red:C.blue,fa:.4,w:1.4,hatch:r>30?{gap:7,a:.15}:null});txt(`${n} (${y})`,big?x:x+24,big?yy-8:yy-4,{size:24,wt:600,align:big?'center':'left'});txt(l+' parameters',big?x:x+24,yy+20,{size:20,align:big?'center':'left'})});
-   txt('circle area proportional to the number of parameters',24,40,{size:22,col:C.muted});txt('GPT-4 (2023): parameter count not disclosed',24,490,{size:21,col:C.blue});return}
-  const words=['The history of artificial intelligence is',...st.gen];let x=24,y=50;
+ draw(st){if(st.mode){const K=150/Math.sqrt(175e9);[['GPT-1','2018',LX('117 million parameters','117 milioni di parametri'),117e6,[120,330]],['GPT-2','2019',LX('1.5 billion parameters','1,5 miliardi di parametri'),1.5e9,[120,210]],['GPT-3','2020',LX('175 billion parameters','175 miliardi di parametri'),175e9,[482,278]]].forEach(([n,y,l,p,[x,yy]])=>{const r=K*Math.sqrt(p);const big=n==='GPT-3';
+    ell(x,yy,Math.max(r,2.5),Math.max(r,2.5),{fill:big?C.red:C.blue,fa:.4,w:1.4,hatch:r>30?{gap:7,a:.15}:null});txt(`${n} (${y})`,big?x:x+24,big?yy-8:yy-4,{size:24,wt:600,align:big?'center':'left'});txt(l,big?x:x+24,yy+20,{size:20,align:big?'center':'left'})});
+   txt(LX('circle area proportional to the number of parameters','area dei cerchi proporzionale al numero di parametri'),24,40,{size:22,col:C.muted});txt(LX('GPT-4 (2023): parameter count not disclosed','GPT-4 (2023): numero di parametri non reso noto'),24,490,{size:21,col:C.blue});return}
+  const words=[LX('The history of artificial intelligence is',`La storia dell'intelligenza artificiale è`),...st.gen];let x=24,y=50;
   const ctx=P.ctx;ctx.save();ctx.font=`600 ${30*HS}px ${HAND}`;const pos=[];words.forEach((w,i)=>{const t=(w==='.'?'':' ')+w;const ww=ctx.measureText(t).width;if(x+ww>610){x=24;y+=38}pos.push([t,x,y,i]);x+=ww});ctx.restore();
   pos.forEach(([t,x,y,i])=>txt(t,x,y,{size:30,col:i?C.blue:C.ink,wt:i&&i===words.length-1?600:400}));
-  const d=this.dist(st);const by=200;if(!d.length){txt('end of the sentence: press “start over”',24,by+40,{size:25,col:C.red});return}
-  txt(`next token, temperature ${fmt(st.T,1)}`,24,by-10,{size:22,col:C.muted});
+  const d=this.dist(st);const by=200;if(!d.length){txt(LX('end of the sentence: press “start over”','fine della frase: premi “ricomincia”'),24,by+40,{size:25,col:C.red});return}
+  txt(LX('next token, temperature ','token successivo, temperatura ')+fmt(st.T,1),24,by-10,{size:22,col:C.muted});
   d.slice(0,6).forEach(([w,p],k)=>{const yy=by+20+k*44;txt(w==='.'?'“.”':w,180,yy+22,{size:25,align:'right'});const bw=Math.max(2,p*400);const q=[[195,yy+2],[195+bw,yy+2],[195+bw,yy+30],[195,yy+30]];wash(q,C.blue,.45);hatch(q,{gap:6,a:.2});path(q,{w:1.2},true);txt(Math.round(p*100)+'%',205+bw,yy+24,{size:21})});
-  txt('low temperature: the likeliest token nearly always wins; high: more surprises',24,500,{size:19,col:C.muted})}};
+  txt(LX('low temperature: the likeliest token nearly always wins; high: more surprises','temperatura bassa: vince quasi sempre il token più probabile; alta: più sorprese'),24,500,{size:19,col:C.muted,maxw:596})}};
 
 /* ================= scene, seconda fase ================= */
 Object.assign(LOOKS,{hopfield:{hair:'side',glasses:true,coat:'blue'},buchanan:{hair:'short',glasses:true,tie:'tie',coat:'green'},mikolov:{hair:'short',coat:'green'}});
@@ -631,6 +659,7 @@ const DIRS=[[1,0],[0,1],[-1,0],[0,-1]];
 
 /* --- macchina di Turing --- */
 const TRULES=[['right','0','0','→','right'],['right','1','1','→','right'],['right','□','□','←','carry'],['carry','1','0','←','carry'],['carry','0','1','stay','done'],['carry','□','1','stay','done']];
+const TWD={right:'destra',carry:'riporto',done:'fine',stay:'resta'};const TW=v=>isIT()?(TWD[v]||v):v;
 SC.turing={init(st){st.tape='□□□□1011□□□□'.split('');st.head=4;st.hx=4;st.state='right';st.run=false;st.t=0;st.rule=-1},
  rule(st){return TRULES.findIndex(r=>r[0]===st.state&&r[1]===st.tape[st.head])},
  step(st){if(st.state==='done')return false;const k=this.rule(st);if(k<0)return false;const r=TRULES[k];st.rule=k;st.tape[st.head]=r[2];if(r[3]==='→')st.head++;if(r[3]==='←')st.head--;st.state=r[4];
@@ -641,12 +670,12 @@ SC.turing={init(st){st.tape='□□□□1011□□□□'.split('');st.head=4;s
   seg(x0-30,y,x0+12*cw+26,y,{w:1.6});seg(x0-30,y+cw,x0+12*cw+26,y+cw,{w:1.6});for(let i=0;i<=12;i++)seg(x0+i*cw,y,x0+i*cw,y+cw,{w:1.2,passes:1});
   txt('…',x0-26,y+30,{size:26});txt('…',x0+12*cw+6,y+30,{size:26});
   st.tape.forEach((c,i)=>{if(c!=='□')txt(c,x0+i*cw+cw/2,y+33,{size:32,align:'center',wt:600});else txt('□',x0+i*cw+cw/2,y+31,{size:20,align:'center',col:C.muted})});
-  const hx=x0+st.hx*cw+cw/2;box(hx-44,28,88,44,{solid:C.sheet,fill:st.state==='done'?C.red:C.yellow,fa:.45,w:1.6});txt(st.state,hx,58,{size:24,align:'center',wt:600});arrow(hx,74,hx,y-6,{w:1.5});
-  const tx=40,ty=236,cws=[110,82,82,82,140];const heads=['state','reads','writes','moves','next state'];
+  const hx=x0+st.hx*cw+cw/2;box(hx-44,28,88,44,{solid:C.sheet,fill:st.state==='done'?C.red:C.yellow,fa:.45,w:1.6});txt(TW(st.state),hx,58,{size:24,align:'center',wt:600});arrow(hx,74,hx,y-6,{w:1.5});
+  const tx=40,ty=236,cws=[110,82,82,82,140];const heads=isIT()?['stato','legge','scrive','sposta','nuovo stato']:['state','reads','writes','moves','next state'];
   let cx=tx;heads.forEach((h,i)=>{txt(h,cx+8,ty,{size:21,col:C.muted});cx+=cws[i]});seg(tx,ty+8,tx+496,ty+8,{w:1.2});
-  const cur=this.rule(st);TRULES.forEach((r,k)=>{const yy=ty+36+k*31;if(k===cur&&st.state!=='done')box(tx,yy-22,496,29,{fill:C.yellow,fa:.55,nostroke:true});let cx=tx;r.forEach((v,i)=>{txt(v,cx+8,yy,{size:22});cx+=cws[i]})});
-  const bits=st.tape.join('').replace(/□/g,'');const n=parseInt(bits||'0',2);txt(`on the tape: ${bits} in base 2 = ${n} in base 10`,40,478,{size:25,col:C.blue});
-  if(st.state==='done')txt('done: the number went up by 1',40,508,{size:22,col:C.red})}};
+  const cur=this.rule(st);TRULES.forEach((r,k)=>{const yy=ty+36+k*31;if(k===cur&&st.state!=='done')box(tx,yy-22,496,29,{fill:C.yellow,fa:.55,nostroke:true});let cx=tx;r.forEach((v,i)=>{txt(TW(v),cx+8,yy,{size:22});cx+=cws[i]})});
+  const bits=st.tape.join('').replace(/□/g,'');const n=parseInt(bits||'0',2);txt(LX('on the tape: ','sul nastro: ')+`${bits} in base 2 = ${n} in base 10`,40,478,{size:25,col:C.blue});
+  if(st.state==='done')txt(LX('done: the number went up by 1','fine: il numero è aumentato di 1'),40,508,{size:22,col:C.red})}};
 
 /* --- neurone --- */
 SC.neuron={init(st){st.x=[1,0];st.th=2;st.ph=0},
@@ -656,7 +685,7 @@ SC.neuron={init(st){st.x=[1,0];st.th=2;st.ph=0},
  draw(st){const s=st.x[0]+st.x[1],fire=s>=st.th;st.anim=fire;
   [[80,150],[80,330]].forEach(([cx,cy],i)=>{ell(cx,cy,26,26,{solid:C.sheet,fill:st.x[i]?C.yellow:null,fa:.8,w:1.6});txt(st.x[i],cx,cy+10,{size:30,align:'center',wt:600});txt(i?'x₂':'x₁',cx,cy-36,{size:24,align:'center'});
    curve([[106,cy],[180,cy+(250-cy)*0.3],[240,250+(cy-250)*0.25]].flatMap((p,k,a)=>k<a.length-1?resample([p,a[k+1]],false,12):[]),{w:1.5,col:st.x[i]?C.red:C.ink});
-   txt('weight 1',150,cy+(250-cy)*0.2-8,{size:19,col:C.muted})});
+   txt(LX('weight 1','peso 1'),150,cy+(250-cy)*0.2-8,{size:19,col:C.muted})});
   ell(300,250,64,56,{w:1.8,fill:fire?C.red:C.green,fa:.25,hatch:{gap:6,a:.18}});
   for(const a of[2.4,3.9,-1.2,1.3]){const x1=300+Math.cos(a)*64,y1=250+Math.sin(a)*56;seg(x1,y1,x1+Math.cos(a)*18,y1+Math.sin(a)*18,{w:1.1,passes:1})}
   txt('Σ = '+s,300,244,{size:28,align:'center',wt:600});txt('θ = '+st.th,300,276,{size:24,align:'center',col:C.blue});
@@ -668,18 +697,22 @@ SC.neuron={init(st){st.x=[1,0];st.th=2;st.ph=0},
   const tx=60,ty=398;['x₁','x₂','Σ','y'].forEach((h,i)=>txt(h,tx+i*50,ty,{size:22,col:C.muted,align:'center'}));seg(tx-20,ty+7,tx+175,ty+7,{w:1.1});
   [[0,0],[0,1],[1,0],[1,1]].forEach(([a,b],k)=>{const yy=ty+30+k*26;if(a===st.x[0]&&b===st.x[1])box(tx-22,yy-20,200,26,{fill:C.yellow,fa:.5,nostroke:true});
    const ss=a+b;[a,b,ss,ss>=st.th?1:0].forEach((v,i)=>txt(v,tx+i*50,yy,{size:22,align:'center',col:i===3&&v?C.red:C.ink}))});
-  const name=['is always on','computes OR','computes AND','never fires'][st.th];
-  txt('with θ = '+st.th,300,440,{size:26});txt('the neuron '+name,300,474,{size:26,col:C.red,wt:600})}};
+  const name=(isIT()?['è sempre attivo','calcola OR','calcola AND','non scatta mai']:['is always on','computes OR','computes AND','never fires'])[st.th];
+  txt(LX('with θ = ','con θ = ')+st.th,300,440,{size:26});txt(LX('the neuron ','il neurone ')+name,300,474,{size:26,col:C.red,wt:600})}};
 
 /* --- gioco dell'imitazione (risposte della macchina: dialogo d'esempio di Turing, 1950) --- */
 const IMIT=[
  {q:'Please write me a sonnet on the subject of the Forth Bridge.',a:['Count me out on this one. I never could write poetry.','“Steel sings above the Forth…” no, that\'s all I\'ve got.'],m:0,why:'Refusing, as a person might, is part of the imitation.'},
  {q:'Add 34957 to 70764.',a:['Hold on… it\'s 105721.','(pause of about 30 seconds) 105621'],m:1,why:'The machine\'s answer is wrong: the sum is 105721.'},
  {q:'I have K at e1, and no other pieces. You have only K at e3 and R at h8. It is your move. What do you play?',a:['(pause of 15 seconds) Rh1 mate.','Rook to h1! Checkmate, I think.'],m:0,why:'Almost the same answer: one question is not enough.'}];
+const IMIT_IT=[
+ {q:`Per favore, scrivimi un sonetto sul ponte sul Forth.`,a:[`Su questo non contare su di me. Non ho mai saputo scrivere poesie.`,`“L'acciaio canta sopra il Forth…” no, è tutto quello che ho.`],m:0,why:`Rifiutarsi, come farebbe una persona, fa parte dell'imitazione.`},
+ {q:`Somma 34957 a 70764.`,a:[`Un attimo… fa 105721.`,`(pausa di circa 30 secondi) 105621`],m:1,why:`La risposta della macchina è sbagliata: la somma è 105721.`},
+ {q:`Ho solo il re in e1. Tu hai il re in e3 e la torre in h8. Tocca a te: che cosa giochi?`,a:[`(pausa di 15 secondi) Th1 matto.`,`Torre in h1! Scacco matto, credo.`],m:0,why:`Risposte quasi uguali: una domanda sola non basta.`}];
 SC.imitation={init(st){st.r=0;st.g=-1},
  act(st,a,v){if(a==='guess'&&st.g<0)st.g=+v;if(a==='next'){st.r=(st.r+1)%IMIT.length;st.g=-1}},
- draw(st){const R=IMIT[st.r];
-  txt(`question ${st.r+1} of ${IMIT.length}`,24,34,{size:21,col:C.muted});
+ draw(st){const R=(isIT()?IMIT_IT:IMIT)[st.r];
+  txt(LX('question ','domanda ')+(st.r+1)+LX(' of ',' di ')+IMIT.length,24,34,{size:21,col:C.muted});
   const qp=[[20,48],[312,48],[312,170],[150,170],[118,204],[122,170],[20,170]];wash(qp,C.yellow,.28);path(qp,{w:1.4},true);para(R.q,34,80,268,{size:22,lh:22});
   person(118,286,.86,{hair:'long',coat:'red',bottom:440});
   box(20,436,280,14,{solid:C.sheet,w:1.5});seg(40,450,40,516,{w:1.4});seg(280,450,280,516,{w:1.4});
@@ -690,7 +723,7 @@ SC.imitation={init(st){st.r=0;st.g=-1},
    else{box(x,64,96,256,{fill:C.green,fa:.25,hatch:{gap:7,a:.2},w:1.5});ell(x+80,196,4,4,{w:1.2})}
    txt(L,x+48,56,{size:30,align:'center',wt:600});para(R.a[i],x-12,358,128,{size:19,col:C.blue,lh:20})});
   curve(resample([[258,380],[300,370],[340,350],[400,334]],false,10),{w:1,a:.5,passes:1});curve(resample([[258,384],[320,380],[470,350],[540,334]],false,10),{w:1,a:.5,passes:1});
-  if(st.g>=0){const ok=st.g===R.m;txt((ok?'right! ':'no: ')+'the machine was '+'AB'[R.m]+'.',330,478,{size:25,wt:600,col:ok?C.green:C.red});para(R.why,330,500,300,{size:19,lh:19})}}};
+  if(st.g>=0){const ok=st.g===R.m;txt((ok?LX('right! ','giusto! '):'no: ')+LX('the machine was ','la macchina era ')+'AB'[R.m]+'.',330,478,{size:25,wt:600,col:ok?C.green:C.red});para(R.why,330,500,300,{size:19,lh:19})}}};
 
 /* --- Shannon e Teseo --- */
 function makeMaze(seed){const r=mulberry(seed);const N=5;const open=Array.from({length:N*N},()=>[false,false,false,false]);const seen=new Set([0]);const stack=[0];
@@ -702,27 +735,27 @@ function mouse(x,y,a){const K=1.5;const rp=(pts)=>rotPts(pts.map(([u,v])=>[u*K,v
   const hd=rp([[12,-6],[24,0],[12,6]]);path(hd,{w:1.3},true);for(const s of[-1,1]){const e=rp([[10,s*7]])[0];ell(e[0],e[1],6.5,6.5,{w:1.1,passes:1,solid:C.sheet})}
   const t=rp([[-15,0],[-24,-5],[-31,3],[-38,-2]]);curve(resample(t,false,4),{w:1.1,passes:1});const n=rp([[24,0]])[0];dot(n[0],n[1],2.6)}
 function goalMark(x,y){ell(x,y,20,20,{w:1.6,fill:C.red,fa:.25});ell(x,y,11,11,{w:1.3,fill:C.red,fa:.5});dot(x,y,3.2,C.red)}
-SC.shannon={cs:72,ox:92,oy:34,init(st){st.open=makeMaze(9);st.goal=24;st.mem={};st.pos=0;st.ang=0;st.seq=[];st.k=0;st.t=0;st.mode='idle';st.trail=[];st.msg='Theseus does not know the maze yet.'},
+SC.shannon={cs:72,ox:92,oy:34,init(st){st.open=makeMaze(9);st.goal=24;st.mem={};st.pos=0;st.ang=0;st.seq=[];st.k=0;st.t=0;st.mode='idle';st.trail=[];st.msg=LX('Theseus does not know the maze yet.','Teseo non conosce ancora il labirinto.')},
  cc(c){return[this.ox+(c%5+0.5)*this.cs,this.oy+(Math.floor(c/5)+0.5)*this.cs]},
  explore(st){const seq=[0];const seen=new Set([0]);const stack=[0];while(stack.length){const c=stack[stack.length-1];if(c===st.goal)break;let moved=false;
    for(let d=0;d<4;d++){if(!st.open[c][d])continue;const n=c+DIRS[d][0]+DIRS[d][1]*5;if(seen.has(n))continue;seen.add(n);stack.push(n);seq.push(n);moved=true;break}
    if(!moved){stack.pop();if(stack.length)seq.push(stack[stack.length-1])}}return seq},
  dirOf(a,b){const d=b-a;return d===1?0:d===5?1:d===-1?2:3},
- act(st,a){if(st.mode!=='idle')return;if(a==='explore'){st.mem={};st.seq=this.explore(st);st.k=0;st.pos=0;st.mode='explore';st.trail=[0];st.anim=true;st.msg='exploring…'}
-  if(a==='recall'){if(!Object.keys(st.mem).length){st.msg='Theseus has to explore first!';return}const seq=[0];let c=0,g=0;while(c!==st.goal&&st.mem[c]!==undefined&&g<30){c=c+DIRS[st.mem[c]][0]+DIRS[st.mem[c]][1]*5;seq.push(c);g++}
-   st.seq=seq;st.k=0;st.pos=0;st.mode='recall';st.trail=[0];st.anim=true;st.msg='following the memory…'}
-  if(a==='move'){let g;do{g=5+Math.floor(Math.random()*20)}while(g===st.goal);st.goal=g;st.pos=0;st.msg='goal moved: the memory is now wrong.'}},
+ act(st,a){if(st.mode!=='idle')return;if(a==='explore'){st.mem={};st.seq=this.explore(st);st.k=0;st.pos=0;st.mode='explore';st.trail=[0];st.anim=true;st.msg=LX('exploring…','esplorazione…')}
+  if(a==='recall'){if(!Object.keys(st.mem).length){st.msg=LX('Theseus has to explore first!','Teseo deve prima esplorare!');return}const seq=[0];let c=0,g=0;while(c!==st.goal&&st.mem[c]!==undefined&&g<30){c=c+DIRS[st.mem[c]][0]+DIRS[st.mem[c]][1]*5;seq.push(c);g++}
+   st.seq=seq;st.k=0;st.pos=0;st.mode='recall';st.trail=[0];st.anim=true;st.msg=LX('following the memory…','segue la memoria…')}
+  if(a==='move'){let g;do{g=5+Math.floor(Math.random()*20)}while(g===st.goal);st.goal=g;st.pos=0;st.msg=LX('goal moved: the memory is now wrong.','meta spostata: ora la memoria è sbagliata.')}},
  tick(st,dt){st.t+=dt;const T=st.mode==='explore'?0.2:0.28;if(st.t<T)return;st.t=0;
   if(st.k<st.seq.length-1){const a=st.seq[st.k],b=st.seq[st.k+1];if(st.mode==='explore')st.mem[a]=this.dirOf(a,b);st.ang=[0,Math.PI/2,Math.PI,-Math.PI/2][this.dirOf(a,b)];st.k++;st.pos=b;st.trail.push(b)}
   else{st.anim=false;const steps=st.seq.length-1;
-   if(st.mode==='explore')st.msg=`first run: ${steps} moves, dead ends included.`;else st.msg=st.pos===st.goal?`second run: ${steps} moves, no hesitation.`:'the goal is not here any more: time to explore again.';st.mode='idle';st.k=0}},
+   if(st.mode==='explore')st.msg=LX(`first run: ${steps} moves, dead ends included.`,`prima corsa: ${steps} mosse, vicoli ciechi compresi.`);else st.msg=st.pos===st.goal?LX(`second run: ${steps} moves, no hesitation.`,`seconda corsa: ${steps} mosse, senza esitazioni.`):LX('the goal is not here any more: time to explore again.','la meta non è più qui: bisogna esplorare di nuovo.');st.mode='idle';st.k=0}},
  draw(st){const{ox,oy,cs}=this;const N=5;box(ox,oy,cs*N,cs*N,{fill:C.green,fa:.12,nostroke:true});
   for(const c of new Set(st.trail)){const x=ox+(c%5)*cs,y=oy+Math.floor(c/5)*cs;hatch([[x,y],[x+cs,y],[x+cs,y+cs],[x,y+cs]],{gap:8,a:.18,ang:40})}
   for(let c=0;c<25;c++){const x=ox+(c%5)*cs,y=oy+Math.floor(c/5)*cs;if(!st.open[c][0])seg(x+cs,y,x+cs,y+cs,{w:2.6});if(!st.open[c][1])seg(x,y+cs,x+cs,y+cs,{w:2.6});if(c%5===0)seg(x,y,x,y+cs,{w:2.6});if(c<5)seg(x,y,x+cs,y,{w:2.6})}
   for(const k in st.mem){const[cx,cy]=this.cc(+k);const d=DIRS[st.mem[k]];arrow(cx-d[0]*14,cy-d[1]*14,cx+d[0]*20,cy+d[1]*20,{col:C.blue,w:1.6,head:7})}
   const[gx,gy]=this.cc(st.goal);goalMark(gx,gy);const[mx,my]=this.cc(st.pos);mouse(mx,my-4,st.ang);
-  txt('start',ox,oy+cs*N+26,{size:20,col:C.muted});txt('goal',gx,gy+34,{size:18,align:'center',col:C.red});
-  const rx=486,ry=110,rc=26;txt('the relays',rx,ry-52,{size:22,wt:600});txt('one memory',rx,ry-30,{size:19,col:C.muted});txt('per square',rx,ry-10,{size:19,col:C.muted});
+  txt(LX('start','partenza'),ox,oy+cs*N+26,{size:20,col:C.muted});txt(LX('goal','meta'),gx,gy+34,{size:18,align:'center',col:C.red});
+  const rx=486,ry=110,rc=26;txt(LX('the relays','i relè'),rx,ry-52,{size:22,wt:600});txt(LX('one memory','una memoria'),rx,ry-30,{size:19,col:C.muted});txt(LX('per square','per casella'),rx,ry-10,{size:19,col:C.muted});
   for(let c=0;c<25;c++){const x=rx+(c%5)*rc,y=ry+Math.floor(c/5)*rc;const on=st.mem[c]!==undefined;box(x+2,y+2,rc-4,rc-4,{w:1,passes:1,fill:on?C.yellow:null,fa:.6});
    if(on){const d=DIRS[st.mem[c]];seg(x+rc/2-d[0]*6,y+rc/2-d[1]*6,x+rc/2+d[0]*7,y+rc/2+d[1]*7,{w:1.3,col:C.blue,passes:1})}}
   para(st.msg,40,450,560,{size:25,col:C.blue})}};
@@ -730,23 +763,25 @@ SC.shannon={cs:72,ox:92,oy:34,init(st){st.open=makeMaze(9);st.goal=24;st.mem={};
 /* --- Dartmouth e il Logic Theorist: due dimostrazioni dei Principia --- */
 const LTP={'2.01':{goal:'(p → ¬p) → ¬p',name:'Theorem ✱2.01',steps:[['(p ∨ p) → p','axiom ✱1.2 (tautology)',''],['(¬p ∨ ¬p) → ¬p','substitute ¬p for p','¬p'],['(p → ¬p) → ¬p','by definition ✱1.01, ¬a ∨ b means a → b','p → ¬p']]},
  '2.02':{goal:'q → (p → q)',name:'Theorem ✱2.02',steps:[['q → (p ∨ q)','axiom ✱1.3 (addition)',''],['q → (¬p ∨ q)','substitute ¬p for p','¬p'],['q → (p → q)','by definition ✱1.01, ¬a ∨ b means a → b','p → q']]}};
+const LTP_IT={'2.01':{goal:'(p → ¬p) → ¬p',name:'Teorema ✱2.01',steps:[['(p ∨ p) → p','assioma ✱1.2 (tautologia)',''],['(¬p ∨ ¬p) → ¬p','sostituisci ¬p a p','¬p'],['(p → ¬p) → ¬p','per la definizione ✱1.01, ¬a ∨ b significa a → b','p → ¬p']]},
+ '2.02':{goal:'q → (p → q)',name:'Teorema ✱2.02',steps:[['q → (p ∨ q)','assioma ✱1.3 (addizione)',''],['q → (¬p ∨ q)','sostituisci ¬p a p','¬p'],['q → (p → q)','per la definizione ✱1.01, ¬a ∨ b significa a → b','p → q']]}};
 SC.dartmouth={init(st){st.th='2.01';st.k=0},
  act(st,a,v){if(a==='thm'){st.th=v;st.k=0;st.el.querySelectorAll('[data-act=thm]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v))}if(a==='next')st.k=Math.min(3,st.k+1)},
- draw(st){const T=LTP[st.th];
+ draw(st){const T=(isIT()?LTP_IT:LTP)[st.th];
   const bx=30,by=70;box(bx,by,150,62,{solid:C.sheet,w:1.5,hatch:{gap:9,a:.12}});path([[bx-8,by],[bx+75,by-26],[bx+158,by]],{w:1.5});box(bx+64,by-46,22,20,{w:1.2});path([[bx+62,by-46],[bx+75,by-60],[bx+88,by-46]],{w:1.2});
-  for(let c=0;c<5;c++)box(bx+10+c*28,by+14,14,20,{w:1,passes:1,hatch:{gap:4,a:.3}});txt('Hanover, New Hampshire',bx+75,by+86,{size:19,align:'center',col:C.muted});txt('summer 1956',bx+75,by+108,{size:19,align:'center',col:C.muted});
+  for(let c=0;c<5;c++)box(bx+10+c*28,by+14,14,20,{w:1,passes:1,hatch:{gap:4,a:.3}});txt('Hanover, New Hampshire',bx+75,by+86,{size:19,align:'center',col:C.muted});txt(LX('summer 1956','estate 1956'),bx+75,by+108,{size:19,align:'center',col:C.muted});
   const bk=[[40,250],[150,242],[156,392],[46,400]];wash(bk,C.blue,.35);hatch(bk,{gap:6,a:.18});path(bk,{w:1.6},true);seg(50,252,54,398,{w:1.1});
   txt('Principia',100,296,{size:22,align:'center',wt:600,rot:-.06});txt('Mathematica',100,320,{size:20,align:'center',wt:600,rot:-.06});txt('vol. I, 1910',102,354,{size:17,align:'center',rot:-.06});
   txt('Whitehead, Russell',102,376,{size:15,align:'center',rot:-.06,col:C.muted});
-  const X=210;txt(T.name,X,52,{size:26,wt:600});txt('goal:',X,92,{size:22,col:C.muted});txt(T.goal,X+62,94,{size:30,font:SERIF,wt:500,col:C.red});
-  txt('it works backward: which axiom can become the goal?',X,124,{size:18,col:C.muted});
+  const X=210;txt(T.name,X,52,{size:26,wt:600});txt(LX('goal:','tesi:'),X,92,{size:22,col:C.muted});txt(T.goal,X+62,94,{size:30,font:SERIF,wt:500,col:C.red});
+  txt(LX('it works backward: which axiom can become the goal?','lavora a ritroso: quale assioma può diventare la tesi?'),X,124,{size:18,col:C.muted});
   T.steps.forEach(([f,why,hl],i)=>{const y=168+i*96;const on=i<st.k;
    box(X,y,400,70,{w:on?1.6:1,passes:on?2:1,a:on?1:.35,dash:on?null:[6,8],fill:on&&i===2?C.green:null,fa:.25});
-   if(on){txt(f,X+16,y+32,{size:28,font:SERIF,wt:500});txt((i+1)+'. '+why,X+16,y+58,{size:18,col:C.blue});if(hl){raw(1,c=>{})}}
-   else txt('step '+(i+1),X+16,y+42,{size:20,col:C.muted});
+   if(on){txt(f,X+16,y+32,{size:28,font:SERIF,wt:500});txt((i+1)+'. '+why,X+16,y+58,{size:18,col:C.blue,maxw:376});if(hl){raw(1,c=>{})}}
+   else txt(LX('step ','passo ')+(i+1),X+16,y+42,{size:20,col:C.muted});
    if(i<2)arrow(X+200,y+72,X+200,y+92,{w:1.3,a:on?1:.3})});
-  if(st.k>=3){txt('✓ same as the goal: proved',X,478,{size:25,wt:600,col:C.green})}else txt('press “next step”',X,478,{size:22,col:C.muted});
-  txt('modern symbols: → implies, ¬ not, ∨ or',X,508,{size:17,col:C.muted})}};
+  if(st.k>=3){txt(LX('✓ same as the goal: proved','✓ coincide con la tesi: dimostrato'),X,478,{size:25,wt:600,col:C.green})}else txt(LX('press “next step”','premi “passo successivo”'),X,478,{size:22,col:C.muted});
+  txt(LX('modern symbols: → implies, ¬ not, ∨ or','simboli moderni: → implica, ¬ non, ∨ o'),X,508,{size:17,col:C.muted})}};
 
 /* --- perceptron --- */
 const PX=u=>320+u*270,PY=v=>230-v*185,PU=x=>(x-320)/270,PV=y=>(230-y)/185;
@@ -756,7 +791,7 @@ SC.perceptron={init(st){this.data(st,3)},
  step(st){const n=st.pts.length;if(!n)return;const i=st.k%n;const[u,v,y]=st.pts[i];const s=st.w[0]*u+st.w[1]*v+st.b;const pred=s>=0?1:-1;st.last=i;st.wrong=pred!==y;
   if(st.wrong){const e=0.3;st.w[0]+=e*y*u;st.w[1]+=e*y*v;st.b+=e*y;st.err++}st.k++;if(st.k%n===0){st.ep++;st.lastErr=st.err;if(st.err===0){st.done=true;st.train=false}st.err=0}},
  act(st,a,v,el){if(a==='step'){st.train=false;this.step(st)}if(a==='train'){st.train=true;st.done=false;st.anim=true;st.t=0}
-  if(a==='cls'){st.cls=-st.cls;el.textContent='add: '+(st.cls>0?'○':'×');el.setAttribute('aria-pressed',st.cls<0)}if(a==='new'){this.data(st,Math.floor(Math.random()*1e6))}},
+  if(a==='cls'){st.cls=-st.cls;el.textContent=LX('add: ','aggiungi: ')+(st.cls>0?'○':'×');el.setAttribute('aria-pressed',st.cls<0)}if(a==='new'){this.data(st,Math.floor(Math.random()*1e6))}},
  down(st,x,y){if(x<50||x>590||y<45||y>415)return;st.pts.push([PU(x),PV(y),st.cls]);st.done=false},
  tick(st,dt){st.t=(st.t||0)+dt;if(st.t>0.07){st.t=0;if(st.train){this.step(st);if(st.ep>80)st.train=false}}if(!st.train)st.anim=false},
  draw(st){const rect=[[50,45],[590,45],[590,415],[50,415]];const f=p=>st.w[0]*PU(p[0])+st.w[1]*PV(p[1])+st.b;
@@ -766,10 +801,10 @@ SC.perceptron={init(st){this.data(st,3)},
   if(L.length>=2)seg(L[0][0],L[0][1],L[1][0],L[1][1],{w:2.6});
   st.pts.forEach(([u,v,y],i)=>{const x=PX(u),yy=PY(v);if(y>0)ell(x,yy,8,8,{w:1.8,col:C.blue,solid:C.sheet});else{seg(x-7,yy-7,x+7,yy+7,{w:2,col:C.red});seg(x-7,yy+7,x+7,yy-7,{w:2,col:C.red})}
    if(i===st.last)ell(x,yy,15,15,{w:1.6,col:st.wrong?C.red:C.green})});
-  if(st.last>=0&&st.wrong){const[u,v]=st.pts[st.last];txt('mistake: adjusting the weights',Math.min(PX(u)+18,380),PY(v)-14,{size:20,col:C.red})}
+  if(st.last>=0&&st.wrong){const[u,v]=st.pts[st.last];txt(LX('mistake: adjusting the weights','errore: correggo i pesi'),Math.min(PX(u)+18,380),PY(v)-14,{size:20,col:C.red})}
   txt(`w₁ = ${fmt(st.w[0])}   w₂ = ${fmt(st.w[1])}   b = ${fmt(st.b)}`,50,452,{size:25});
-  txt(st.done?`epoch ${st.ep}: no mistakes, the classes are separated!`:`epoch ${st.ep+1}`+(st.lastErr!==null?`; mistakes in the previous epoch: ${st.lastErr}`:''),50,486,{size:23,col:st.done?C.green:C.blue,wt:st.done?600:400});
-  txt('○ class +1   × class −1',50,514,{size:19,col:C.muted})}};
+  txt(st.done?LX(`epoch ${st.ep}: no mistakes, the classes are separated!`,`epoca ${st.ep}: nessun errore, le classi sono separate!`):LX('epoch ','epoca ')+(st.ep+1)+(st.lastErr!==null?LX('; mistakes in the previous epoch: ',`; errori nell'epoca precedente: `)+st.lastErr:''),50,486,{size:23,col:st.done?C.green:C.blue,wt:st.done?600:400});
+  txt(LX('○ class +1   × class −1','○ classe +1   × classe −1'),50,514,{size:19,col:C.muted})}};
 
 /* --- ELIZA (regole scritte per questa pagina, nello stile del copione DOCTOR) --- */
 const EREF={i:'you',me:'you',my:'your',am:'are',mine:'yours',myself:'yourself',you:'I',your:'my',yours:'mine',are:'am',"i'm":"you're","you're":"I'm",was:'were',"i've":"you've"};
@@ -786,9 +821,26 @@ const ERUL=[[/\byou are (.+)/,['What makes you think I am $1?','Does it please y
  [/^(yes|yeah)\b/,['You seem quite sure.','I see.']],[/^no\b/,['Why not?','Are you saying no just to be negative?']],
  [/\b(hello|hi|hey)\b/,['Hello. How are you feeling today?']],[/\bdream/,['What does that dream suggest to you?']]];
 const EDEF=['Please go on.','Can you tell me more?','What does that suggest to you?','I see. And how does that make you feel?','Interesting. Please continue.'];
+const EREF_IT={io:'tu',tu:'io',mio:'tuo',mia:'tua',miei:'tuoi',mie:'tue',tuo:'mio',tua:'mia',tuoi:'miei',tue:'mie',me:'te',te:'me',mi:'ti',ti:'mi',
+ sono:'sei',sei:'sono',ho:'hai',hai:'ho',posso:'puoi',puoi:'posso',voglio:'vuoi',vuoi:'voglio'};
+const EB='(?:^| )',EE='(?= |$)';
+const ERUL_IT=[[new RegExp('^(?:tu )?sei (.+)'),['Che cosa ti fa pensare che io sia $1?','Ti fa piacere credere che io sia $1?']],
+ [new RegExp(EB+'ho bisogno di (.+)'),['Perché hai bisogno di $1?','Ti aiuterebbe davvero avere $1?']],
+ [new RegExp(EB+'mi sento (.+)'),['Parlami ancora del sentirti $1.','Ti senti spesso $1?','Che cosa ti fa sentire $1?']],
+ [new RegExp(EB+'(madre|padre|sorella|fratello|famiglia|genitori|mamma|papà|babbo)'+EE),['Parlami ancora della tua famiglia.','Chi altro della tua famiglia ti viene in mente?']],
+ [new RegExp(EB+'(computer|macchina|macchine|programma|programmi|robot|ia)'+EE),['I computer ti preoccupano?','Perché parli di computer?','Pensi che le macchine possano capirti?']],
+ [new RegExp(EB+'(?:io )?sono (.+)'),['Da quanto tempo sei $1?','Ti piace essere $1?','Perché mi dici che sei $1?']],
+ [new RegExp(EB+'voglio (.+)'),['Perché vuoi $1?','Che cosa significherebbe per te ottenerlo?']],
+ [new RegExp(EB+'non riesco a (.+)'),['Come sai di non riuscire a $1?','Forse riusciresti a $1, se ci provassi.']],
+ [new RegExp(EB+'sempre'+EE),['Ti viene in mente un esempio preciso?','Davvero, sempre?']],[new RegExp(EB+'perché'+EE),['È questa la vera ragione?','Quali altre ragioni ti vengono in mente?']],
+ [new RegExp('^(sì|si|certo)'+EE),['Sembri piuttosto sicuro.','Capisco.']],[new RegExp('^no'+EE),['Perché no?','Dici di no solo per essere negativo?']],
+ [new RegExp(EB+'(ciao|salve|buongiorno|buonasera)'+EE),['Ciao. Come ti senti oggi?']],[/sogn/,['Che cosa ti suggerisce quel sogno?']]];
+const EDEF_IT=['Continua, ti prego.','Puoi dirmi di più?','Che cosa ti suggerisce questo?','Capisco. E come ti fa sentire?','Interessante. Continua pure.'];
+function elizaIT(inp){const s=inp.toLowerCase().replace(/[’`]/g,"'").replace(/[.!?;:,"«»“”()]+/g,' ').replace(/\s+/g,' ').trim();
+ for(const[re,ans]of ERUL_IT){const m=s.match(re);if(m){const a=ans[ecount++%ans.length];return a.replace('$1',m[1]?m[1].split(' ').map(w=>EREF_IT[w]||w).join(' '):'')}}return EDEF_IT[ecount++%EDEF_IT.length]}
 let ecount=0;
-function eliza(inp){const s=inp.toLowerCase().replace(/[’]/g,"'").replace(/[.!?;,]+$/g,'').trim();for(const[re,ans]of ERUL){const m=s.match(re);if(m){const a=ans[ecount++%ans.length];return a.replace('$1',m[1]?reflect(m[1]):'')}}return EDEF[ecount++%EDEF.length]}
-SC.eliza={init(st){st.log=[['e','HOW DO YOU DO. PLEASE TELL ME YOUR PROBLEM.']]},
+function eliza(inp){if(isIT())return elizaIT(inp);const s=inp.toLowerCase().replace(/[’]/g,"'").replace(/[.!?;,]+$/g,'').trim();for(const[re,ans]of ERUL){const m=s.match(re);if(m){const a=ans[ecount++%ans.length];return a.replace('$1',m[1]?reflect(m[1]):'')}}return EDEF[ecount++%EDEF.length]}
+SC.eliza={init(st){st.log=[['e',LX('HOW DO YOU DO. PLEASE TELL ME YOUR PROBLEM.','COME STAI? RACCONTAMI IL TUO PROBLEMA.')]]},
  say(st,t){st.log.push(['u',t]);st.log.push(['e',eliza(t).toUpperCase()]);st.log=st.log.slice(-40)},
  draw(st){const pp=[[150,10],[492,10],[492,300],[150,300]];solid(pp,C.sheet);wash(pp,C.yellow,.12);path(pp,{w:1.3},true);for(let k=0;k<11;k++)seg(150,24+k*26,492,24+k*26,{w:.7,passes:1,a:.25});
   const ctx=P.ctx;const lines=[];ctx.save();ctx.font=`17px "Courier New",Courier,monospace`;
@@ -797,11 +849,17 @@ SC.eliza={init(st){st.log=[['e','HOW DO YOU DO. PLEASE TELL ME YOUR PROBLEM.']]}
   const tt=[[90,300],[552,300],[572,420],[70,420]];solid(tt,C.sheet);wash(tt,C.muted,.3);hatch(tt,{gap:8,a:.18});path(tt,{w:1.8},true);
   for(let r=0;r<3;r++)for(let c=0;c<11;c++)box(112+c*36+r*10,336+r*24,26,16,{w:.9,passes:1});
   seg(150,300,150,284,{w:1.2});seg(492,300,492,284,{w:1.2});ell(321,300,190,6,{w:1.1,passes:1});
-  txt('teletype',80,450,{size:21,col:C.muted});txt('IBM 7094 at MIT, via a time-sharing link',80,474,{size:20,col:C.muted});txt('type in the panel; ELIZA answers in capitals',80,502,{size:20,col:C.blue})}};
+  txt(LX('teletype','telescrivente'),80,450,{size:21,col:C.muted});txt(LX('IBM 7094 at MIT, via a time-sharing link',`IBM 7094 del MIT, collegato in time-sharing`),80,474,{size:20,col:C.muted});txt(LX('type in the panel; ELIZA answers in capitals','scrivi nel pannello; ELIZA risponde in maiuscolo'),80,502,{size:20,col:C.blue})}};
 
 /* --- MYCIN: concatenamento all'indietro su regole didattiche (animali) --- */
 const MQ={hair:'Does it have hair?',feathers:'Does it have feathers?',flies:'Does it fly?',eggs:'Does it lay eggs?',meat:'Does it eat meat?',tawny:'Is it tawny?',spots:'Does it have dark spots?',stripes:'Does it have black stripes?',hooves:'Does it have hooves?',swims:'Does it swim?'};
-const MR=[['R1',['hair'],'mammal'],['R2',['feathers'],'bird'],['R3',['flies','eggs'],'bird'],['R4',['mammal','meat'],'carnivore'],['R5',['carnivore','tawny','spots'],'cheetah'],['R6',['carnivore','tawny','stripes'],'tiger'],['R7',['mammal','hooves','stripes'],'zebra'],['R8',['bird','!flies','swims'],'penguin']];
+// R5 e R8: la zebra deve essere un erbivoro, cioè un mammifero che non mangia carne; così non può mai risultare carnivora
+const MR=[['R1',['hair'],'mammal'],['R2',['feathers'],'bird'],['R3',['flies','eggs'],'bird'],['R4',['mammal','meat'],'carnivore'],['R5',['mammal','!meat'],'herbivore'],['R6',['carnivore','tawny','spots'],'cheetah'],['R7',['carnivore','tawny','stripes'],'tiger'],['R8',['herbivore','hooves','stripes'],'zebra'],['R9',['bird','!flies','swims'],'penguin']];
+const MQ_IT={hair:'Ha il pelo?',feathers:'Ha le piume?',flies:'Vola?',eggs:'Depone le uova?',meat:'Mangia carne?',tawny:'È fulvo?',spots:'Ha macchie scure?',stripes:'Ha strisce nere?',hooves:'Ha gli zoccoli?',swims:'Nuota?'};
+const MN_IT={hair:'pelo',feathers:'piume',flies:'vola',eggs:'uova',meat:'carne',tawny:'fulvo',spots:'macchie',stripes:'strisce',hooves:'zoccoli',swims:'nuota',
+ mammal:'mammifero',bird:'uccello',carnivore:'carnivoro',herbivore:'erbivoro',cheetah:'ghepardo',tiger:'tigre',zebra:'zebra',penguin:'pinguino'};
+const MART_IT={cheetah:'un',tiger:'una',zebra:'una',penguin:'un'};
+const MNm=k=>isIT()?(MN_IT[k]||k):k;
 const MH=['cheetah','tiger','zebra','penguin'];
 SC.mycin={init(st){st.ans={};st.log={tried:new Set(),failed:new Set(),fired:new Set()};st.solve=this.solve(st)},
  prove(st,g,why,log){if(g in st.ans)return st.ans[g];if(MQ[g])return{ask:g,why};let any=false;
@@ -811,17 +869,17 @@ SC.mycin={init(st){st.ans={};st.log={tried:new Set(),failed:new Set(),fired:new 
  solve(st){const log=st.log;for(const h of MH){const v=this.prove(st,h,[],log);if(typeof v==='object')return{...v,hyp:h,log};if(v===true)return{done:h,log}}return{done:null,log}},
  act(st,a){if(a==='restart'){this.init(st);return}if((a==='yes'||a==='no')&&st.solve.ask){st.ans[st.solve.ask]=a==='yes';st.solve=this.solve(st)}},
  draw(st){const S=st.solve;
-  txt('rules',24,34,{size:22,wt:600});
-  MR.forEach((r,i)=>{const y=62+i*30;const fired=S.log.fired.has(r[0]),failed=S.log.failed.has(r[0]),tried=S.log.tried.has(r[0]);
-   const s=`${r[0]}  IF ${r[1].map(p=>p[0]==='!'?'not '+p.slice(1):p).join(' & ')} THEN ${r[2]}`;
-   if(fired)box(18,y-21,340,28,{fill:C.green,fa:.35,nostroke:true});txt(s,24,y,{size:17,col:failed?C.muted:C.ink,a:failed?.55:1});if(failed)seg(22,y-6,24+s.length*7.3,y-6,{w:1,passes:1,col:C.muted})});
-  txt('known facts',390,34,{size:22,wt:600});let k=0;for(const f in st.ans){if(!MQ[f]&&!st.ans[f])continue;const y=62+k*25;if(k<9)txt((st.ans[f]?'✓ ':'✗ ')+f,392,y,{size:19,col:st.ans[f]?C.green:C.red});k++}
+  txt(LX('rules','regole'),24,34,{size:22,wt:600});
+  MR.forEach((r,i)=>{const y=58+i*27;const fired=S.log.fired.has(r[0]),failed=S.log.failed.has(r[0]),tried=S.log.tried.has(r[0]);
+   const s=`${r[0]}  ${LX('IF','SE')} ${r[1].map(p=>p[0]==='!'?LX('not ','non ')+MNm(p.slice(1)):MNm(p)).join(' & ')} ${LX('THEN','ALLORA')} ${MNm(r[2])}`;
+   if(fired)box(18,y-20,356,26,{fill:C.green,fa:.35,nostroke:true});txt(s,24,y,{size:17,col:failed?C.muted:C.ink,a:failed?.55:1,maxw:344});if(failed)seg(22,y-6,26+Math.min(344,tw(s,17)),y-6,{w:1,passes:1,col:C.muted})});
+  txt(LX('known facts','fatti noti'),392,34,{size:22,wt:600});let k=0;for(const f in st.ans){if(!MQ[f]&&!st.ans[f])continue;const y=62+k*25;if(k<10)txt((st.ans[f]?'✓ ':'✗ ')+MNm(f),394,y,{size:19,col:st.ans[f]?C.green:C.red});k++}
   seg(18,318,622,318,{w:1,a:.4,passes:1});
-  if(S.ask){txt(`hypothesis: is it a ${S.hyp}?`,24,352,{size:22,col:C.muted});
-   const q=[[20,366],[620,366],[620,420],[20,420]];wash(q,C.yellow,.35);path(q,{w:1.4},true);txt(MQ[S.ask],36,402,{size:30,wt:600});
-   const chain=S.why.map(([r,g])=>`${r} to show “${g}”`).reverse().join(', for ');para(S.why.length?`why? I am trying ${chain}.`:`why? I am testing the hypothesis “${S.hyp}”.`,24,450,590,{size:19,col:C.blue,lh:21})}
-  else{txt(S.done?`conclusion: it is a ${S.done}`:'no hypothesis fits the answers',24,400,{size:30,wt:600,col:S.done?C.green:C.red});txt(`questions asked: ${Object.keys(st.ans).filter(f=>MQ[f]).length} of ${Object.keys(MQ).length} possible`,24,440,{size:21,col:C.muted})}
-  txt('hypotheses, in order: cheetah, tiger, zebra, penguin',24,508,{size:18,col:C.muted})}};
+  if(S.ask){txt(isIT()?`ipotesi: è ${MART_IT[S.hyp]} ${MNm(S.hyp)}?`:`hypothesis: is it a ${S.hyp}?`,24,352,{size:22,col:C.muted});
+   const q=[[20,366],[620,366],[620,420],[20,420]];wash(q,C.yellow,.35);path(q,{w:1.4},true);txt((isIT()?MQ_IT:MQ)[S.ask],36,402,{size:30,wt:600});
+   const chain=S.why.map(([r,g])=>isIT()?`${r} per dimostrare “${MNm(g)}”`:`${r} to show “${g}”`).reverse().join(LX(', for ',', che serve a '));para(S.why.length?LX(`why? I am trying ${chain}.`,`perché? Sto provando ${chain}.`):LX(`why? I am testing the hypothesis “${S.hyp}”.`,`perché? Sto verificando l'ipotesi “${MNm(S.hyp)}”.`),24,450,590,{size:19,col:C.blue,lh:21})}
+  else{txt(S.done?(isIT()?`conclusione: è ${MART_IT[S.done]} ${MNm(S.done)}`:`conclusion: it is a ${S.done}`):LX('no hypothesis fits the answers','nessuna ipotesi si accorda con le risposte'),24,400,{size:30,wt:600,col:S.done?C.green:C.red,maxw:596});txt(LX('questions asked: ','domande poste: ')+Object.keys(st.ans).filter(f=>MQ[f]).length+LX(' of ',' su ')+Object.keys(MQ).length+LX(' possible',' possibili'),24,440,{size:21,col:C.muted})}
+  txt(LX('hypotheses, in order: cheetah, tiger, zebra, penguin','ipotesi, in ordine: ghepardo, tigre, zebra, pinguino'),24,508,{size:18,col:C.muted})}};
 
 /* --- rete di Hopfield --- */
 const HPAT=[["##########","##########","    ##    ","    ##    ","    ##    ","    ##    ","    ##    ","    ##    ","    ##    ","    ##    "],
@@ -840,12 +898,12 @@ SC.hopfield={init(st){st.s=HPAT[0].slice();st.run=false;st.t=0;st.order=[];st.la
    const i=st.order.pop();let h=0;for(let j=0;j<100;j++)h+=HW[i][j]*st.s[j];const v=h>=0?1:-1;if(v!==st.s[i]){st.s[i]=v;st.quiet=0}else st.quiet++;st.last=i}},
  draw(st){const{x,y,c}=HG;for(let i=0;i<100;i++){const X=x+(i%10)*c,Y=y+Math.floor(i/10)*c;const q=[[X,Y],[X+c,Y],[X+c,Y+c],[X,Y+c]];if(st.s[i]>0)wash(q,C.blue,.75);if(i===st.last&&st.run)path(q,{w:2,col:C.red},true)}
   for(let k=0;k<=10;k++){seg(x+k*c,y,x+k*c,y+10*c,{w:.8,passes:1,a:.5});seg(x,y+k*c,x+10*c,y+k*c,{w:.8,passes:1,a:.5})}
-  txt('100 neurons, each connected to all the others',x,40,{size:20,col:C.muted});
-  txt('stored memories',400,72,{size:21,wt:600});HPAT.forEach((p,k)=>{const X=420+k*62,Y=90,cc=5;for(let i=0;i<100;i++)if(p[i]>0)box(X+(i%10)*cc,Y+Math.floor(i/10)*cc,cc,cc,{nostroke:true,fill:C.blue,fa:.8});box(X,Y,50,50,{w:1.1,passes:1});
+  txt(LX('100 neurons, each connected to all the others','100 neuroni, ciascuno collegato a tutti gli altri'),x,40,{size:20,col:C.muted});
+  txt(LX('stored memories','ricordi memorizzati'),400,72,{size:21,wt:600});HPAT.forEach((p,k)=>{const X=420+k*62,Y=90,cc=5;for(let i=0;i<100;i++)if(p[i]>0)box(X+(i%10)*cc,Y+Math.floor(i/10)*cc,cc,cc,{nostroke:true,fill:C.blue,fa:.8});box(X,Y,50,50,{w:1.1,passes:1});
    const ov=p.filter((v,i)=>v===st.s[i]).length;txt(ov+'%',X+25,Y+74,{size:19,align:'center',col:ov===100?C.green:C.ink,wt:ov===100?600:400})});
-  txt('cells matching the grid',400,196,{size:18,col:C.muted});
-  const E=this.energy(st);txt('energy',400,262,{size:22,wt:600});txt(fmt(E,1),400,296,{size:30,col:C.red});txt('it never goes up',400,322,{size:18,col:C.muted});
-  const m=HPAT.findIndex(p=>p.every((v,i)=>v===st.s[i]));txt(st.run?'updating one neuron at a time…':m>=0?`memory ${m+1} recalled`:'a damaged memory',x,420,{size:25,wt:600,col:st.run?C.blue:m>=0?C.green:C.red})}};
+  txt(LX('cells matching the grid','celle uguali alla griglia'),400,196,{size:18,col:C.muted});
+  const E=this.energy(st);txt(LX('energy','energia'),400,262,{size:22,wt:600});txt(fmt(E,1),400,296,{size:30,col:C.red});txt(LX('it never goes up','non aumenta mai'),400,322,{size:18,col:C.muted});
+  const m=HPAT.findIndex(p=>p.every((v,i)=>v===st.s[i]));txt(st.run?LX('updating one neuron at a time…','aggiorno un neurone alla volta…'):m>=0?LX(`memory ${m+1} recalled`,`ricordo ${m+1} richiamato`):LX('a damaged memory','un ricordo danneggiato'),x,420,{size:25,wt:600,col:st.run?C.blue:m>=0?C.green:C.red})}};
 
 /* --- retropropagazione --- */
 const sig=x=>1/(1+Math.exp(-x));
@@ -856,7 +914,7 @@ SC.backprop={init(st){const r=mulberry(Math.floor(Math.random()*1e6)+1);st.W1=[0
  iter(st){const lr=0.5;const gW1=[[0,0],[0,0],[0,0]],gb1=[0,0,0],gW2=[0,0,0];let gb2=0;
   XP.forEach((x,k)=>{const[h,o]=this.fwd(st,x);const d=o-XF.xor[k];gb2+=d;for(let j=0;j<3;j++){gW2[j]+=d*h[j];const dh=d*st.W2[j]*h[j]*(1-h[j]);gb1[j]+=dh;gW1[j][0]+=dh*x[0];gW1[j][1]+=dh*x[1]}});
   st.b2-=lr*gb2;for(let j=0;j<3;j++){st.W2[j]-=lr*gW2[j];st.b1[j]-=lr*gb1[j];st.W1[j][0]-=lr*gW1[j][0];st.W1[j][1]-=lr*gW1[j][1]}st.it++},
- btn(st){const b=st.el&&st.el.querySelector('[data-act=train]');if(b)b.textContent=st.train?'pause':'train'},
+ btn(st){const b=st.el&&st.el.querySelector('[data-act=train]');if(b)b.textContent=st.train?LX('pause','pausa'):LX('train','addestra')},
  act(st,a){if(a==='train'){st.train=!st.train;st.anim=st.train;this.btn(st)}if(a==='reset'){const el=st.el;this.init(st);st.el=el;this.btn(st)}},
  tick(st,dt){st.ph+=dt*0.8;if(!st.train){st.anim=false;return}for(let k=0;k<2;k++){this.iter(st);if(st.it%5===0)st.hist.push(this.loss(st))}st.loss=this.loss(st);
   if(st.it>=4000||st.loss<0.002){st.train=false;st.anim=false;this.btn(st)}},
@@ -866,28 +924,28 @@ SC.backprop={init(st){const r=mulberry(Math.floor(Math.random()*1e6)+1);st.W1=[0
    const A=Array.isArray(L[0][0])?L[0]:[L[0]],B=Array.isArray(L[1][0])?L[1]:[L[1]];for(const p of A)for(const q of B)dot(p[0]+(q[0]-p[0])*u,p[1]+(q[1]-p[1])*u,4.5,back?C.red:C.blue)}
   BN.i.forEach((p,i)=>{ell(p[0],p[1],20,20,{solid:C.sheet,w:1.6});txt(i?'x₂':'x₁',p[0],p[1]+8,{size:22,align:'center'})});
   BN.h.forEach(q=>ell(q[0],q[1],20,20,{solid:C.sheet,w:1.6,fill:C.green,fa:.35}));ell(BN.o[0],BN.o[1],20,20,{solid:C.sheet,w:1.6,fill:C.red,fa:.3});txt('y',BN.o[0],BN.o[1]+8,{size:22,align:'center'});
-  txt('inputs',70,470,{size:20,col:C.muted,align:'center'});txt('hidden layer',210,470,{size:20,col:C.muted,align:'center'});txt('output',340,470,{size:20,col:C.muted,align:'center'});
-  const mx=410,my=50,ms=190,n=10;txt('network output',mx,my-14,{size:20,col:C.blue});
+  txt(LX('inputs','ingressi'),70,470,{size:20,col:C.muted,align:'center'});txt(LX('hidden layer','strato nascosto'),210,470,{size:20,col:C.muted,align:'center'});txt(LX('output','uscita'),340,470,{size:20,col:C.muted,align:'center'});
+  const mx=410,my=50,ms=190,n=10;txt(LX('network output','uscita della rete'),mx,my-14,{size:20,col:C.blue});
   raw(30,ctx=>{ctx.fillStyle=C.yellow;for(let a=0;a<n;a++)for(let b=0;b<n;b++){const[,o]=this.fwd(st,[a/(n-1),1-b/(n-1)]);ctx.globalAlpha=0.1+o*0.75;ctx.fillRect(mx+a*ms/n,my+b*ms/n,ms/n+0.5,ms/n+0.5)}});
   box(mx,my,ms,ms,{w:1.4});XP.forEach(([u,v],k)=>{const x=mx+8+u*(ms-16),y=my+ms-8-v*(ms-16);ell(x,y,7,7,{w:1.6,solid:C.sheet,fill:XF.xor[k]?C.red:null,fa:.9})});
-  const gx=410,gy=300,gw=200,gh=120;arrow(gx,gy+gh,gx+gw+10,gy+gh,{w:1.2});arrow(gx,gy+gh,gx,gy-8,{w:1.2});txt('mean squared error',gx+6,gy+2,{size:19,col:C.muted});txt('iterations',gx+gw-60,gy+gh+22,{size:19,col:C.muted});
+  const gx=410,gy=300,gw=200,gh=120;arrow(gx,gy+gh,gx+gw+10,gy+gh,{w:1.2});arrow(gx,gy+gh,gx,gy-8,{w:1.2});txt(LX('mean squared error','errore quadratico medio'),gx+6,gy+2,{size:19,col:C.muted});txt(LX('iterations','iterazioni'),gx+gw+10,gy+gh+22,{size:19,col:C.muted,align:'right'});
   if(st.hist.length>1){const m=Math.max(...st.hist,0.3);const D=Math.max(st.hist.length-1,60);const pts=st.hist.map((v,i)=>[gx+i/D*gw,gy+gh-v/m*gh]);stroke(pts,{w:1.8,col:C.red,passes:1})}
-  txt(`iterations: ${st.it}   error: ${fmt(st.loss,4)}`,390,480,{size:23});if(st.loss<0.01)txt('XOR learned!',390,510,{size:25,col:C.green,wt:600})}};
+  txt(LX('iterations: ','iterazioni: ')+st.it+LX('   error: ','   errore: ')+fmt(st.loss,4),390,480,{size:23});if(st.loss<0.01)txt(LX('XOR learned!','XOR imparato!'),390,510,{size:25,col:C.green,wt:600})}};
 
 /* --- Deep Blue --- */
-function big(n){if(n<1e4)return Math.round(n).toLocaleString('en-US');const e=Math.floor(Math.log10(n));const m=n/10**e;return fmt(m,1)+' × 10'+sup(e)}
-function dur(s){if(s<1)return fmt(s,s<0.01?4:2)+' seconds';if(s<120)return fmt(s,1)+' seconds';if(s<7200)return fmt(s/60,1)+' minutes';if(s<172800)return fmt(s/3600,1)+' hours';if(s<3.15e7*2)return fmt(s/86400,0)+' days';return big(s/3.15e7)+' years'}
+function big(n){if(n<1e4)return Math.round(n).toLocaleString(isIT()?'it-IT':'en-US');const e=Math.floor(Math.log10(n));const m=n/10**e;return fmt(m,1)+' × 10'+sup(e)}
+function dur(s){const u=isIT()?['secondi','minuti','ore','giorni','anni']:['seconds','minutes','hours','days','years'];if(s<1)return fmt(s,s<0.01?4:2)+' '+u[0];if(s<120)return fmt(s,1)+' '+u[0];if(s<7200)return fmt(s/60,1)+' '+u[1];if(s<172800)return fmt(s/3600,1)+' '+u[2];if(s<3.15e7*2)return fmt(s/86400,0)+' '+u[3];return big(s/3.15e7)+' '+u[4]}
 SC.deepblue={init(st){st.d=4},act(st,a,v){if(a==='depth')st.d=+v},
  draw(st){const sb=(x,t1,t2,t3)=>{box(x,24,280,104,{fill:C.green,fa:.25,w:1.6,hatch:{gap:8,a:.12}});txt(t1,x+140,52,{size:21,align:'center',col:C.muted});txt(t2,x+140,86,{size:27,align:'center',wt:600});txt(t3,x+140,114,{size:21,align:'center'})};
-  sb(24,'February 1996, Philadelphia','Kasparov 4–2','the human wins');sb(336,'May 1997, New York','Deep Blue 3½–2½','the machine wins');
+  if(isIT()){sb(24,'febbraio 1996, Filadelfia','Kasparov 4–2',`vince l'uomo`);sb(336,'maggio 1997, New York','Deep Blue 3½–2½','vince la macchina')}else{sb(24,'February 1996, Philadelphia','Kasparov 4–2','the human wins');sb(336,'May 1997, New York','Deep Blue 3½–2½','the machine wins')}
   const lv=Math.min(3,st.d);const rootY=172,dy=56;let nodes=[[320,rootY]];ell(320,rootY,8,8,{solid:C.sheet,fill:C.red,fa:.6,w:1.4});
   for(let L=1;L<=lv;L++){const nn=[];const span=560/Math.pow(4,L);nodes.forEach(([x,y],pi)=>{for(let k=0;k<4;k++){const cx=40+span*(pi*4+k+0.5),cy=rootY+L*dy;seg(x,y,cx,cy,{w:L<3?1.2:.8,passes:1,a:L<3?.9:.6});nn.push([cx,cy])}});
    nn.forEach(([x,y])=>L<3?ell(x,y,5,5,{solid:C.sheet,w:1.1}):dot(x,y,1.8));nodes=nn}
-  if(st.d>3)txt(`⋮ ${st.d-3} more level${st.d-3>1?'s':''}`,320,rootY+3*dy+34,{size:22,align:'center',col:C.muted});
-  txt('only 4 moves per position drawn: a real position has about 35 on average',320,rootY+3*dy+64,{size:19,align:'center',col:C.muted});
-  const n=Math.pow(35,st.d);txt(`d = ${st.d}: about 35${sup(st.d)} ≈ ${big(n)} positions`,24,450,{size:27,wt:600});
-  txt(`at 200 million positions per second: ${dur(n/2e8)}`,24,484,{size:24,col:C.blue});
-  txt('without alpha-beta pruning, which cuts most of the branches',24,512,{size:19,col:C.muted})}};
+  if(st.d>3)txt(isIT()?(st.d-3>1?`⋮ altri ${st.d-3} livelli`:'⋮ un altro livello'):`⋮ ${st.d-3} more level${st.d-3>1?'s':''}`,320,rootY+3*dy+34,{size:22,align:'center',col:C.muted});
+  txt(LX('only 4 moves per position drawn: a real position has about 35 on average','disegnate solo 4 mosse per posizione: una posizione reale ne ha in media circa 35'),320,rootY+3*dy+64,{size:19,align:'center',col:C.muted,maxw:600});
+  const n=Math.pow(35,st.d);txt(`d = ${st.d}: `+LX('about ','circa ')+`35${sup(st.d)} ≈ ${big(n)}`+LX(' positions',' posizioni'),24,450,{size:27,wt:600});
+  txt(LX('at 200 million positions per second: ','a 200 milioni di posizioni al secondo: ')+dur(n/2e8),24,484,{size:24,col:C.blue});
+  txt(LX('without alpha-beta pruning, which cuts most of the branches','senza la potatura alfa-beta, che taglia gran parte dei rami'),24,512,{size:19,col:C.muted})}};
 
 /* --- ImageNet --- */
 const INET=[[2010,28.2,'NEC-UIUC'],[2011,25.8,'XRCE'],[2012,15.3,'AlexNet (Krizhevsky, Sutskever, Hinton)'],[2013,11.7,'Clarifai'],[2014,6.7,'GoogLeNet'],[2015,3.6,'ResNet']];
@@ -895,17 +953,19 @@ const IX=i=>110+i*82,IY=v=>420-v/30*340;
 SC.imagenet={init(st){st.hov=2;st.human=false},act(st,a,v,el){if(a==='human'){st.human=!st.human;el.setAttribute('aria-pressed',st.human)}},
  move(st,x,y){const i=INET.findIndex((b,i)=>Math.abs(x-IX(i)-25)<32);if(i>=0&&y>40&&y<460)st.hov=i},down(st,x,y){this.move(st,x,y)},
  draw(st){arrow(70,420,620,420);arrow(70,420,70,50);for(const v of[0,10,20,30]){seg(64,IY(v),76,IY(v),{w:1,passes:1});txt(v+'%',60,IY(v)+7,{size:20,align:'right'})}
-  txt('top-5 error of the winner',80,62,{size:21,col:C.muted});
+  txt(LX('top-5 error of the winner','errore top-5 del vincitore'),80,62,{size:21,col:C.muted});
   INET.forEach(([y,v,name],i)=>{const x=IX(i),top=IY(v);const p=[[x,top],[x+50,top],[x+50,420],[x,420]];const al=y===2012;
    wash(p,al?C.red:C.green,al?.55:.3);hatch(p,{gap:5,a:al?.35:.25,col:al?C.red:C.ink});path(p,{w:i===st.hov?2.2:1.4},true);
    txt(fmt(v,1)+'%',x+25,top-10,{size:22,align:'center',wt:600,col:al?C.red:C.ink});txt(y,x+25,446,{size:21,align:'center'})});
   if(st.human){const y=IY(5.1);seg(80,y,610,y,{w:1.8,col:C.blue,dash:[8,6]})}
   const h=INET[st.hov];txt(`${h[0]}: ${h[2]}`,70,484,{size:25,wt:600,col:h[0]===2012?C.red:C.ink});
-  txt(st.human?'blue line: human estimate ≈ 5.1% (one expert annotator, 2014)':'from 2015 the best systems go below the human estimate',70,512,{size:20,col:st.human?C.blue:C.muted})}};
+  txt(st.human?LX('blue line: human estimate ≈ 5.1% (one expert annotator, 2014)','linea blu: stima umana ≈ 5,1% (un solo annotatore esperto, 2014)'):LX('from 2015 the best systems go below the human estimate','dal 2015 i sistemi migliori scendono sotto la stima umana'),70,512,{size:20,col:st.human?C.blue:C.muted})}};
 
 /* --- word2vec: mappa bidimensionale inventata --- */
 const WV={man:[110,300],woman:[190,230],king:[150,150],queen:[232,82],boy:[60,380],girl:[140,312],uncle:[230,330],aunt:[312,262],
  France:[380,110],Paris:[445,185],Italy:[470,90],Rome:[538,168],Germany:[410,250],Berlin:[476,322],Spain:[520,240],Madrid:[585,318]};
+const WN_IT={man:'uomo',woman:'donna',king:'re',queen:'regina',boy:'ragazzo',girl:'ragazza',uncle:'zio',aunt:'zia',France:'Francia',Paris:'Parigi',Italy:'Italia',Rome:'Roma',Germany:'Germania',Berlin:'Berlino',Spain:'Spagna',Madrid:'Madrid'};
+const WNm=w=>isIT()?(WN_IT[w]||w):w;
 const WA=[['king','man','woman'],['uncle','man','woman'],['Paris','France','Italy'],['Berlin','Germany','Spain']];
 SC.word2vec={init(st){st.a=0;st.t=1},act(st,a,v){if(a==='an'){st.a=+v;st.t=0;st.anim=true;st.el.querySelectorAll('[data-act=an]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v))}},
  tick(st,dt){st.t=Math.min(1,st.t+dt/1.4);if(st.t>=1)st.anim=false},
@@ -916,11 +976,11 @@ SC.word2vec={init(st){st.a=0;st.t=1},act(st,a,v){if(a==='an'){st.a=+v;st.t=0;st.
   arrow(b[0],b[1],b[0]+(c[0]-b[0])*u,b[1]+(c[1]-b[1])*u,{w:2,col:C.red,head:10});
   if(w2>0)arrow(a[0],a[1],a[0]+(res[0]-a[0])*w2,a[1]+(res[1]-a[1])*w2,{w:2,col:C.red,dash:[7,6],head:10});
   for(const[w,p]of Object.entries(WV)){const role=w===A?'a':w===B||w===Cw?'b':w===cand[0][0]&&e>=1?'r':'';
-   ell(p[0],p[1],role?7:5,role?7:5,{solid:role==='r'?C.green:role?C.yellow:C.sheet,w:1.3,passes:1});txt(w,p[0]+10,p[1]-8,{size:role?24:21,wt:role?600:400,col:role==='r'?C.green:C.ink})}
+   ell(p[0],p[1],role?7:5,role?7:5,{solid:role==='r'?C.green:role?C.yellow:C.sheet,w:1.3,passes:1});txt(WNm(w),p[0]+10,p[1]-8,{size:role?24:21,wt:role?600:400,col:role==='r'?C.green:C.ink})}
   if(e>=1){ell(res[0],res[1],18,18,{w:1.4,col:C.red,dash:[4,4]});txt('?',res[0]-22,res[1]+24,{size:22,col:C.red})}
-  txt(`${A} − ${B} + ${Cw}`,24,474,{size:28,wt:600});
-  if(e>=1)txt(`nearest word, not counting the three used: ${cand[0][0]}`,24,506,{size:22,col:C.green,wt:600});else txt('computing…',24,506,{size:22,col:C.muted});
-  txt('gender',120,436,{size:18,col:C.muted});txt('countries and capitals',400,436,{size:18,col:C.muted})}};
+  txt(`${WNm(A)} − ${WNm(B)} + ${WNm(Cw)}`,24,474,{size:28,wt:600});
+  if(e>=1)txt(LX('nearest word, not counting the three used: ','parola più vicina, escluse le tre usate: ')+WNm(cand[0][0]),24,506,{size:22,col:C.green,wt:600});else txt(LX('computing…','calcolo…'),24,506,{size:22,col:C.muted});
+  txt(LX('gender','genere'),120,436,{size:18,col:C.muted});txt(LX('countries and capitals','paesi e capitali'),400,436,{size:18,col:C.muted})}};
 
 /* --- go --- */
 const GO={o:[34,42],s:22};
@@ -929,33 +989,38 @@ SC.go={init(st){st.b=Array(361).fill(0);st.turn=1;st.cap=[0,0,0];st.msg=''},act(
  down(st,x,y){const cx=Math.round((x-GO.o[0])/GO.s),cy=Math.round((y-GO.o[1])/GO.s);if(cx<0||cy<0||cx>18||cy>18)return;if(Math.hypot(x-GO.o[0]-cx*GO.s,y-GO.o[1]-cy*GO.s)>12)return;
   const i=cy*19+cx;if(st.b[i])return;const b=st.b.slice();b[i]=st.turn;const opp=3-st.turn;let took=0;
   for(const[dx,dy]of DIRS){const nx=cx+dx,ny=cy+dy;if(nx<0||ny<0||nx>18||ny>18)continue;const n=ny*19+nx;if(b[n]===opp){const[g,l]=this.group(b,n);if(!l){g.forEach(k=>b[k]=0);took+=g.length}}}
-  if(!took&&!this.group(b,i)[1]){st.msg='suicide move: not allowed';return}st.msg='';st.b=b;st.cap[st.turn]+=took;st.turn=opp},
+  if(!took&&!this.group(b,i)[1]){st.msg=LX('suicide move: not allowed','mossa suicida: non consentita');return}st.msg='';st.b=b;st.cap[st.turn]+=took;st.turn=opp},
  draw(st){const[ox,oy]=GO.o,s=GO.s,E=18*s;const bd=[[ox-18,oy-18],[ox+E+18,oy-18],[ox+E+18,oy+E+18],[ox-18,oy+E+18]];wash(bd,C.yellow,.45);path(bd,{w:1.6},true);
   for(let i=0;i<19;i++){seg(ox+i*s,oy,ox+i*s,oy+E,{w:.9,passes:1,a:.75,bow:.3});seg(ox,oy+i*s,ox+E,oy+i*s,{w:.9,passes:1,a:.75,bow:.3})}
   for(const a of[3,9,15])for(const b of[3,9,15])dot(ox+a*s,oy+b*s,3);
   st.b.forEach((v,i)=>{if(!v)return;const x=ox+(i%19)*s,y=oy+Math.floor(i/19)*s;if(v===1)ell(x,y,9.5,9.5,{solid:'#1B1D1F',w:1.2,col:'#1B1D1F'});else ell(x,y,9.5,9.5,{solid:'#F6F6F1',w:1.3,col:'#2A2C2E'})});
-  const rx=462;box(rx,30,160,94,{fill:C.green,fa:.25,w:1.5});txt('Seoul, March 2016',rx+80,56,{size:20,align:'center',col:C.muted});txt('AlphaGo 4',rx+80,86,{size:26,align:'center',wt:600});txt('Lee Sedol 1',rx+80,112,{size:22,align:'center'});
-  txt('how many positions?',rx,166,{size:22,wt:600});txt('power of 10',rx,188,{size:18,col:C.muted});
-  [['chess',44,''],['atoms',80,'(observable universe)'],['go',170,'']].forEach(([l,e,l2],k)=>{const y=214+k*66;const w=e/170*160;const p=[[rx,y],[rx+w,y],[rx+w,y+18],[rx,y+18]];wash(p,k===2?C.red:C.blue,.45);path(p,{w:1.2},true);txt(`${l}: 10${sup(e)}`,rx,y+40,{size:20});if(l2)txt(l2,rx,y+58,{size:17,col:C.muted})});
-  txt(`${st.turn===1?'black':'white'} to play`,rx,436,{size:23,wt:600});txt(`captures: black ${st.cap[1]}, white ${st.cap[2]}`,rx,464,{size:19,col:C.muted});
+  const rx=462;box(rx,30,160,94,{fill:C.green,fa:.25,w:1.5});txt(LX('Seoul, March 2016','Seul, marzo 2016'),rx+80,56,{size:20,align:'center',col:C.muted});txt('AlphaGo 4',rx+80,86,{size:26,align:'center',wt:600});txt('Lee Sedol 1',rx+80,112,{size:22,align:'center'});
+  txt(LX('how many positions?','quante posizioni?'),rx,166,{size:22,wt:600});txt(LX('power of 10','potenza di 10'),rx,188,{size:18,col:C.muted});
+  (isIT()?[['scacchi',44,''],['atomi',80,'(universo osservabile)'],['go',170,'']]:[['chess',44,''],['atoms',80,'(observable universe)'],['go',170,'']]).forEach(([l,e,l2],k)=>{const y=214+k*66;const w=e/170*160;const p=[[rx,y],[rx+w,y],[rx+w,y+18],[rx,y+18]];wash(p,k===2?C.red:C.blue,.45);path(p,{w:1.2},true);txt(`${l}: 10${sup(e)}`,rx,y+40,{size:20});if(l2)txt(l2,rx,y+58,{size:17,col:C.muted})});
+  txt(isIT()?`muove il ${st.turn===1?'nero':'bianco'}`:`${st.turn===1?'black':'white'} to play`,rx,436,{size:23,wt:600});txt(LX(`captures: black ${st.cap[1]}, white ${st.cap[2]}`,`catture: nero ${st.cap[1]}, bianco ${st.cap[2]}`),rx,464,{size:19,col:C.muted});
   if(st.msg)txt(st.msg,34,506,{size:21,col:C.red})}};
 
 /* --- attenzione --- */
 const ATOK=['The','cat','didn\'t','cross','the','street','because','it','was','too','tired'];
-SC.attention={init(st){st.v=0;st.sel=7},
- toks(st){const t=ATOK.slice();t[10]=st.v?'wide':'tired';return t},
- att(st,i){const n=11;const s=[];for(let j=0;j<n;j++)s.push(0.6/(1+Math.abs(i-j)));s[i]+=0.8;const add=(j,v)=>s[j]+=v;
+const ATOK_IT=['Il','gatto','non','ha','attraversato','la','strada','perché','era','troppo','stanco'];
+SC.attention={init(st){st.v=0;st.sel=isIT()?8:7},
+ toks(st){const t=(isIT()?ATOK_IT:ATOK).slice();t[10]=isIT()?(st.v?'larga':'stanco'):(st.v?'wide':'tired');return t},
+ attIT(st,i){const n=11;const s=[];for(let j=0;j<n;j++)s.push(0.6/(1+Math.abs(i-j)));s[i]+=0.8;const add=(j,v)=>s[j]+=v;
+  if(i===1)add(0,1.2);if(i===2)add(4,1);if(i===3)add(4,1.2);if(i===4){add(1,1.4);add(6,1.6)}if(i===6){add(5,1.2);add(4,1)}if(i===7){add(8,.8);add(4,.6)}
+  if(i===8){if(st.v){add(6,4.5);add(10,1)}else{add(1,4.5);add(10,1)}}if(i===9)add(10,1.5);if(i===10){if(st.v){add(6,3);add(8,1.2)}else{add(1,3);add(8,1.2)}}
+  const T=s.reduce((a,b)=>a+b,0);return s.map(v=>v/T)},
+ att(st,i){if(isIT())return this.attIT(st,i);const n=11;const s=[];for(let j=0;j<n;j++)s.push(0.6/(1+Math.abs(i-j)));s[i]+=0.8;const add=(j,v)=>s[j]+=v;
   if(i===1)add(0,1.2);if(i===2)add(3,1);if(i===3){add(1,1.4);add(5,1.6)}if(i===5){add(4,1.2);add(3,1)}if(i===6){add(7,.8);add(3,.6)}
   if(i===7){if(st.v){add(5,4.5);add(10,1)}else{add(1,4.5);add(10,1)}}if(i===8){add(7,1);add(10,.8)}if(i===9)add(10,1.5);if(i===10){if(st.v){add(5,3);add(7,1.2)}else{add(1,3);add(7,1.2)}}
   const T=s.reduce((a,b)=>a+b,0);return s.map(v=>v/T)},
  act(st,a,v){if(a==='end'){st.v=+v;st.el.querySelectorAll('[data-act=end]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v))}},
  down(st,x,y){if(x>260)return;const i=Math.round((y-54)/38);if(i>=0&&i<11)st.sel=i},
  draw(st){const T=this.toks(st),A=this.att(st,st.sel);const Y=i=>54+i*38;
-  txt('looking',180,26,{size:19,col:C.muted,align:'right'});txt('looked at',440,26,{size:19,col:C.muted});
+  txt(LX('looking','chi guarda'),180,26,{size:19,col:C.muted,align:'right'});txt(LX('looked at','chi è guardato'),440,26,{size:19,col:C.muted});
   A.forEach((w,j)=>{if(w<0.02)return;curve(bez([190,Y(st.sel)-7],[330,Y(st.sel)-7],[300,Y(j)-7],[432,Y(j)-7],24),{w:0.6+w*16,col:C.blue,a:Math.min(.95,.25+w*2),passes:1})});
-  T.forEach((t,i)=>{const on=i===st.sel;if(on)box(60,Y(i)-26,126,32,{fill:C.yellow,fa:.6,nostroke:true});txt(t,180,Y(i),{size:25,align:'right',wt:on?600:400});
+  T.forEach((t,i)=>{const on=i===st.sel;if(on)box(44,Y(i)-26,142,32,{fill:C.yellow,fa:.6,nostroke:true});txt(t,180,Y(i),{size:25,align:'right',wt:on?600:400});
    txt(t,440,Y(i),{size:25,wt:A[i]>0.25?600:400,col:A[i]>0.25?C.red:C.ink});txt(Math.round(A[i]*100)+'%',600,Y(i),{size:19,align:'right',col:C.muted})});
-  const j=A.indexOf(Math.max(...A.map((v,k)=>k===st.sel?0:v)));txt(`“${T[st.sel]}” looks mostly at “${T[j]}”`,40,494,{size:26,wt:600,col:C.red})}};
+  const j=A.indexOf(Math.max(...A.map((v,k)=>k===st.sel?0:v)));txt(LX(`“${T[st.sel]}” looks mostly at “${T[j]}”`,`“${T[st.sel]}” guarda soprattutto “${T[j]}”`),40,494,{size:26,wt:600,col:C.red})}};
 
 /* --- AlphaFold --- */
 SC.fold={init(st){st.f=0;st.play=false;const N=36;st.u=[];st.t=[];st.z=[];st.hy=[];
@@ -969,10 +1034,10 @@ SC.fold={init(st){st.f=0;st.play=false;const N=36;st.u=[];st.t=[];st.z=[];st.hy=
   if(f>0.85){for(const[i,j]of st.pairs){const a=P2[i],b=P2[j];seg(a[0],a[1],b[0],b[1],{w:1,dash:[3,5],col:C.red,a:(f-0.85)/0.15*0.7,passes:1})}}
   stroke(P2.flatMap((p,i)=>i?resample([P2[i-1],p],false,8).slice(1):[p]),{w:2});
   P2.forEach((p,i)=>{const hyd=st.hy[i];const r=6+(st.z[i]*e+1)*1.5;ell(p[0],p[1],r,r,{solid:C.sheet,fill:hyd?C.yellow:C.blue,fa:.75,w:1.2})});
-  txt(f<0.05?'the chain, just made':f>0.95?'the folded shape':'folding…',40,40,{size:25,wt:600});
-  ell(62,512,6,6,{fill:C.yellow,fa:.8,w:1});txt('water-repelling: hide inside',74,518,{size:18,col:C.muted});ell(340,512,6,6,{fill:C.blue,fa:.8,w:1});txt('water-loving: stay outside',352,518,{size:18,col:C.muted});
+  txt(f<0.05?LX('the chain, just made','la catena appena prodotta'):f>0.95?LX('the folded shape','la forma ripiegata'):LX('folding…','ripiegamento…'),40,40,{size:25,wt:600});
+  ell(62,512,6,6,{fill:C.yellow,fa:.8,w:1});txt(LX('water-repelling: hide inside','idrofobi: si nascondono dentro'),74,518,{size:18,col:C.muted});ell(340,512,6,6,{fill:C.blue,fa:.8,w:1});txt(LX('water-loving: stay outside','idrofili: restano fuori'),352,518,{size:18,col:C.muted});
   const medal=(cy,a,b,c)=>{seg(522,cy-90,548,cy-50,{w:1.3,col:C.red});seg(574,cy-90,548,cy-50,{w:1.3,col:C.red});ell(548,cy,52,52,{fill:C.yellow,fa:.6,w:1.6,hatch:{gap:6,a:.16}});ell(548,cy,43,43,{w:1,passes:1});txt('Nobel',548,cy-4,{size:24,align:'center',wt:600});txt(a,548,cy+20,{size:16,align:'center'});txt(b,548,cy+76,{size:20,align:'center'});txt(c,548,cy+98,{size:20,align:'center'})};
-  medal(118,'chemistry 2024','Baker, Hassabis,','Jumper');medal(318,'physics 2024','Hopfield,','Hinton')}};
+  medal(118,LX('chemistry 2024','chimica 2024'),'Baker, Hassabis,','Jumper');medal(318,LX('physics 2024','fisica 2024'),'Hopfield,','Hinton')}};
 
 /* ================= testi ================= */
 const CONTENT={
@@ -1082,7 +1147,7 @@ Object.assign(CONTENT,{
   people:[['Edward Shortliffe','shortliffe'],['Bruce Buchanan','buchanan']],
   ctrl:'<button class="h" data-act="yes">yes</button><button class="h" data-act="no">no</button><button class="h" data-act="restart">start over</button>',
   hint:'think of an animal and answer: the system asks only what it needs',
-  note:'The rules about animals are a classic textbook example, not MYCIN\'s medical rules.',
+  note:'The rules about animals are adapted from a classic textbook example; they are not MYCIN\'s medical rules.',
   line:'Snowed in, the rule-makers kept working. Notice that the system asks only what it needs, and can always tell you why it is asking.'},
  11:{year:'1982',
   ps:['In 1982 physicist John Hopfield showed how a network of neurons can work as a memory. Every neuron is connected to all the others, and the stored patterns are written into the connection weights.',
@@ -1152,6 +1217,165 @@ Object.assign(CONTENT,{
   hint:'drag the slider or press “fold”',
   note:'A simplified 2D sketch, not a real protein structure.',
   line:'AlphaFold does not show how the chain folds, only the shape it ends up in. For biologists, that is already a great deal.'}});
+
+/* ================= testi in italiano ================= */
+const CONTENT_IT={
+ intro:{year:`Dal 1843 a oggi`,h1:`Una mappa dell'intelligenza artificiale`,sub:`Quasi due secoli di macchine pensanti, disegnati a matita.`,
+  ps:[`Ogni luogo di questa mappa è un momento della storia dell'IA. Il terreno sale nelle estati dell'entusiasmo e sprofonda in valli innevate nei due inverni dell'IA, all'incirca 1974–1980 e 1987–1993. La forma del paesaggio è qualitativa: racconta una storia, non misura nulla.`,
+   `Percorri il sentiero con la rotella del mouse, i tasti freccia, uno scorrimento del dito o i pulsanti qui sotto. Ogni tappa ha un piccolo esperimento con cui giocare. “Mappa intera” mostra tutto in una volta.`,
+   `La tua guida è Teseo, il topo meccanico costruito da Claude Shannon nel 1950. Le persone compaiono come schizzi stilizzati accompagnati dal nome, non come ritratti. Il tempo non è in scala: il lungo tratto prima del 1940 è compresso.`],
+  ctrl:`<button class="h" data-nav="next">inizia la passeggiata</button>`,
+  line:`Ciao! Sono Teseo, il topo che risolve labirinti costruito da Claude Shannon nel 1950. Scorri, trascina o usa i tasti freccia e ti accompagno lungo il sentiero.`},
+ 1:{year:`1843`,
+  ps:[`Dal 1834 Charles Babbage progettò la macchina analitica: un “magazzino” per conservare i numeri, un “mulino” per eseguire i calcoli e istruzioni su schede perforate, prese in prestito dal telaio Jacquard. Non fu mai costruita.`,
+   `Nel 1843 Ada Lovelace tradusse un articolo sulla macchina scritto da Luigi Federico Menabrea, un ingegnere militare che aveva ascoltato Babbage a Torino nel 1840. Le sue note erano lunghe circa tre volte l'articolo. La nota G descrive, passo per passo, come la macchina avrebbe potuto calcolare i numeri di Bernoulli: di solito è considerata il primo programma per computer pubblicato.`,
+   `Scrisse anche che la macchina “non ha la minima pretesa di originare alcunché”: può fare soltanto ciò che sappiamo ordinarle di fare.`],
+  ctrl:`<button class="h" data-act="crank">gira la manovella</button><button class="h" data-act="reset">cancella i risultati</button>`,
+  hint:`ogni giro calcola il numero di Bernoulli successivo`,
+  note:`Numerazione moderna: il numero che Lovelace chiamava B₇ è l'attuale B₈ = −1/30. La macchina è uno schizzo semplificato e le cifre nel magazzino sono decorative.`,
+  line:`Un secolo prima di me, Lovelace capì che la macchina poteva lavorare su simboli, non solo su numeri. Nella nota A immaginò perfino che potesse comporre musica.`},
+ 2:{year:`1936`,
+  ps:[`Nel 1936 il giovane Alan Turing affrontò un problema posto da David Hilbert: esiste un metodo meccanico che decida, per qualunque enunciato della logica, se è dimostrabile? Prima dovette definire con esattezza che cosa significa “calcolare”.`,
+   `La sua risposta fu una macchina immaginaria: un nastro di celle, una testina che legge e scrive un simbolo alla volta e una tabella di regole della forma “in questo stato, se leggi questo simbolo, scrivi, spostati e cambia stato”. Eppure, secondo la tesi di Church–Turing, una macchina così può eseguire qualunque algoritmo.`,
+   `La macchina sul foglio aggiunge 1 a un numero binario. La risposta alla domanda di Hilbert, trovata da Turing e pochi mesi prima da Alonzo Church, è no.`],
+  ctrl:`<button class="h" data-act="step">un passo</button><button class="h" data-act="run">esegui fino alla fine</button><button class="h" data-act="again">aggiungi ancora 1</button><button class="h" data-act="reset">azzera il nastro</button>`,
+  hint:`segui la testina e la regola evidenziata`,
+  line:`Un nastro, una testina e una tabella di regole. In linea di principio, una macchina così può imitare qualunque computer, compresi i relè che mi guidavano nel labirinto.`},
+ 3:{year:`1943`,
+  ps:[`Il neurofisiologo Warren McCulloch e il giovane logico Walter Pitts proposero un modello matematico del neurone: riceve segnali che valgono 0 o 1, li somma e “scatta” solo se la somma raggiunge una soglia θ.`,
+   `Cambiando la soglia, lo stesso neurone calcola funzioni logiche diverse; collegando più neuroni, il loro modello può realizzare qualunque funzione logica. Il cervello, visto come una rete di interruttori.`,
+   `Il modello originale ha anche ingressi inibitori, qui omessi. Questo neurone non impara: pesi e soglia sono fissati a mano. L'apprendimento sarebbe arrivato con il percettrone.`],
+  ctrl:`<button class="h" data-act="th" data-v="-1">soglia −1</button><button class="h" data-act="th" data-v="1">soglia +1</button>`,
+  hint:`tocca x₁ e x₂ sul foglio per accenderli e spegnerli`,
+  line:`Un neurone che è solo un interruttore con una soglia. Buffo: anche il mio cervello era fatto di interruttori, relè telefonici nascosti sotto il labirinto.`},
+ 4:{year:`1950`,
+  ps:[`In “Computing Machinery and Intelligence” Turing sostituì la domanda “Le macchine possono pensare?”, che giudicava troppo priva di senso per meritare una discussione, con un gioco: un interrogante scambia messaggi scritti con due giocatori nascosti, una persona e una macchina, e deve capire chi è chi.`,
+   `Turing prevedeva che entro una cinquantina d'anni un interrogante medio non avrebbe avuto più del 70 per cento di probabilità di fare l'identificazione giusta dopo cinque minuti di domande.`,
+   `Le risposte della macchina sul foglio vengono dal dialogo d'esempio che Turing scrisse nel suo articolo; quelle della persona sono inventate.`],
+  ctrl:`<button class="h" data-act="guess" data-v="0">la macchina è A</button><button class="h" data-act="guess" data-v="1">la macchina è B</button><button class="h" data-act="next">domanda successiva</button>`,
+  hint:`leggi le risposte e prova a indovinare`,
+  note:`Il dialogo è tradotto dall'inglese. La domanda sugli scacchi è scritta in notazione algebrica moderna; Turing usava la vecchia notazione descrittiva.`,
+  line:`Turing lo chiamava gioco dell'imitazione. Oggi tutti lo chiamano test di Turing, un nome che lui non usò mai.`},
+ 5:{year:`1950`,
+  ps:[`Claude Shannon, che nel 1948 aveva fondato la teoria dell'informazione, costruì Teseo: un topo mosso da un magnete sotto un labirinto di 25 caselle. La sua “mente” era un banco di relè telefonici nascosto sotto il tavolo.`,
+   `Nella prima corsa Teseo esplora per tentativi ed errori e, per ogni casella, i relè ricordano l'ultima direzione in cui ne è uscito. Nella seconda corsa il topo segue la memoria dritto fino alla meta.`,
+   `Se si sposta la meta, la memoria diventa sbagliata: Teseo deve imparare di nuovo.`],
+  ctrl:`<button class="h" data-act="explore">prima corsa: esplora</button><button class="h" data-act="recall">seconda corsa: ricorda</button><button class="h" data-act="move">sposta la meta</button>`,
+  hint:`le frecce blu sono la memoria dei relè`,
+  note:`La strategia di esplorazione sul foglio è semplificata.`,
+  line:`Sono io! Shannon mi costruì nel 1950. Tutta la mia memoria sta in 25 frecce, una per casella, e ricordo sempre e soltanto l'ultima via d'uscita.`},
+ 6:{year:`1956`,
+  ps:[`Nel 1955 John McCarthy, Marvin Minsky, Nathaniel Rochester e Claude Shannon proposero un progetto di ricerca estivo al Dartmouth College di Hanover, nel New Hampshire. La loro proposta contiene il primo uso noto dell'espressione “intelligenza artificiale”.`,
+   `Nell'estate del 1956 parteciparono una ventina di ricercatori, in momenti diversi. Allen Newell e Herbert Simon portarono il Logic Theorist, scritto con Cliff Shaw: un programma che dimostra teoremi di logica.`,
+   `Lavorava a ritroso partendo dal teorema, cercando un assioma o un teorema già dimostrato da trasformare nella tesi. Dimostrò 38 dei primi 52 teoremi del capitolo 2 dei <cite>Principia Mathematica</cite> e per uno di essi, il teorema 2.85, trovò una dimostrazione più breve.`],
+  ctrl:`<button class="h" data-act="next">passo successivo</button><button class="h" data-act="thm" data-v="2.01" aria-pressed="true">teorema ✱2.01</button><button class="h" data-act="thm" data-v="2.02" aria-pressed="false">teorema ✱2.02</button>`,
+  hint:`tre passi, da un assioma al teorema`,
+  note:`Entrambe le dimostrazioni sono quelle dei <cite>Principia</cite>, in simboli moderni. Mostrano il tipo di catena che il Logic Theorist cercava.`,
+  line:`Shannon, il mio costruttore, firmò la proposta di Dartmouth. Il nome “intelligenza artificiale” si attribuisce a McCarthy.`},
+ 7:{year:`1958`,
+  ps:[`Nel 1958 lo psicologo Frank Rosenblatt presentò il percettrone, simulato prima su un computer IBM 704 e poi costruito come macchina, il Mark I: 400 fotocellule in una griglia 20 × 20, con pesi regolati da motori elettrici.`,
+   `La novità è che impara dagli esempi: quando sbaglia, sposta di poco i pesi nella direzione giusta. Se i dati si possono separare con una retta (un iperpiano, in più dimensioni), è dimostrato che l'algoritmo ne trova una in un numero finito di passi.`,
+   `Il New York Times riferì che la Marina degli Stati Uniti si aspettava una macchina capace di camminare, parlare, vedere e perfino essere consapevole della propria esistenza.`],
+  ctrl:`<button class="h" data-act="step">un passo</button><button class="h" data-act="train">addestra</button><button class="h" data-act="cls" aria-pressed="false">aggiungi: ○</button><button class="h" data-act="new">nuovi dati</button>`,
+  hint:`fai clic sul foglio per aggiungere punti`,
+  line:`Io ho imparato il labirinto ricordando. Il percettrone impara correggendo i propri errori, un esempio alla volta.`},
+ 8:{year:`1966`,
+  ps:[`Al MIT Joseph Weizenbaum scrisse ELIZA, descritto in un articolo pubblicato nel 1966. Il suo copione più noto, DOCTOR, imita uno psicoterapeuta che trasforma in domande le frasi del paziente.`,
+   `ELIZA non capisce nulla: cerca parole chiave e applica regole di trasformazione. Eppure molti utenti si confidavano con il programma; la segretaria di Weizenbaum una volta gli chiese di uscire dalla stanza per poterci “parlare” in privato.`,
+   `La tendenza ad attribuire comprensione a una macchina quando produce frasi plausibili oggi si chiama effetto ELIZA.`],
+  ctrl:`<form class="chat"><input type="text" aria-label="Scrivi a ELIZA" placeholder="scrivi qui e premi Invio" autocomplete="off"><button class="h" type="submit">invia</button></form>`,
+  hint:`prova: “mi sento stanco”, “mia madre…”, “sono sempre in ritardo”`,
+  note:`Il copione DOCTOR originale era in inglese: la frase d'apertura ne è una traduzione, le altre regole sono state scritte in italiano per questa pagina, nel suo stile.`,
+  line:`ELIZA non capì mai una parola, eppure la gente le confidava i propri segreti. Ricordatelo quando arriveremo alla città.`},
+ 9:{year:`1969–1973`,
+  ps:[`Nel 1969 Marvin Minsky e Seymour Papert pubblicarono <cite>Perceptrons</cite>, uno studio matematico di ciò che i percettroni a uno strato non sanno fare. Il libro tratta soprattutto proprietà come la parità e la connessione; il suo esempio più semplice e più citato è lo XOR, l'“o esclusivo”, che vale 1 quando i due ingressi sono diversi.`,
+   `Un percettrone a uno strato separa i dati con una sola retta, e nessuna retta separa i punti dello XOR. Le reti con più strati ci riescono, ma un modo pratico e ampiamente conosciuto per addestrarle arrivò solo negli anni Ottanta.`,
+   `Il libro e il rapporto Lighthill (1973), commissionato dallo Science Research Council britannico, contribuirono ai tagli dei finanziamenti. Seguì il primo inverno dell'IA, all'incirca dal 1974 al 1980.`],
+  ctrl:`<button class="h" data-act="fn" data-v="and" aria-pressed="false">AND</button><button class="h" data-act="fn" data-v="or" aria-pressed="false">OR</button><button class="h" data-act="fn" data-v="xor" aria-pressed="true">XOR</button>`,
+  hint:`trascina i due punti rossi: riesci a separare lo XOR?`,
+  line:`Brr, in fondo a questa discesa ci aspetta l'inverno. Quattro punti, una retta, e proprio non funziona: l'esempio classico di ciò che un percettrone a uno strato non sa fare.`},
+ 10:{year:`anni ’70`,
+  ps:[`Negli anni Settanta l'IA cambiò strategia: invece di inseguire un'intelligenza generale, raccolse la conoscenza degli esperti in forma di regole “se… allora”. MYCIN, sviluppato a Stanford come lavoro di dottorato di Edward Shortliffe, identificava i batteri nelle infezioni gravi e suggeriva gli antibiotici, usando circa 600 regole.`,
+   `MYCIN ragionava all'indietro: partiva da un'ipotesi e poneva solo le domande necessarie per verificarla. Se gli si chiedeva “perché?”, sapeva dire quale regola stava provando.`,
+   `In una valutazione del 1979 i suoi consigli furono giudicati accettabili almeno altrettanto spesso di quelli degli specialisti di Stanford, eppure non fu mai usato nella pratica clinica. Negli anni Ottanta i sistemi esperti basati su regole diventarono un'industria.`],
+  ctrl:`<button class="h" data-act="yes">sì</button><button class="h" data-act="no">no</button><button class="h" data-act="restart">ricomincia</button>`,
+  hint:`pensa a un animale e rispondi: il sistema chiede solo ciò che gli serve`,
+  note:`Le regole sugli animali sono adattate da un classico esempio da manuale; non sono le regole mediche di MYCIN.`,
+  line:`Bloccati dalla neve, i costruttori di regole continuarono a lavorare. Nota che il sistema chiede solo ciò che gli serve e sa sempre dirti perché lo sta chiedendo.`},
+ 11:{year:`1982`,
+  ps:[`Nel 1982 il fisico John Hopfield mostrò come una rete di neuroni possa funzionare da memoria. Ogni neurone è collegato a tutti gli altri e le configurazioni memorizzate sono scritte nei pesi delle connessioni.`,
+   `Si fa partire la rete da una configurazione danneggiata e si lasciano aggiornare i neuroni uno alla volta: una grandezza chiamata energia non aumenta mai, e di solito la rete si assesta sul ricordo memorizzato più vicino al punto di partenza. La matematica è strettamente legata ai modelli di materiali magnetici chiamati vetri di spin.`,
+   `Troppi ricordi la confondono: una rete di N neuroni memorizza in modo affidabile solo circa 0,14 N configurazioni. Nel 2024 Hopfield ha condiviso il premio Nobel per la fisica con Geoffrey Hinton.`],
+  ctrl:`<button class="h" data-act="recall">richiama</button><button class="h" data-act="noise">aggiungi rumore</button><button class="h" data-act="pat" data-v="0">T</button><button class="h" data-act="pat" data-v="1">L</button><button class="h" data-act="pat" data-v="2">X</button>`,
+  hint:`fai clic sulle celle per danneggiare la figura, poi premi “richiama”`,
+  note:`La griglia ha 100 neuroni e memorizza 3 configurazioni.`,
+  line:`Una memoria che si ripara da sola: le mostri un'immagine danneggiata e ritrova il resto. I miei relè non ci sarebbero mai riusciti.`},
+ 12:{year:`1986`,
+  ps:[`Per addestrare una rete con più strati bisogna sapere quanto ciascun peso, compresi quelli nascosti, ha contribuito all'errore finale. La retropropagazione lo calcola con la regola della catena: l'errore viaggia all'indietro, strato dopo strato.`,
+   `L'idea ha radici negli anni Sessanta e Settanta (Kelley, Bryson, Linnainmaa, Werbos), ma diventò famosa nel 1986 con un articolo su <cite>Nature</cite> di Rumelhart, Hinton e Williams, le cui reti imparavano rappresentazioni interne. La rete sul foglio, con tre neuroni nascosti, impara lo XOR.`,
+   `Un anno dopo crollò il mercato delle macchine Lisp, computer costruiti per eseguire il Lisp, il principale linguaggio dell'IA; i sistemi esperti si rivelarono costosi da mantenere. I finanziamenti si esaurirono di nuovo: fu il secondo inverno dell'IA, all'incirca 1987–1993.`],
+  ctrl:`<button class="h" data-act="train">addestra</button><button class="h" data-act="reset">nuovi pesi casuali</button>`,
+  hint:`blu in avanti, rosso all'indietro; linea più spessa = peso più grande, tratteggiata = negativo`,
+  line:`Di nuovo il passo XOR, e questa volta tre neuroni nascosti lo superano. Goditi il panorama: subito dopo questo crinale il sentiero scende nel secondo inverno.`},
+ 13:{year:`1997`,
+  ps:[`Nel febbraio 1996, a Filadelfia, il campione del mondo Garry Kasparov batté Deep Blue di IBM per 4–2. Nella rivincita del maggio 1997, a New York, vinse la macchina per 3½–2½: Kasparov si aggiudicò la prima partita, Deep Blue la seconda e la decisiva sesta, e le altre tre finirono patte.`,
+   `Deep Blue non imitava il pensiero di un grande maestro. Con chip costruiti appositamente valutava circa 200 milioni di posizioni al secondo, esplorava l'albero delle mosse possibili e scartava i rami inutili con la potatura alfa-beta.`,
+   `Fu un trionfo della ricerca a forza bruta, guidata da una funzione di valutazione scritta da persone.`],
+  ctrl:`<label class="rng">profondità <input type="range" min="1" max="12" value="4" data-act="depth"></label>`,
+  hint:`quante posizioni, se guardi avanti di d semimosse?`,
+  line:`Deep Blue non imparò mai dalle sue partite: cercava, velocissimo. Il mio labirinto aveva 25 caselle; gli scacchi hanno molte più posizioni di quante chiunque potrebbe mai contarne.`},
+ 14:{year:`2012`,
+  ps:[`Fei-Fei Li, convinta che alle macchine mancassero i dati più che l'ingegno, avviò ImageNet: oltre 14 milioni di immagini etichettate da decine di migliaia di persone. Dal 2010 una gara annuale chiedeva ai programmi di classificare le immagini in 1000 categorie.`,
+   `Nel 2012 AlexNet, di Alex Krizhevsky, Ilya Sutskever e Geoffrey Hinton, abbassò l'errore top-5 al 15,3%, contro il 26,2% del secondo classificato. È una rete convoluzionale profonda, addestrata su due schede grafiche: piccoli filtri scorrono sull'immagine e imparano a riconoscere bordi, poi forme, poi parti di oggetti. Yann LeCun usava reti convoluzionali dal 1989 per leggere i codici postali scritti a mano.`,
+   `Errore top-5: un'immagine conta come sbagliata se la categoria giusta non è tra le cinque proposte del modello.`],
+  ctrl:`<button class="h" data-act="human" aria-pressed="false">mostra la stima umana</button>`,
+  hint:`punta le barre per leggere i vincitori`,
+  line:`Schede grafiche nate per i videogiochi, oltre un milione di foto etichettate e una vecchia idea sui filtri che scorrono. All'improvviso il bosco prese vita.`},
+ 15:{year:`2013`,
+  ps:[`Nel 2013 Tomas Mikolov e i suoi colleghi di Google pubblicarono word2vec, un metodo veloce per trasformare ogni parola in una lista di qualche centinaio di numeri: un vettore. Una piccola rete impara i vettori da miliardi di parole di testo, prevedendo quali parole compaiono vicine.`,
+   `Le parole usate in contesti simili finiscono vicine, e alcune relazioni diventano direzioni. L'esempio più noto: re − uomo + donna dà un vettore la cui parola più vicina, escluse le tre usate, è regina.`,
+   `I modelli linguistici cominciano ancora così: anche in GPT ogni token parte come un vettore appreso.`],
+  ctrl:`<button class="h" data-act="an" data-v="0" aria-pressed="true">re − uomo + donna</button><button class="h" data-act="an" data-v="1" aria-pressed="false">zio − uomo + donna</button><button class="h" data-act="an" data-v="2" aria-pressed="false">Parigi − Francia + Italia</button><button class="h" data-act="an" data-v="3" aria-pressed="false">Berlino − Germania + Spagna</button>`,
+  hint:`scegli una somma e guarda le frecce`,
+  note:`La mappa è uno schizzo in 2D con posizioni inventate; i veri vettori di parole hanno centinaia di dimensioni. Senza escludere le tre parole usate, la più vicina è spesso una di loro. Gli esempi originali erano in inglese (king, man, woman, queen).`,
+  line:`Qui le parole sono luoghi e i significati sono direzioni. Da uomo a donna c'è la stessa breve passeggiata che da re a regina.`},
+ 16:{year:`2016`,
+  ps:[`Nel go i giocatori posano pietre su una griglia 19 × 19 per circondare territorio. Le posizioni legali sono circa 2 × 10¹⁷⁰: qui la forza bruta di Deep Blue non ha speranze.`,
+   `AlphaGo di DeepMind combinava reti neurali, addestrate su partite umane e poi giocando contro sé stesse, con la ricerca ad albero Monte Carlo. Nel marzo 2016, a Seul, batté Lee Sedol per 4–1.`,
+   `La mossa 37 della seconda partita, che alcuni commentatori presero dapprima per un errore, si rivelò decisiva; nella quarta partita la mossa 78 di Lee gli valse la sua unica vittoria.`],
+  ctrl:`<button class="h" data-act="clear">svuota il goban</button>`,
+  hint:`fai clic sulle intersezioni: le pietre circondate vengono catturate`,
+  line:`AlphaGo imparò in parte come me, provando e riprovando. A me bastarono due corse; lui giocò milioni di partite contro sé stesso.`},
+ 17:{year:`2017`,
+  ps:[`Otto ricercatori, allora tutti a Google, pubblicarono “Attention Is All You Need” e introdussero il transformer, un'architettura per sequenze basata sul meccanismo dell'attenzione.`,
+   `Ogni token guarda gli altri e pesa quanto ciascuno è rilevante per il proprio significato. Così “era” si lega a “gatto” se era troppo stanco, ma a “strada” se era troppo larga. Nei modelli che generano testo, come GPT, ogni token può guardare solo i token che lo precedono.`,
+   `A differenza delle reti ricorrenti, durante l'addestramento un transformer elabora in parallelo tutti i token di un testo, e questo gli permette di imparare da enormi quantità di testo. È la T di GPT.`],
+  people:[['Ashish Vaswani e sette coautori','vaswani']],
+  ctrl:`<button class="h" data-act="end" data-v="0" aria-pressed="true">… era troppo stanco</button><button class="h" data-act="end" data-v="1" aria-pressed="false">… era troppo larga</button>`,
+  hint:`tocca una parola nella colonna di sinistra`,
+  note:`Pesi scelti a mano a scopo illustrativo. Qui ogni parola può guardare l'intera frase, come nell'encoder del transformer. L'esempio inglese usa il pronome “it”; in italiano il soggetto è sottinteso in “era”, e la desinenza dell'aggettivo (stanco, larga) basta già a sciogliere l'ambiguità.`,
+  line:`Un ponte dove ogni parola è legata a ogni altra da un cavo. Più il cavo è spesso, più attenzione riceve.`},
+ 18:{year:`2020`,
+  ps:[`Una proteina è una catena di amminoacidi che si ripiega in una forma tridimensionale precisa, e nella maggior parte dei casi è la forma a determinarne la funzione. Prevederla a partire dalla sola sequenza era un problema aperto da una cinquantina d'anni.`,
+   `Nel 2020, alla competizione CASP14, AlphaFold 2 di DeepMind raggiunse un'accuratezza paragonabile a quella sperimentale per circa due terzi delle proteine. Oggi un database pubblico contiene le strutture previste di oltre 200 milioni di proteine.`,
+   `Nel 2024 il premio Nobel per la chimica è andato per metà a Demis Hassabis e John Jumper, per la previsione delle strutture, e per metà a David Baker, per la progettazione di nuove proteine.`],
+  ctrl:`<label class="rng">ripiegamento <input type="range" min="0" max="100" value="0" data-act="f"></label><button class="h" data-act="play">ripiega</button>`,
+  hint:`trascina il cursore o premi “ripiega”`,
+  note:`Uno schizzo semplificato in 2D, non una vera struttura proteica.`,
+  line:`AlphaFold non mostra come la catena si ripiega, solo la forma in cui finisce. Per i biologi è già moltissimo.`},
+ 19:{year:`2018–2022`,
+  ps:[`OpenAI addestrò transformer sempre più grandi su un compito semplice: prevedere il token successivo in enormi raccolte di testo. GPT-1 (2018) aveva 117 milioni di parametri, GPT-2 (2019) 1,5 miliardi, GPT-3 (2020) 175 miliardi.`,
+   `ChatGPT fu rilasciato il 30 novembre 2022. Era stato ulteriormente addestrato con il feedback umano (RLHF) per seguire istruzioni e sostenere una conversazione. Secondo le stime dell'epoca, raggiunse 100 milioni di utenti in circa due mesi.`,
+   `Un modello così sceglie un token alla volta da una distribuzione di probabilità. La temperatura stabilisce quanto la scelta sia audace.`],
+  ctrl:`<button class="h" data-act="gen">scegli un token</button><button class="h" data-act="restart">ricomincia</button><button class="h" data-act="mode" aria-pressed="false">mostra le dimensioni dei modelli</button><label class="rng">temperatura <input type="range" min="0.2" max="2" step="0.1" value="1" data-act="temp"></label>`,
+  hint:`premi “scegli un token” per allungare la frase`,
+  note:`La frase e le sue probabilità sono inventate a scopo didattico. Un modello reale assegna un punteggio a ogni token del suo vocabolario.`,
+  line:`Un modello linguistico sceglie un token alla volta, come io sceglievo una casella alla volta. Il mio labirinto aveva 25 caselle; il vocabolario di GPT-3 ha circa 50.000 token.`},
+ end:{year:`Oggi`,h2:`Il belvedere`,
+  ps:[`Il sentiero finisce qui, per ora. Alle tue spalle ci sono le estati e gli inverni dell'IA; davanti a te, la storia si sta ancora scrivendo.`,`Apri la mappa intera per tornare a qualunque tappa.`],
+  ctrl:`<button class="h" data-nav="overview">mappa intera</button>`,
+  line:`Fine del sentiero, per ora. Da questa torre si vedono entrambi gli inverni alle nostre spalle. Apri la mappa intera per tornare a qualunque tappa.`}};
+const CT=()=>LANG==='it'?CONTENT_IT:CONTENT;
 
 /* ================= stato generale ================= */
 const FILM=new URLSearchParams(location.search).get('film');let VCLOCK=null;const NOW=()=>VCLOCK===null?performance.now():VCLOCK;
@@ -1246,33 +1470,34 @@ function teseoSide(x,base,dir,ph,walk){const s=1.25;const X=u=>x+dir*u*s,Y=v=>ba
  ell(X(12),Y(19),4.2*s,4.6*s,{solid:C.sheet,w:1.2,fill:C.red,fa:.3});dot(X(18),Y(11),1.8);dot(X(26),Y(8),1.9);
  for(const d of[-2,0,2])seg(X(25),Y(8),X(34),Y(8+d*1.6),{w:1,passes:1,col:C.red})}
 let bubOn=false,bubUntil=0;
-function lineOf(i){const S=STOPS[i];const c=CONTENT[S.k||S.n];return c&&c.line}
+function lineOf(i){const S=STOPS[i];const c=CT()[S.k||S.n];return c&&c.line}
 function bubble(on){if(FILM)on=false;const l=lineOf(cur);bubOn=on&&!!l&&!ov&&innerWidth>760;if(bubOn){$('bubt').textContent=l;bubUntil=performance.now()+14000}bub.classList.toggle('on',bubOn);placeBubble()}
 function placeBubble(){if(!bubOn)return;const p=pathAt(TS.s);const[sx,sy]=toScreen(p.x,p.y);const a=area();const bw=bub.offsetWidth,bh=bub.offsetHeight;
  let x=sx-34,y=sy+22,up=false;const S=STOPS[cur];if(y+bh>a.y+a.h-6){y=a.y+a.h-bh-6;if(S.n)y=Math.max(y,toScreen(0,S.py-72)[1]);if(y<sy-10){y=Math.max(8,sy-40*cam.z-bh-10);up=true}}x=Math.max(8,Math.min(a.x+a.w-bw-8,x));y=Math.max(8,y);
  bub.style.left=x+'px';bub.style.top=y+'px';bub.classList.toggle('up',up);bub.style.setProperty('--tx',Math.max(14,Math.min(bw-30,sx-x-8))+'px')}
 
 /* ================= pannello e contenuti ================= */
-function stopHTML(i){const S=STOPS[i];const c=CONTENT[S.k||S.n];
- if(!c)return`<div class="year">${S.y}</div><h2>${S.title}</h2><p class="soon">This place is already on the map. Its text and its experiment arrive in the next phase of the project.</p>`;
- let h=`<div class="year">${c.year}</div>`+(c.h1?`<h1>${c.h1}</h1>`:`<h2>${c.h2||S.title}</h2>`)+(c.sub?`<p class="sub">${c.sub}</p>`:'')+(c.line?`<p class="tline"><b>Theseus</b> ${c.line}</p>`:'')+c.ps.map(p=>`<p>${p}</p>`).join('');
- if(c.people)h+=`<canvas class="people" data-people='${JSON.stringify(c.people).replace(/'/g,'&#39;')}' aria-hidden="true"></canvas>`;
+function stopHTML(i){const S=STOPS[i];const c=CT()[S.k||S.n];
+ if(!c)return`<div class="year">${yr(S)}</div><h2>${ttl(S)}</h2><p class="soon">${LX('This place is already on the map. Its text and its experiment arrive in the next phase of the project.','Questo luogo è già sulla mappa. Il testo e l’esperimento arriveranno nella prossima fase del progetto.')}</p>`;
+ let h=`<div class="year">${c.year}</div>`+(c.h1?`<h1>${c.h1}</h1>`:`<h2>${c.h2||ttl(S)}</h2>`)+(c.sub?`<p class="sub">${c.sub}</p>`:'')+(c.line?`<p class="tline"><b>${LX('Theseus','Teseo')}</b> ${c.line}</p>`:'')+c.ps.map(p=>`<p>${p}</p>`).join('');
+ const people=c.people||(CONTENT[S.k||S.n]||{}).people;
+ if(people)h+=`<canvas class="people" data-people='${JSON.stringify(people).replace(/'/g,'&#39;')}' aria-hidden="true"></canvas>`;
  if(c.ctrl)h+=`<div class="ctrl">${c.ctrl}</div>`;if(c.hint)h+=`<div class="hint">${c.hint}</div>`;if(c.note)h+=`<p class="note">${c.note}</p>`;return h}
-function buildPanel(){const box=$('stops');box.innerHTML='';STOPS.forEach((S,i)=>{const s=document.createElement('section');s.className='stop';s.dataset.i=i;s.setAttribute('aria-label',S.n?`Stop ${S.n}: ${S.title}`:(S.k==='intro'?'Introduction':'The lookout'));s.innerHTML=stopHTML(i);box.appendChild(s);
+function buildPanel(){const box=$('stops');box.innerHTML='';STOPS.forEach((S,i)=>{const s=document.createElement('section');s.className='stop';s.dataset.i=i;s.setAttribute('aria-label',S.n?`${LX('Stop','Tappa')} ${S.n}: ${ttl(S)}`:(S.k==='intro'?LX('Introduction','Introduzione'):LX('The lookout','Il belvedere')));s.innerHTML=stopHTML(i);box.appendChild(s);
   s.querySelectorAll('[data-act]').forEach(b=>{const ev=b.tagName==='INPUT'?'input':'click';b.addEventListener(ev,()=>{if(!S.done)return;const L=ensureLive(S);bubble(false);const sc=SC[S.scene];sc.act&&sc.act(L.st,b.dataset.act,b.tagName==='INPUT'?b.value:b.dataset.v,b);L.dirty=true;needs=true})});
   const fm=s.querySelector('form.chat');if(fm)fm.addEventListener('submit',e=>{e.preventDefault();const inp=fm.querySelector('input');const v=inp.value.trim();if(!v)return;inp.value='';const L=ensureLive(S);bubble(false);SC[S.scene].say(L.st,v);L.dirty=true;needs=true});
   s.querySelectorAll('[data-nav]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.nav==='next')go(cur+1);else setOverview(true)}))});
  const ol=$('ovlist');ol.innerHTML='';STOPS.forEach((S,i)=>{const li=document.createElement('li');const b=document.createElement('button');b.className='ovb';
-  b.innerHTML=S.n?`<span class="n">${S.n}</span><span class="yy">${S.y}</span> ${S.title}`:(S.k==='intro'?'<span class="n">·</span> Start of the trail':'<span class="n">·</span> The lookout');b.onclick=()=>{setOverview(false,i)};li.appendChild(b);ol.appendChild(li)});
- marks.innerHTML='';STOPS.forEach((S,i)=>{const b=document.createElement('button');b.className='mk';b.textContent=S.n||(S.k==='intro'?'start':'end');b.setAttribute('aria-label',S.n?`Go to stop ${S.n}: ${S.title}, ${S.y}`:(S.k==='intro'?'Go to the start':'Go to the lookout'));b.onclick=()=>setOverview(false,i);marks.appendChild(b)})}
+  b.innerHTML=S.n?`<span class="n">${S.n}</span><span class="yy">${yr(S)}</span> ${ttl(S)}`:'<span class="n">·</span> '+(S.k==='intro'?LX('Start of the trail','Inizio del sentiero'):LX('The lookout','Il belvedere'));b.onclick=()=>{setOverview(false,i)};li.appendChild(b);ol.appendChild(li)});
+ marks.innerHTML='';STOPS.forEach((S,i)=>{const b=document.createElement('button');b.className='mk';b.textContent=S.n||(S.k==='intro'?LX('start','inizio'):LX('end','fine'));b.setAttribute('aria-label',S.n?`${LX('Go to stop','Vai alla tappa')} ${S.n}: ${ttl(S)}, ${yr(S)}`:(S.k==='intro'?LX('Go to the start',`Vai all'inizio`):LX('Go to the lookout','Vai al belvedere')));b.onclick=()=>setOverview(false,i);marks.appendChild(b)})}
 const LOOKS2=LOOKS;
 function drawPeople(cvp){const list=JSON.parse(cvp.dataset.people);const W0=500,H0=104;const k=Math.min(3,(cvp.clientWidth||352)/W0*dpr);cvp.width=Math.round(W0*k);cvp.height=Math.round(H0*k);
  const c=cvp.getContext('2d');c.setTransform(k,0,0,k,0,0);P.ctx=c;P.budget=Infinity;P.used=0;P.dry=false;P.minw=0;P.scale=0;const n=list.length;const w=W0/Math.max(n,3);
  list.forEach(([name,key],i)=>{const cx=i*w+34;person(cx,30,0.6,{...LOOKS2[key],bottom:104});const lines=wrapLines(name,w-80,22);lines.forEach((l,q)=>txt(l,cx+44,54+q*21-(lines.length-1)*10,{size:22,col:C.ink}))})}
 function showPanel(i){if(FILM)filmCaption(i);document.querySelectorAll('.stop').forEach(s=>s.classList.toggle('active',+s.dataset.i===i&&!ov));$('ovsec').classList.toggle('active',ov);
  const s=document.querySelector(`.stop[data-i="${i}"]`);if(s&&!ov){s.querySelectorAll('canvas.people').forEach(drawPeople);panel.scrollTop=0}
- const S=STOPS[i];$('sr').textContent=ov?'Whole map':(S.n?`Stop ${S.n} of 19, ${S.y}: ${S.title}`:(S.k==='intro'?'Start of the trail':'The lookout'));
- $('prev').disabled=i===0&&!ov;$('next').disabled=i===STOPS.length-1&&!ov;$('ovbtn').textContent=ov?'back to the trail':'whole map';$('ovbtn').setAttribute('aria-pressed',ov);
+ const S=STOPS[i];$('sr').textContent=ov?LX('Whole map','Mappa intera'):(S.n?`${LX('Stop','Tappa')} ${S.n} ${LX('of','di')} 19, ${yr(S)}: ${ttl(S)}`:(S.k==='intro'?LX('Start of the trail','Inizio del sentiero'):LX('The lookout','Il belvedere')));
+ $('prev').disabled=i===0&&!ov;$('next').disabled=i===STOPS.length-1&&!ov;$('ovbtn').textContent=ov?LX('back to the trail','torna al sentiero'):LX('whole map','mappa intera');$('ovbtn').setAttribute('aria-pressed',ov);
  history.replaceState(null,'','#'+(ov?'map':S.n?'stop-'+S.n:S.k))}
 
 /* ================= navigazione ================= */
@@ -1305,7 +1530,7 @@ function mmDraw(){const r=mmc.getBoundingClientRect();if(!r.width)return;const k
  seg(X(1940),h-8,X(1940),h-2,{w:1,passes:1,col:C.muted});
  const p=X(curT);ell(p,Y(lev(curT)),5,5,{solid:C.red,w:1.2,passes:1});
  const bs=$('mmdots').children;STOPS.forEach((S,i)=>{const b=bs[i];if(!b)return;b.style.left=(X(S.t)-7)+'px';b.style.top=(Y(lev(S.t))-7)+'px';b.classList.toggle('cur',i===cur&&!ov)})}
-function mmBuild(){const d=$('mmdots');d.innerHTML='';STOPS.forEach((S,i)=>{const b=document.createElement('button');b.className='md';b.setAttribute('aria-label',S.n?`Stop ${S.n}, ${S.y}: ${S.title}`:(S.k==='intro'?'Start of the trail':'The lookout'));b.title=S.n?`${S.y} ${S.title}`:(S.k==='intro'?'Start':'The lookout');
+function mmBuild(){const d=$('mmdots');d.innerHTML='';STOPS.forEach((S,i)=>{const b=document.createElement('button');b.className='md';b.setAttribute('aria-label',S.n?`${LX('Stop','Tappa')} ${S.n}, ${yr(S)}: ${ttl(S)}`:(S.k==='intro'?LX('Start of the trail','Inizio del sentiero'):LX('The lookout','Il belvedere')));b.title=S.n?`${yr(S)} ${ttl(S)}`:(S.k==='intro'?LX('Start','Inizio'):LX('The lookout','Il belvedere'));
  b.onclick=()=>{if(ov)setOverview(false,i);else go(i)};d.appendChild(b)})}
 
 /* ================= segnalini della vista d'insieme ================= */
@@ -1335,7 +1560,8 @@ function pup(e){if(pmode==='scene'){const S=STOPS[cur],L=live[S.n];const sc=SC[S
 cv.addEventListener('pointerup',pup);cv.addEventListener('pointercancel',()=>{pmode=null;pressed=false});
 $('prev').onclick=()=>go(cur-1);$('next').onclick=()=>go(cur+1);$('ovbtn').onclick=()=>setOverview(!ov);
 bub.addEventListener('click',()=>bubble(false));
-$('fold').onclick=()=>{const c=panel.classList.toggle('folded');$('fold').setAttribute('aria-expanded',!c);$('fold').textContent=c?'show text':'hide text';onResize()};
+$('fold').onclick=()=>{const c=panel.classList.toggle('folded');$('fold').setAttribute('aria-expanded',!c);$('fold').textContent=c?LX('show text','apri testo'):LX('hide text','chiudi testo');onResize()};
+$('lang').onclick=()=>setLang(isIT()?'en':'it');
 $('theme').onclick=()=>{document.documentElement.dataset.theme=isDark()?'light':'dark';retheme()};
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(!document.documentElement.dataset.theme)retheme()});
 
@@ -1346,6 +1572,27 @@ addEventListener('resize',onResize);
 function snapshots(){for(const S of STOPS)if(S.done){const st={el:null};SC[S.scene].init(st);SNAP[S.n]=st}}
 function rebuild(){tiles.clear();snapshots();buildWorld();makeBase();for(const k in live)live[k].dirty=true;needs=true}
 function retheme(){readAll();makeGrain();$('loading').classList.add('on');setTimeout(()=>{rebuild();$('loading').classList.remove('on');mmDraw();document.querySelectorAll('.stop.active canvas.people').forEach(drawPeople)},30)}
+function applyStatic(){const it=isIT();document.documentElement.lang=LANG;
+ document.title=LX('A map of artificial intelligence',`Una mappa dell'intelligenza artificiale`);
+ const md=document.querySelector('meta[name="description"]');if(md)md.setAttribute('content',LX(`An interactive hand-drawn map of the history of artificial intelligence: nineteen stops from Ada Lovelace's Note G in 1843 to ChatGPT, walking across the summers and the two winters of AI.`,`Una mappa interattiva disegnata a mano della storia dell'intelligenza artificiale: diciannove tappe dalla nota G di Ada Lovelace, nel 1843, a ChatGPT, attraverso le estati e i due inverni dell'IA.`));
+ $('home').textContent=LX('← articles','← articoli');
+ cv.setAttribute('aria-label',LX('A hand-drawn landscape: the history of artificial intelligence as a trail from 1843 to today. Hills are periods of enthusiasm, snowy valleys are the two AI winters. The text for each stop is in the side panel.',`Un paesaggio disegnato a mano: la storia dell'intelligenza artificiale come un sentiero dal 1843 a oggi. Le colline sono i periodi di entusiasmo, le valli innevate i due inverni dell'IA. Il testo di ogni tappa è nel pannello laterale.`));
+ marks.setAttribute('aria-label',LX('Stops on the map','Tappe sulla mappa'));panel.setAttribute('aria-label',LX('Stop details','Dettagli della tappa'));
+ const os=$('ovsec');os.setAttribute('aria-label',LX('Whole map','Mappa intera'));os.querySelector('.year').textContent=LX('1843 to today','Dal 1843 a oggi');
+ os.querySelector('h2').textContent=LX('The whole map','La mappa intera');os.querySelector('p').textContent=LX('Pick a stop on the map or in this list.','Scegli una tappa sulla mappa o in questo elenco.');
+ bub.querySelector('b').textContent=LX('Theseus','Teseo');bar.setAttribute('aria-label',LX('Trail navigation','Navigazione del sentiero'));
+ $('prev').setAttribute('aria-label',LX('Previous stop','Tappa precedente'));$('next').setAttribute('aria-label',LX('Next stop','Tappa successiva'));
+ $('mmnote').textContent=LX('summers and winters, qualitative; time squeezed before 1940','estati e inverni, qualitativi; tempo compresso prima del 1940');
+ $('fold').textContent=panel.classList.contains('folded')?LX('show text','apri testo'):LX('hide text','chiudi testo');
+ $('theme').textContent=LX('theme','tema');$('theme').setAttribute('aria-label',LX('Switch between light and dark theme','Passa dal tema chiaro al tema scuro e viceversa'));
+ const lb=$('lang');lb.querySelector('.lg-l').textContent=it?'English':'italiano';lb.querySelector('.lg-s').textContent=it?'EN':'IT';
+ lb.setAttribute('aria-label',it?'Read in English':'Leggi in italiano');lb.setAttribute('lang',it?'en':'it');
+ $('loading').textContent=LX('sketching the map…','disegno la mappa…')}
+function setLang(l){if(l===LANG)return;LANG=l;try{localStorage.setItem('mapai-lang',l)}catch(_){}
+ try{const u=new URL(location.href);u.searchParams.set('lang',l);history.replaceState(null,'',u.pathname+u.search+u.hash)}catch(_){}
+ applyStatic();bubble(false);for(const k in live)delete live[k];buildPanel();mmBuild();showPanel(cur);
+ $('loading').classList.add('on');
+ setTimeout(()=>{rebuild();$('loading').classList.remove('on');const S=STOPS[cur];if(S.done&&!ov){const L=ensureLive(S);L.dirty=true}onResize()},30)}
 let lastT=0;
 function tickAll(now,dt){time+=dt;
  if(tr){stepTr(now);needs=true;mmDraw()}
@@ -1354,7 +1601,7 @@ function tickAll(now,dt){time+=dt;
  if(needs||(!reduce&&ambOn)){needs=false;ambOn=draw();placeBubble();placeMarks()}}
 function loop(now){const dt=Math.min(.05,(now-lastT)/1000||0);lastT=now;tickAll(now,dt);genTiles(tr?4:10);requestAnimationFrame(loop)}
 let ambOn=false;
-async function start(){if(FILM)filmSetup();readAll();makeGrain();sizeCanvas();buildPanel();mmBuild();
+async function start(){if(FILM)filmSetup();applyStatic();readAll();makeGrain();sizeCanvas();buildPanel();mmBuild();
  const h=location.hash.slice(1);if(h.startsWith('stop-')){const n=+h.slice(5);const i=STOPS.findIndex(S=>S.n===n);if(i>=0)cur=i}else if(h==='end')cur=STOPS.length-1;
  try{await Promise.race([Promise.all(['400 30px Caveat','600 30px Caveat','400 18px Newsreader','500 30px Newsreader'].map(f=>document.fonts.load(f))),new Promise(r=>setTimeout(r,3000))])}catch(_){}
  rebuild();$('loading').classList.remove('on');
@@ -1381,7 +1628,7 @@ function filmSetup(){const _r=mulberry(20260923);Math.random=_r;const p=FILM==='
 function filmArea(){const p=FILM==='p';return p?{x:0,y:190,w:W,h:H-190-84}:{x:0,y:0,w:W,h:H-118}}
 let FCAP=null;
 function filmCaption(i){if(FCAP)return;const S=STOPS[i];const c=document.getElementById('fcap');if(!c)return;
- let yy,tt,nn='';if(S.n){yy=CONTENT[S.n].year;tt=S.title;nn=S.n+' / 19'}else if(S.k==='intro'){yy='1843 to today';tt='A map of artificial intelligence'}else{yy='today';tt='The lookout'}
+ let yy,tt,nn='';if(S.n){yy=CT()[S.n].year;tt=ttl(S);nn=S.n+' / 19'}else if(S.k==='intro'){yy=LX('1843 to today','dal 1843 a oggi');tt=LX('A map of artificial intelligence',`Una mappa dell'intelligenza artificiale`)}else{yy=LX('today','oggi');tt=LX('The lookout','Il belvedere')}
  c.querySelector('.yy').textContent=yy;c.querySelector('.tt').textContent=tt;c.querySelector('.nn').textContent=nn}
 function filmSetCaption(yy,tt,nn){FCAP=null;const c=document.getElementById('fcap');c.querySelector('.yy').textContent=yy;c.querySelector('.tt').textContent=tt;c.querySelector('.nn').textContent=nn||'';FCAP=1}
 function filmReady(){mmDraw();needs=true;draw()}
