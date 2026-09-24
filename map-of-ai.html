@@ -119,25 +119,18 @@ form.chat input{flex:1;min-width:0;font-family:"Courier New",Courier,monospace;f
   #mmnote{display:none}
 }
 #top{position:fixed;left:12px;top:calc(12px + env(safe-area-inset-top,0px));z-index:6;display:flex;gap:8px;align-items:center}
-#home,#lang{font-family:var(--hand);font-size:21px;line-height:1.15;cursor:pointer;
-  text-decoration:none;color:var(--ink);background-color:var(--paper);background-image:var(--grain,none);border:1.6px solid var(--ink);
-  border-radius:255px 14px 225px 14px/14px 225px 14px 255px;padding:3px 14px 4px}
-#home:hover,#lang:hover{background-color:color-mix(in srgb,var(--yellow) 28%,transparent)}
-#home:focus-visible,#lang:focus-visible{outline:2px dashed var(--blue);outline-offset:3px}
-body.film #top{display:none!important}
-@media (max-width:760px){#top{left:8px;gap:6px}#home,#lang{font-size:18px;padding:2px 10px}}
-#home{position:fixed;left:12px;top:calc(12px + env(safe-area-inset-top,0px));z-index:6;font-family:var(--hand);font-size:21px;line-height:1.15;
+#home{font-family:var(--hand);font-size:21px;line-height:1.15;cursor:pointer;
   text-decoration:none;color:var(--ink);background-color:var(--paper);background-image:var(--grain,none);border:1.6px solid var(--ink);
   border-radius:255px 14px 225px 14px/14px 225px 14px 255px;padding:3px 14px 4px}
 #home:hover{background-color:color-mix(in srgb,var(--yellow) 28%,transparent)}
 #home:focus-visible{outline:2px dashed var(--blue);outline-offset:3px}
-body.film #home{display:none!important}
-@media (max-width:760px){#home{left:8px;font-size:18px;padding:2px 10px}}
+body.film #top{display:none!important}
+@media (max-width:760px){#top{left:8px}#home{font-size:18px;padding:2px 10px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<div id="top"><a id="home" href="articles.html">← articles</a><button id="lang" aria-label="Leggi in italiano" lang="it"><span class="lg-l">italiano</span><span class="lg-s">IT</span></button></div>
+<div id="top"><a id="home" href="articles.html">← articles</a></div>
 <canvas id="map" role="img" aria-label="A hand-drawn landscape: the history of artificial intelligence as a trail from 1843 to today. Hills are periods of enthusiasm, snowy valleys are the two AI winters. The text for each stop is in the side panel."></canvas>
 <div id="marks" aria-label="Stops on the map"></div>
 <aside id="panel" aria-label="Stop details">
@@ -152,6 +145,7 @@ body.film #home{display:none!important}
  <button id="ovbtn" aria-pressed="false">whole map</button>
  <button id="fold" aria-expanded="true">hide text</button>
  <button id="theme" aria-label="Switch between light and dark theme">theme</button>
+ <button id="lang" aria-label="Leggi in italiano" lang="it"><span class="lg-l">italiano</span><span class="lg-s">IT</span></button>
 </nav>
 <div id="sr" class="sr" aria-live="polite"></div>
 <div id="loading" class="on">sketching the map…</div>
@@ -1613,7 +1607,7 @@ start();
 /* ================= modalità film: orologio virtuale e didascalie, per la cattura del video ================= */
 function filmSetup(){const _r=mulberry(20260923);Math.random=_r;const p=FILM==='p';document.body.classList.add('film',p?'film-p':'film-l');
  const st=document.createElement('style');st.textContent=`
- body.film #panel,body.film #bub,body.film #marks,body.film #prev,body.film #next,body.film #ovbtn,body.film #fold,body.film #theme,body.film #mmnote{display:none!important}
+ body.film #panel,body.film #bub,body.film #marks,body.film #prev,body.film #next,body.film #ovbtn,body.film #fold,body.film #theme,body.film #lang,body.film #mmnote{display:none!important}
  #fcap{position:fixed;left:0;right:0;z-index:8;background-color:var(--paper);background-image:var(--grain,none);display:flex;flex-direction:column;justify-content:center}
  #fcap .yy{font-family:var(--hand);font-weight:600;color:var(--red);line-height:1}
  #fcap .tt{font-family:var(--serif);font-weight:500;line-height:1.08;letter-spacing:-.01em;color:var(--ink)}

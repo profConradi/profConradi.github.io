@@ -41,7 +41,6 @@ body.film #home{display:none!important}
 @media (max-width:760px){#home{left:8px;font-size:18px;padding:2px 10px}}
 '''
 CSS_ANCHOR = '@media (prefers-reduced-motion:reduce){*{transition:none!important}}'
-FOCUS_RULE = '#home:focus-visible{outline:2px dashed var(--blue);outline-offset:3px}\n'
 FILM_RULE = 'body.film #home{display:none!important}\n'
 BACK_LINK = '<a id="home" href="articles.html">← articles</a>'
 
@@ -82,14 +81,17 @@ def integrate(path):
         s = s.replace(m.group(0), m.group(0) + meta_block(name, m.group(1), desc))
         done.append('metadata')
 
-    if '#home{' not in s:
+    # The page may style the link itself — map-of-ai.html puts it in a #top group next to its
+    # own language button — so look for any #home selector, not just the one this script writes.
+    styled = re.search(r'#home\s*[,{:]', s)
+    if not styled:
         if s.count(CSS_ANCHOR) != 1:
             return ['no reduced-motion rule to anchor the styles to']
         s = s.replace(CSS_ANCHOR, CSS + CSS_ANCHOR)
         done.append('back link styles')
-    elif 'body.film #home' not in s and 'body.film' in s:
+    elif 'body.film' in s and not re.search(r'body\.film\s+#(home|top)\b', s):
         # the page gained a film capture mode after the styles were added
-        s = s.replace(FOCUS_RULE, FOCUS_RULE + FILM_RULE)
+        s = s.replace(CSS_ANCHOR, FILM_RULE + CSS_ANCHOR)
         done.append('film rule')
 
     if 'id="home"' not in s:
