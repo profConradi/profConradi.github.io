@@ -1,6 +1,21 @@
 {
   "items": [
     {
+      "title": "From Pollen to Pixel",
+      "slug": "from-pollen-to-pixel",
+      "url": "from-pollen-to-pixel.html",
+      "date": "2026-10-03",
+      "summary": "Bilingual, in Italian and English: STEM Stories, episode 1 — an animated film drawn in the style of a scientific engraving, tracing Brownian motion in nine chapters. From Lucretius watching dust in a sunbeam to Robert Brown and his Clarkia pulchella pollen in 1827, then Bachelier reading stock prices as a random walk, Einstein tying mean squared displacement to Avogadro's number, Perrin counting atoms, and on to option pricing and the diffusion models that generate images from noise. With sound, music and chapter markers.",
+      "tags": [
+        "physics",
+        "history of science",
+        "bilingual",
+        "animation",
+        "teaching"
+      ],
+      "readTime": "film, 3 min 49 s"
+    },
+    {
       "title": "Large Language Models: A Map with Theseus",
       "slug": "map-of-llms",
       "url": "map-of-llms.html",
